@@ -1,4 +1,6 @@
-namespace ShopCore.Application.Features.Orders.DTOs;
+using ShopCore.Application.Addresses.DTOs;
+
+namespace ShopCore.Application.Orders.DTOs;
 
 public class OrderDetailDto
 {

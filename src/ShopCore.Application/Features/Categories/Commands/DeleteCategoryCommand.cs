@@ -1,3 +1,3 @@
 namespace ShopCore.Application.Categories.Commands.DeleteCategory;
 
-public record DeleteCategoryCommand : IRequest;
+public record DeleteCategoryCommand(int Id) : IRequest<Unit>;

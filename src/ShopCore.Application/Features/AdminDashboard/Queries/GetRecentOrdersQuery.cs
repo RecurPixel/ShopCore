@@ -1,3 +1,5 @@
+using ShopCore.Application.AdminDashboard.DTOs;
+
 namespace ShopCore.Application.AdminDashboard.Queries.GetRecentOrders;
 
-public record GetRecentOrdersQuery : IRequest<object>;
+public record GetRecentOrdersQuery : IRequest<List<RecentOrderDto>>;

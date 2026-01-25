@@ -1,3 +1,17 @@
+using ShopCore.Application.Subscriptions.DTOs;
+
 namespace ShopCore.Application.Subscriptions.Commands.CreateSubscription;
 
-public record CreateSubscriptionCommand : IRequest;
+public record CreateSubscriptionCommand(
+    int VendorId,
+    int DeliveryAddressId,
+    List<SubscriptionItemDto> Items,
+    SubscriptionFrequency Frequency,
+    int? CustomFrequencyDays,
+    DateTime StartDate,
+    string? PreferredDeliveryTime,
+    int BillingCycleDays,
+    decimal? DepositAmount
+) : IRequest<SubscriptionDto>;
+
+public record SubscriptionItemDto(int ProductId, int Quantity);

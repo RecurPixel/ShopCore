@@ -6,3 +6,4 @@ global using System.Threading.Tasks;
 global using FluentValidation;
 global using MediatR;
 global using Microsoft.EntityFrameworkCore;
+global using ShopCore.Domain.Enums;

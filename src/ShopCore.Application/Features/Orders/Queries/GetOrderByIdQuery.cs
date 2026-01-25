@@ -1,4 +1,4 @@
-using ShopCore.Application.Features.Orders.DTOs;
+using ShopCore.Application.Orders.DTOs;
 
 namespace ShopCore.Application.Orders.Queries.GetOrderById;
 

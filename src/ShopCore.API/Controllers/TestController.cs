@@ -1,4 +1,4 @@
-using ShopCore.Application.Features.Test.Queries;
+using ShopCore.Application.Test.Queries;
 
 namespace ShopCore.API.Controllers;
 

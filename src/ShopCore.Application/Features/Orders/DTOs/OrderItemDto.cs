@@ -1,4 +1,4 @@
-namespace ShopCore.Application.Features.Orders.DTOs;
+namespace ShopCore.Application.Orders.DTOs;
 
 public class OrderItemDto
 {

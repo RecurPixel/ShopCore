@@ -1,6 +1,6 @@
 using ShopCore.Application.Cart.Commands.UpdateCartItem;
 
-namespace ShopCore.Application.Features.Cart.Validators;
+namespace ShopCore.Application.Cart.Validators;
 
 public class UpdateCartItemCommandValidator : AbstractValidator<UpdateCartItemCommand>
 {

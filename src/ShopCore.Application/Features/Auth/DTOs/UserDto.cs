@@ -1,4 +1,4 @@
-namespace ShopCore.Application.Features.Auth.DTOs;
+namespace ShopCore.Application.Auth.DTOs;
 
 public class UserDto
 {

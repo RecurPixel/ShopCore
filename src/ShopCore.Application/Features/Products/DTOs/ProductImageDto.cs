@@ -1,4 +1,4 @@
-namespace ShopCore.Application.Features.Products.DTOs;
+namespace ShopCore.Application.Products.DTOs;
 
 public class ProductImageDto
 {

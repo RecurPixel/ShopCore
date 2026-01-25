@@ -1,4 +1,4 @@
-namespace ShopCore.Application.Features.Addresses.DTOs;
+namespace ShopCore.Application.Addresses.DTOs;
 
 public class AddressDto
 {

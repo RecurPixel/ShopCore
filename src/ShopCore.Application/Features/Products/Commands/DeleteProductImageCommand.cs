@@ -1,3 +1,3 @@
 namespace ShopCore.Application.Products.Commands.DeleteProductImage;
 
-public record DeleteProductImageCommand : IRequest;
+public record DeleteProductImageCommand(int Id) : IRequest<Unit>;

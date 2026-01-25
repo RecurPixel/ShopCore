@@ -1,3 +1,5 @@
+using ShopCore.Application.Wishlist.DTOs;
+
 namespace ShopCore.Application.Wishlist.Queries.GetWishlist;
 
-public record GetWishlistQuery : IRequest<object>;
+public record GetWishlistQuery : IRequest<WishlistDto>;

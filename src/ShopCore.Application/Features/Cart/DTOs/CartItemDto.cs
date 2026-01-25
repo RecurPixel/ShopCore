@@ -1,4 +1,4 @@
-namespace ShopCore.Application.Features.Cart.DTOs;
+namespace ShopCore.Application.Cart.DTOs;
 
 public class CartItemDto
 {

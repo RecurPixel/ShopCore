@@ -1,3 +1,3 @@
 namespace ShopCore.Application.Coupons.Commands.DeactivateCoupon;
 
-public record DeactivateCouponCommand : IRequest;
+public record DeactivateCouponCommand(int Id) : IRequest<Unit>;

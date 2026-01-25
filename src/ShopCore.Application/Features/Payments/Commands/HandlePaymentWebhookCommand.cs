@@ -1,3 +1,3 @@
 namespace ShopCore.Application.Payments.Commands.HandlePaymentWebhook;
 
-public record HandlePaymentWebhookCommand : IRequest;
+public record HandlePaymentWebhookCommand(string Payload, string Signature) : IRequest<Unit>;

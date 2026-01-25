@@ -1,3 +1,3 @@
 namespace ShopCore.Application.Vendors.Commands.ApproveVendor;
 
-public record ApproveVendorCommand : IRequest;
+public record ApproveVendorCommand(int VendorId) : IRequest<Unit>;

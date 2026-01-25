@@ -1,3 +1,3 @@
 namespace ShopCore.Application.Auth.Commands.Logout;
 
-public record LogoutCommand : IRequest;
+public record LogoutCommand(string RefreshToken) : IRequest<Unit>;

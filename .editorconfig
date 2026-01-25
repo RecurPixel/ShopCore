@@ -1,0 +1,78 @@
+# Top-most EditorConfig file
+root = true
+
+# -----------------------------
+# Global defaults
+# -----------------------------
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+# -----------------------------
+# C# files
+# -----------------------------
+[*.cs]
+
+# Disable "namespace does not match folder structure"
+dotnet_diagnostic.IDE0130.severity = none
+
+# Use file-scoped namespaces (C# 10+)
+csharp_style_namespace_declarations = file_scoped:suggestion
+
+# Prefer var where obvious
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# Expression-bodied members (balanced, not aggressive)
+csharp_style_expression_bodied_methods = false:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+
+# -----------------------------
+# Using directives
+# -----------------------------
+
+# Do NOT force System.* first (plays nicer with vertical slices)
+dotnet_sort_system_directives_first = false
+
+# Keep using directives explicit
+dotnet_remove_unnecessary_imports = true
+
+# -----------------------------
+# Naming conventions
+# -----------------------------
+
+# Interfaces start with I
+dotnet_naming_rule.interfaces_should_be_prefixed.severity = warning
+dotnet_naming_rule.interfaces_should_be_prefixed.symbols = interfaces
+dotnet_naming_rule.interfaces_should_be_prefixed.style = interface_prefix
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+dotnet_naming_styles.interface_prefix.required_prefix = I
+dotnet_naming_styles.interface_prefix.capitalization = pascal_case
+
+# -----------------------------
+# Formatting
+# -----------------------------
+
+# Braces on new line
+csharp_new_line_before_open_brace = all
+
+# -----------------------------
+# File-specific overrides
+# -----------------------------
+
+# JSON / config files
+[*.json]
+indent_size = 2
+
+[*.yml]
+indent_size = 2
+
+[*.yaml]
+indent_size = 2

@@ -1,4 +1,4 @@
-namespace ShopCore.Application.Features.Users.DTOs;
+namespace ShopCore.Application.Users.DTOs;
 
 public class UpdateUserDto
 {
