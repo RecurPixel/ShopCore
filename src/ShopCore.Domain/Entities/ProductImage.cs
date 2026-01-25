@@ -1,0 +1,14 @@
+namespace ShopCore.Domain.Entities;
+
+public class ProductImage : AuditableEntity
+{
+    public int ProductId { get; set; }
+    public string ImageUrl { get; set; } = string.Empty;
+    public string? ThumbnailUrl { get; set; }
+    public string? AltText { get; set; }
+    public int DisplayOrder { get; set; }
+    public bool IsPrimary { get; set; }
+
+    // Navigation
+    public Product Product { get; set; } = null!;
+}
