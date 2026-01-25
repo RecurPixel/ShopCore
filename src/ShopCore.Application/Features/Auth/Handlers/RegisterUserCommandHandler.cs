@@ -1,9 +1,10 @@
+using ShopCore.Application.Auth.DTOs;
 using ShopCore.Application.Common.Interfaces;
 using ShopCore.Domain.Entities;
 
 namespace ShopCore.Application.Auth.Commands.RegisterUser;
 
-public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand>
+public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, RegisterResponse>
 {
     private readonly IApplicationDbContext _context;
     private readonly IPasswordHasher _passwordHasher;
@@ -20,7 +21,10 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand>
         _dateTime = dateTime;
     }
 
-    public async Task Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+    public async Task<RegisterResponse> Handle(
+        RegisterUserCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // Check if user already exists
         var exists = await _context.Users.AnyAsync(
@@ -47,5 +51,12 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand>
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync(cancellationToken);
+        return new RegisterResponse
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+        };
     }
 }

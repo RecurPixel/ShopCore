@@ -1,10 +1,12 @@
+using ShopCore.Application.Cart.DTOs;
+
 namespace ShopCore.Application.Cart.Queries.GetCart;
 
-public class GetCartQueryHandler : IRequestHandler<GetCartQuery, object>
+public class GetCartQueryHandler : IRequestHandler<GetCartQuery, CartDto>
 {
-    public Task<object> Handle(GetCartQuery request, CancellationToken cancellationToken)
+    public Task<CartDto> Handle(GetCartQuery request, CancellationToken cancellationToken)
     {
         // TODO: Implement query logic
-        return Task.FromResult<object>(new { });
+        return Task.FromResult(new CartDto());
     }
 }

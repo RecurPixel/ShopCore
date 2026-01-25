@@ -1,3 +1,3 @@
 namespace ShopCore.Application.Wishlist.Commands.RemoveFromWishlist;
 
-public record RemoveFromWishlistCommand(int ProductId) : IRequest<Unit>;
+public record RemoveFromWishlistCommand(int ProductId) : IRequest;

@@ -1,10 +1,15 @@
+using ShopCore.Application.Categories.DTOs;
+
 namespace ShopCore.Application.Categories.Commands.CreateCategory;
 
-public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand>
+public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, CategoryDto>
 {
-    public Task Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
+    public Task<CategoryDto> Handle(
+        CreateCategoryCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new CategoryDto());
     }
 }

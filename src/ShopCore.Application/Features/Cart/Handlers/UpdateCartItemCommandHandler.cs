@@ -1,10 +1,12 @@
+using ShopCore.Application.Cart.DTOs;
+
 namespace ShopCore.Application.Cart.Commands.UpdateCartItem;
 
-public class UpdateCartItemCommandHandler : IRequestHandler<UpdateCartItemCommand>
+public class UpdateCartItemCommandHandler : IRequestHandler<UpdateCartItemCommand, CartDto>
 {
-    public Task Handle(UpdateCartItemCommand request, CancellationToken cancellationToken)
+    public Task<CartDto> Handle(UpdateCartItemCommand request, CancellationToken cancellationToken)
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new CartDto());
     }
 }

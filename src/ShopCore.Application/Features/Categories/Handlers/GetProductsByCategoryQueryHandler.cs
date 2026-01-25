@@ -1,13 +1,16 @@
+using ShopCore.Application.Products.DTOs;
+
 namespace ShopCore.Application.Categories.Queries.GetProductsByCategory;
 
-public class GetProductsByCategoryQueryHandler : IRequestHandler<GetProductsByCategoryQuery, object>
+public class GetProductsByCategoryQueryHandler
+    : IRequestHandler<GetProductsByCategoryQuery, List<ProductDto>>
 {
-    public Task<object> Handle(
+    public Task<List<ProductDto>> Handle(
         GetProductsByCategoryQuery request,
         CancellationToken cancellationToken
     )
     {
         // TODO: Implement query logic
-        return Task.FromResult<object>(new { });
+        return Task.FromResult(new List<ProductDto>());
     }
 }

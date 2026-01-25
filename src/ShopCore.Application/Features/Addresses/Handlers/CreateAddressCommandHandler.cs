@@ -1,10 +1,15 @@
+using ShopCore.Application.Addresses.DTOs;
+
 namespace ShopCore.Application.Addresses.Commands.CreateAddress;
 
-public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand>
+public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand, AddressDto>
 {
-    public Task Handle(CreateAddressCommand request, CancellationToken cancellationToken)
+    public Task<AddressDto> Handle(
+        CreateAddressCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new AddressDto());
     }
 }

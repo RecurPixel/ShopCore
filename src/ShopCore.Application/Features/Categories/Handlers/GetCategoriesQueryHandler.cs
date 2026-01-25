@@ -1,10 +1,15 @@
+using ShopCore.Application.Categories.DTOs;
+
 namespace ShopCore.Application.Categories.Queries.GetCategories;
 
-public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, object>
+public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, List<CategoryDto>>
 {
-    public Task<object> Handle(GetCategoriesQuery request, CancellationToken cancellationToken)
+    public Task<List<CategoryDto>> Handle(
+        GetCategoriesQuery request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement query logic
-        return Task.FromResult<object>(new { });
+        return Task.FromResult(new List<CategoryDto>());
     }
 }

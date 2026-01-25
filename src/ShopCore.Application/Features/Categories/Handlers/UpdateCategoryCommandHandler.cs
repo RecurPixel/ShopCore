@@ -1,10 +1,15 @@
+using ShopCore.Application.Categories.DTOs;
+
 namespace ShopCore.Application.Categories.Commands.UpdateCategory;
 
-public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand>
+public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, CategoryDto>
 {
-    public Task Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
+    public Task<CategoryDto> Handle(
+        UpdateCategoryCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new CategoryDto());
     }
 }

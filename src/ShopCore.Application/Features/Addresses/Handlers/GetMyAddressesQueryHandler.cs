@@ -1,10 +1,15 @@
+using ShopCore.Application.Addresses.DTOs;
+
 namespace ShopCore.Application.Addresses.Queries.GetMyAddresses;
 
-public class GetMyAddressesQueryHandler : IRequestHandler<GetMyAddressesQuery, object>
+public class GetMyAddressesQueryHandler : IRequestHandler<GetMyAddressesQuery, List<AddressDto>>
 {
-    public Task<object> Handle(GetMyAddressesQuery request, CancellationToken cancellationToken)
+    public Task<List<AddressDto>> Handle(
+        GetMyAddressesQuery request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement query logic
-        return Task.FromResult<object>(new { });
+        return Task.FromResult(new List<AddressDto>());
     }
 }
