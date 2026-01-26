@@ -1,6 +1,8 @@
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Payments.Commands.ConfirmPayment;
 using ShopCore.Application.Payments.Commands.CreatePaymentIntent;
 using ShopCore.Application.Payments.Commands.HandlePaymentWebhook;
+using ShopCore.Application.Payments.DTOs;
 using ShopCore.Application.Payments.Queries.GetPaymentHistory;
 
 namespace ShopCore.Api.Controllers;
@@ -23,9 +25,8 @@ public class PaymentsController : ControllerBase
     // POST /api/v1/payments/create-intent
     [Authorize]
     [HttpPost("create-intent")]
-    public async Task<IActionResult> CreatePaymentIntent(
-        [FromBody] CreatePaymentIntentCommand command
-    )
+    public async Task<ActionResult<PaymentIntentDto>> CreatePaymentIntent(
+        [FromBody] CreatePaymentIntentCommand command)
     {
         var intent = await _mediator.Send(command);
         return Ok(intent);
@@ -34,19 +35,21 @@ public class PaymentsController : ControllerBase
     // POST /api/v1/payments/confirm
     [Authorize]
     [HttpPost("confirm")]
-    public async Task<IActionResult> ConfirmPayment([FromBody] ConfirmPaymentCommand command)
+    public async Task<ActionResult<PaymentConfirmationDto>> ConfirmPayment(
+        [FromBody] ConfirmPaymentCommand command)
     {
-        var result = await _mediator.Send(command);
-        return Ok(result);
+        var confirmation = await _mediator.Send(command);
+        return Ok(confirmation);
     }
 
     // GET /api/v1/payments/history
     [Authorize]
     [HttpGet("history")]
-    public async Task<IActionResult> GetPaymentHistory([FromQuery] GetPaymentHistoryQuery query)
+    public async Task<ActionResult<PaginatedList<PaymentHistoryDto>>> GetPaymentHistory(
+        [FromQuery] GetPaymentHistoryQuery query)
     {
-        var payments = await _mediator.Send(query);
-        return Ok(payments);
+        var history = await _mediator.Send(query);
+        return Ok(history);
     }
 
     // -------------------

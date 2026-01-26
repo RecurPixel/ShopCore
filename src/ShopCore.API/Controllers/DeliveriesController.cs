@@ -1,6 +1,8 @@
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Deliveries.Commands.CompleteDelivery;
 using ShopCore.Application.Deliveries.Commands.FailDelivery;
 using ShopCore.Application.Deliveries.Commands.SkipDelivery;
+using ShopCore.Application.Deliveries.DTOs;
 using ShopCore.Application.Deliveries.Queries.GetDeliveryById;
 using ShopCore.Application.Deliveries.Queries.GetSubscriptionDeliveries;
 
@@ -24,7 +26,10 @@ public class DeliveriesController : ControllerBase
     // GET /api/v1/deliveries/subscriptions/{id}/deliveries
     [Authorize]
     [HttpGet("subscriptions/{id}/deliveries")]
-    public async Task<IActionResult> GetSubscriptionDeliveries(Guid id)
+    public async Task<ActionResult<PaginatedList<DeliveryDto>>> GetSubscriptionDeliveries(
+        [FromRoute] int subscriptionId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
         var deliveries = await _mediator.Send(new GetSubscriptionDeliveriesQuery(id));
 
@@ -34,7 +39,8 @@ public class DeliveriesController : ControllerBase
     // GET /api/v1/deliveries/{id}
     [Authorize]
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetDeliveryById(Guid id)
+    public async Task<ActionResult<DeliveryDto>> GetDeliveryById(
+        [FromRoute] int id)
     {
         var delivery = await _mediator.Send(new GetDeliveryByIdQuery(id));
 
@@ -51,6 +57,18 @@ public class DeliveriesController : ControllerBase
     {
         await _mediator.Send(new SkipDeliveryCommand(id));
         return NoContent();
+    }
+
+    // GET /api/v1/deliveries/upcoming
+    [Authorize(Roles = "Vendor,Driver")]
+    [HttpGet("upcoming")]
+    public async Task<ActionResult<List<DeliveryDto>>> GetUpcomingDeliveries(
+        [FromQuery] DateTime? date = null)
+    {
+        var deliveries = await _mediator.Send(
+            new GetUpcomingDeliveriesQuery(date)
+        );
+        return Ok(deliveries);
     }
 
     // ----------------
@@ -74,4 +92,6 @@ public class DeliveriesController : ControllerBase
         await _mediator.Send(new FailDeliveryCommand(id));
         return NoContent();
     }
+
+
 }

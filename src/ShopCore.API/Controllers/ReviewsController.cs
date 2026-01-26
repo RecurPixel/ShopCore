@@ -1,8 +1,11 @@
+using ShopCore.Api.Files;
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Reviews.Commands.CreateReview;
 using ShopCore.Application.Reviews.Commands.DeleteReview;
 using ShopCore.Application.Reviews.Commands.MarkReviewHelpful;
 using ShopCore.Application.Reviews.Commands.RespondToReview;
 using ShopCore.Application.Reviews.Commands.UpdateReview;
+using ShopCore.Application.Reviews.DTOs;
 using ShopCore.Application.Reviews.Queries.GetProductReviews;
 
 namespace ShopCore.Api.Controllers;
@@ -22,16 +25,16 @@ public class ReviewsController : ControllerBase
     // Public endpoints
     // ----------------
 
-    // GET /api/v1/reviews/products/{id}/reviews
-    [HttpGet("products/{id}/reviews")]
-    public async Task<IActionResult> GetProductReviews(
-        Guid id,
-        [FromQuery] GetProductReviewsQuery query
-    )
+    // GET /api/v1/reviews/products/{productId}/reviews
+    [AllowAnonymous]
+    [HttpGet("products/{productId:int}/reviews")]
+    public async Task<ActionResult<PaginatedList<ReviewDto>>> GetProductReviews(
+        int productId,
+        [FromQuery] GetProductReviewsQuery query)
     {
-        query.ProductId = id;
+        var finalQuery = query with { ProductId = productId };
 
-        var reviews = await _mediator.Send(query);
+        var reviews = await _mediator.Send(finalQuery);
         return Ok(reviews);
     }
 
@@ -42,36 +45,66 @@ public class ReviewsController : ControllerBase
     // POST /api/v1/reviews
     [Authorize]
     [HttpPost]
-    public async Task<IActionResult> CreateReview([FromBody] CreateReviewCommand command)
+    public async Task<ActionResult<ReviewDto>> CreateReview(
+        [FromForm] int productId,
+        [FromForm] int orderId,
+        [FromForm] int rating,
+        [FromForm] string? title,
+        [FromForm] string? comment,
+        [FromForm] List<IFormFile>? images)
     {
+        var files = images?
+            .Select(f => (IFile)new FormFileAdapter(f))
+            .ToList();
+
+        var command = new CreateReviewCommand(
+            productId,
+            orderId,
+            rating,
+            title,
+            comment,
+            files);
+
         var review = await _mediator.Send(command);
         return Ok(review);
     }
 
     // PUT /api/v1/reviews/{id}
     [Authorize]
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateReview(Guid id, [FromBody] UpdateReviewCommand command)
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<ReviewDto>> UpdateReview(
+        int id,
+        [FromBody] UpdateReviewCommand command)
     {
-        command.ReviewId = id;
+        var finalCommand = command with { Id = id };
 
-        var review = await _mediator.Send(command);
+        var review = await _mediator.Send(finalCommand);
         return Ok(review);
     }
 
     // DELETE /api/v1/reviews/{id}
     [Authorize]
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteReview(Guid id)
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteReview(int id)
     {
         await _mediator.Send(new DeleteReviewCommand(id));
         return NoContent();
     }
 
+    // GET /api/v1/reviews/me
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<ActionResult<PaginatedList<ReviewDto>>> GetMyReviews(
+        [FromQuery] GetMyReviewsQuery query)
+    {
+        var reviews = await _mediator.Send(query);
+        return Ok(reviews);
+    }
+
     // POST /api/v1/reviews/{id}/helpful
     [Authorize]
-    [HttpPost("{id}/helpful")]
-    public async Task<IActionResult> MarkReviewHelpful(Guid id)
+    [HttpPost("{id:int}/helpful")]
+    public async Task<IActionResult> MarkReviewHelpful(int id)
     {
         await _mediator.Send(new MarkReviewHelpfulCommand(id));
         return NoContent();
@@ -83,15 +116,14 @@ public class ReviewsController : ControllerBase
 
     // POST /api/v1/reviews/{id}/respond
     [Authorize(Roles = "Vendor")]
-    [HttpPost("{id}/respond")]
-    public async Task<IActionResult> RespondToReview(
-        Guid id,
-        [FromBody] RespondToReviewCommand command
-    )
+    [HttpPost("{id:int}/respond")]
+    public async Task<IActionResult> AddVendorResponse(
+        int id,
+        [FromBody] RespondToReviewCommand command)
     {
-        command.ReviewId = id;
+        var finalCommand = command with { ReviewId = id };
 
-        await _mediator.Send(command);
+        await _mediator.Send(finalCommand);
         return NoContent();
     }
 }

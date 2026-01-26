@@ -8,15 +8,19 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
     private readonly IPasswordHasher _passwordHasher;
     private readonly IDateTime _dateTime;
 
+    private readonly IEmailService _emailService;
+
     public RegisterUserCommandHandler(
         IApplicationDbContext context,
         IPasswordHasher passwordHasher,
-        IDateTime dateTime
+        IDateTime dateTime,
+        IEmailService emailService
     )
     {
         _context = context;
         _passwordHasher = passwordHasher;
         _dateTime = dateTime;
+        _emailService = emailService;
     }
 
     public async Task<RegisterResponse> Handle(
@@ -50,6 +54,20 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync(cancellationToken);
+
+        // Send welcome email
+        await _emailService.SendWelcomeEmailAsync(
+            user.Email,
+            user.FullName
+        );
+
+        // Send email verification
+        var verificationUrl = "https://shopcore.com/verify-email";
+        await _emailService.SendEmailVerificationAsync(
+            user.Email,
+            user.EmailVerificationToken!,
+            verificationUrl
+        );
 
         return new RegisterResponse
         {

@@ -1,8 +1,10 @@
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Subscriptions.Commands.CreateSubscription;
 using ShopCore.Application.Subscriptions.Commands.PauseSubscription;
 using ShopCore.Application.Subscriptions.Commands.ResumeSubscription;
 using ShopCore.Application.Subscriptions.Commands.SettleSubscription;
 using ShopCore.Application.Subscriptions.Commands.UpdateSubscription;
+using ShopCore.Application.Subscriptions.DTOs;
 using ShopCore.Application.Subscriptions.Queries.GetMySubscriptions;
 using ShopCore.Application.Subscriptions.Queries.GetSubscriptionById;
 using ShopCore.Application.Subscriptions.Queries.GetVendorSubscriptions;
@@ -22,13 +24,12 @@ public class SubscriptionsController : ControllerBase
     }
 
     // POST /api/v1/subscriptions
+    [Authorize(Roles = "Customer,Vendor")]
     [HttpPost]
-    public async Task<IActionResult> CreateSubscription(
-        [FromBody] CreateSubscriptionCommand command
-    )
+    public async Task<ActionResult<SubscriptionDto>> CreateSubscription(
+    [FromBody] CreateSubscriptionCommand command)
     {
         var subscription = await _mediator.Send(command);
-
         return CreatedAtAction(
             nameof(GetSubscriptionById),
             new { id = subscription.Id },
@@ -37,31 +38,33 @@ public class SubscriptionsController : ControllerBase
     }
 
     // GET /api/v1/subscriptions
+    [Authorize(Roles = "Customer,Vendor")]
     [HttpGet]
-    public async Task<IActionResult> GetMySubscriptions([FromQuery] GetMySubscriptionsQuery query)
+    public async Task<ActionResult<PaginatedList<SubscriptionDto>>> GetMySubscriptions(
+        [FromQuery] GetMySubscriptionsQuery query)
     {
         var subscriptions = await _mediator.Send(query);
         return Ok(subscriptions);
     }
 
     // GET /api/v1/subscriptions/{id}
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetSubscriptionById(Guid id)
+    [Authorize(Roles = "Customer,Vendor")]
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<SubscriptionDto>> GetSubscriptionById(
+        [FromRoute] int id)
     {
-        var subscription = await _mediator.Send(new GetSubscriptionByIdQuery(id));
-
-        if (subscription == null)
-            return NotFound();
-
+        var subscription = await _mediator.Send(
+            new GetSubscriptionByIdQuery(id)
+        );
         return Ok(subscription);
     }
 
     // PATCH /api/v1/subscriptions/{id}
+    [Authorize(Roles = "Customer,Vendor")]
     [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdateSubscription(
-        Guid id,
-        [FromBody] UpdateSubscriptionCommand command
-    )
+    public async Task<ActionResult<SubscriptionDto>> UpdateSubscription(
+        [FromRoute] int id,
+        [FromBody] UpdateSubscriptionCommand command)
     {
         command.SubscriptionId = id;
 
@@ -71,7 +74,8 @@ public class SubscriptionsController : ControllerBase
 
     // PATCH /api/v1/subscriptions/{id}/pause
     [HttpPatch("{id}/pause")]
-    public async Task<IActionResult> PauseSubscription(Guid id)
+    public async Task<IActionResult> PauseSubscription(
+        [FromRoute] int id)
     {
         await _mediator.Send(new PauseSubscriptionCommand(id));
         return NoContent();
@@ -79,15 +83,28 @@ public class SubscriptionsController : ControllerBase
 
     // PATCH /api/v1/subscriptions/{id}/resume
     [HttpPatch("{id}/resume")]
-    public async Task<IActionResult> ResumeSubscription(Guid id)
+    public async Task<IActionResult> ResumeSubscription(
+        [FromRoute] int id)
     {
         await _mediator.Send(new ResumeSubscriptionCommand(id));
         return NoContent();
     }
 
+    // POST /api/v1/subscriptions/{id}/cancel
+    [Authorize(Roles = "Customer,Vendor")]
+    [HttpPost("{id:int}/cancel")]
+    public async Task<IActionResult> CancelSubscription(
+        [FromRoute] int id)
+    {
+
+        await _mediator.Send(new CancelSubscriptionCommand(id));
+        return NoContent();
+    }
+
     // POST /api/v1/subscriptions/{id}/settle
     [HttpPost("{id}/settle")]
-    public async Task<IActionResult> SettleSubscription(Guid id)
+    public async Task<ActionResult<SubscriptionSettlementDto>> SettleSubscription(
+        [FromRoute] int id)
     {
         await _mediator.Send(new SettleSubscriptionCommand(id));
         return NoContent();
@@ -100,9 +117,8 @@ public class SubscriptionsController : ControllerBase
     // GET /api/v1/vendors/me/subscriptions
     [Authorize(Roles = "Vendor")]
     [HttpGet("/api/v1/vendors/me/subscriptions")]
-    public async Task<IActionResult> GetVendorSubscriptions(
-        [FromQuery] GetVendorSubscriptionsQuery query
-    )
+    public async Task<ActionResult<PaginatedList<SubscriptionDto>>> GetVendorSubscriptions(
+        [FromQuery] GetVendorSubscriptionsQuery query)
     {
         var subscriptions = await _mediator.Send(query);
         return Ok(subscriptions);

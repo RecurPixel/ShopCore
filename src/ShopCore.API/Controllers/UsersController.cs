@@ -1,6 +1,8 @@
+using ShopCore.Api.Files;
 using ShopCore.Application.Users.Commands.ChangePassword;
 using ShopCore.Application.Users.Commands.UpdateCurrentUser;
 using ShopCore.Application.Users.Commands.UploadUserAvatar;
+using ShopCore.Application.Users.DTOs;
 using ShopCore.Application.Users.Queries.GetCurrentUser;
 
 namespace ShopCore.Api.Controllers;
@@ -17,32 +19,37 @@ public class UsersController : ControllerBase
     }
 
     // GET /api/v1/users/me
-    [HttpGet("me")]
-    public async Task<IActionResult> GetMe()
+    [HttpGet]
+    public async Task<ActionResult<UserProfileDto>> GetProfile()
     {
         var user = await _mediator.Send(new GetCurrentUserQuery());
         return Ok(user);
     }
 
     // PUT /api/v1/users/me
-    [HttpPut("me")]
-    public async Task<IActionResult> UpdateMe([FromBody] UpdateCurrentUserCommand command)
+    [HttpPut]
+    public async Task<ActionResult<UserProfileDto>> UpdateProfile(
+        [FromBody] UpdateCurrentUserCommand command)
     {
         var user = await _mediator.Send(command);
         return Ok(user);
     }
 
     // POST /api/v1/users/me/avatar
-    [HttpPost("me/avatar")]
-    public async Task<IActionResult> UploadAvatar([FromForm] UploadUserAvatarCommand command)
+    [HttpPost("avatar")]
+    public async Task<ActionResult<string>> UploadAvatar(IFormFile file)
     {
-        var result = await _mediator.Send(command);
-        return Ok(result);
+        var command = new UploadUserAvatarCommand(
+            new FormFileAdapter(file));
+
+        var url = await _mediator.Send(command);
+        return Ok(url);
     }
 
     // POST /api/v1/users/me/change-password
-    [HttpPost("me/change-password")]
-    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command)
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword(
+        [FromBody] ChangePasswordCommand command)
     {
         await _mediator.Send(command);
         return NoContent();

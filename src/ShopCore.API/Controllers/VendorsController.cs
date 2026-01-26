@@ -1,8 +1,12 @@
+using ShopCore.Api.Files;
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Vendors.Commands.ApproveVendor;
 using ShopCore.Application.Vendors.Commands.RegisterVendor;
 using ShopCore.Application.Vendors.Commands.SuspendVendor;
 using ShopCore.Application.Vendors.Commands.UpdateMyVendor;
 using ShopCore.Application.Vendors.Commands.UpdateVendorOrderStatus;
+using ShopCore.Application.Vendors.Commands.UploadVendorLogo;
+using ShopCore.Application.Vendors.DTOs;
 using ShopCore.Application.Vendors.Queries.GetMyVendor;
 using ShopCore.Application.Vendors.Queries.GetMyVendorOrders;
 using ShopCore.Application.Vendors.Queries.GetMyVendorStats;
@@ -28,7 +32,8 @@ public class VendorsController : ControllerBase
     // POST /api/v1/vendors/register
     [Authorize]
     [HttpPost("register")]
-    public async Task<IActionResult> RegisterVendor([FromBody] RegisterVendorCommand command)
+    public async Task<ActionResult<VendorProfileDto>> RegisterVendor(
+        [FromBody] RegisterVendorCommand command)
     {
         var vendor = await _mediator.Send(command);
         return Ok(vendor);
@@ -37,7 +42,7 @@ public class VendorsController : ControllerBase
     // GET /api/v1/vendors/me
     [Authorize(Roles = "Vendor")]
     [HttpGet("me")]
-    public async Task<IActionResult> GetMyVendorProfile()
+    public async Task<ActionResult<VendorProfileDto>> GetMyVendorProfile()
     {
         var vendor = await _mediator.Send(new GetMyVendorQuery());
         return Ok(vendor);
@@ -46,16 +51,33 @@ public class VendorsController : ControllerBase
     // PUT /api/v1/vendors/me
     [Authorize(Roles = "Vendor")]
     [HttpPut("me")]
-    public async Task<IActionResult> UpdateMyVendorProfile([FromBody] UpdateMyVendorCommand command)
+    public async Task<ActionResult<VendorProfileDto>> UpdateVendorProfile(
+        [FromBody] UpdateMyVendorCommand command)
     {
         var vendor = await _mediator.Send(command);
         return Ok(vendor);
     }
 
+    // POST /api/v1/vendors/me/logo
+    [Authorize(Roles = "Vendor")]
+    [HttpPost("me/logo")]
+    public async Task<ActionResult<string>> UploadVendorLogo(
+        IFormFile file)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest("Logo file is required.");
+
+        var command = new UploadVendorLogoCommand(
+            new FormFileAdapter(file));
+
+        var logoUrl = await _mediator.Send(command);
+        return Ok(logoUrl);
+    }
+
     // GET /api/v1/vendors/me/stats
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/stats")]
-    public async Task<IActionResult> GetMyVendorStats()
+    public async Task<ActionResult<VendorStatsDto>> GetVendorStats()
     {
         var stats = await _mediator.Send(new GetMyVendorStatsQuery());
         return Ok(stats);
@@ -64,9 +86,10 @@ public class VendorsController : ControllerBase
     // GET /api/v1/vendors/me/orders
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/orders")]
-    public async Task<IActionResult> GetMyOrders()
+    public async Task<ActionResult<PaginatedList<VendorOrderDto>>> GetVendorOrders(
+        [FromQuery] GetMyVendorOrdersQuery query)
     {
-        var orders = await _mediator.Send(new GetMyVendorOrdersQuery());
+        var orders = await _mediator.Send(query);
         return Ok(orders);
     }
 
@@ -91,7 +114,7 @@ public class VendorsController : ControllerBase
     // GET /api/v1/vendors/pending
     [Authorize(Roles = "Admin")]
     [HttpGet("pending")]
-    public async Task<IActionResult> GetPendingVendors()
+    public async Task<ActionResult<List<VendorProfileDto>>> GetPendingVendors()
     {
         var vendors = await _mediator.Send(new GetPendingVendorsQuery());
         return Ok(vendors);
@@ -99,8 +122,8 @@ public class VendorsController : ControllerBase
 
     // PATCH /api/v1/vendors/{id}/approve
     [Authorize(Roles = "Admin")]
-    [HttpPatch("{id}/approve")]
-    public async Task<IActionResult> ApproveVendor(Guid id)
+    [HttpPatch("{id:int}/approve")]
+    public async Task<IActionResult> ApproveVendor(int id)
     {
         await _mediator.Send(new ApproveVendorCommand(id));
         return NoContent();
@@ -108,10 +131,15 @@ public class VendorsController : ControllerBase
 
     // PATCH /api/v1/vendors/{id}/suspend
     [Authorize(Roles = "Admin")]
-    [HttpPatch("{id}/suspend")]
-    public async Task<IActionResult> SuspendVendor(Guid id)
+    [HttpPatch("{id:int}/suspend")]
+    public async Task<IActionResult> SuspendVendor(
+        int id,
+        [FromBody] SuspendVendorCommand command)
     {
-        await _mediator.Send(new SuspendVendorCommand(id));
+        // enforce route → command consistency
+        var finalCommand = command with { VendorId = id };
+
+        await _mediator.Send(finalCommand);
         return NoContent();
     }
 }

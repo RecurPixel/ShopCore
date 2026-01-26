@@ -3,6 +3,7 @@ using ShopCore.Application.Cart.Commands.ClearCart;
 using ShopCore.Application.Cart.Commands.RemoveCartItem;
 using ShopCore.Application.Cart.Commands.UpdateCartItem;
 using ShopCore.Application.Cart.Commands.ValidateCart;
+using ShopCore.Application.Cart.DTOs;
 using ShopCore.Application.Cart.Queries.GetCart;
 
 namespace ShopCore.Api.Controllers;
@@ -20,7 +21,7 @@ public class CartController : ControllerBase
 
     // GET /api/v1/cart
     [HttpGet]
-    public async Task<IActionResult> GetCart()
+    public async Task<ActionResult<CartDto>> GetCart()
     {
         var cart = await _mediator.Send(new GetCartQuery());
         return Ok(cart);
@@ -28,28 +29,33 @@ public class CartController : ControllerBase
 
     // POST /api/v1/cart/items
     [HttpPost("items")]
-    public async Task<IActionResult> AddItem([FromBody] AddCartItemCommand command)
+    public async Task<ActionResult<CartDto>> AddToCart(
+      [FromBody] AddCartItemCommand command)
     {
         var cart = await _mediator.Send(command);
         return Ok(cart);
     }
 
     // PUT /api/v1/cart/items/{id}
-    [HttpPut("items/{id}")]
-    public async Task<IActionResult> UpdateItem(Guid id, [FromBody] UpdateCartItemCommand command)
+    [HttpPut("items/{id:int}")]
+    public async Task<ActionResult<CartDto>> UpdateCartItem(
+        int id,
+        [FromBody] UpdateCartItemCommand command)
     {
-        command.CartItemId = id;
+        var finalCommand = command with { CartItemId = id };
 
-        var cart = await _mediator.Send(command);
+        var cart = await _mediator.Send(finalCommand);
         return Ok(cart);
     }
 
     // DELETE /api/v1/cart/items/{id}
-    [HttpDelete("items/{id}")]
-    public async Task<IActionResult> RemoveItem(Guid id)
+    [HttpDelete("items/{id:int}")]
+    public async Task<ActionResult<CartDto>> RemoveFromCart(int id)
     {
-        await _mediator.Send(new RemoveCartItemCommand(id));
-        return NoContent();
+        var cart = await _mediator.Send(
+            new RemoveCartItemCommand(id));
+
+        return Ok(cart);
     }
 
     // DELETE /api/v1/cart/clear
@@ -62,7 +68,7 @@ public class CartController : ControllerBase
 
     // POST /api/v1/cart/validate
     [HttpPost("validate")]
-    public async Task<IActionResult> ValidateCart()
+    public async Task<ActionResult<CartValidationResultDto>> ValidateCart()
     {
         var result = await _mediator.Send(new ValidateCartCommand());
         return Ok(result);

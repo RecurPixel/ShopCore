@@ -7,4 +7,5 @@ public enum DeliveryItemStatus
     OutOfStock = 3,
     Damaged = 4,
     Skipped = 5,
+    Cancelled = 6
 }

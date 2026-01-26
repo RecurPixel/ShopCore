@@ -1,3 +1,4 @@
+using ShopCore.Application.AdminDashboard.DTOs;
 using ShopCore.Application.AdminDashboard.Queries.GetAdminDashboardStats;
 using ShopCore.Application.AdminDashboard.Queries.GetRecentOrders;
 using ShopCore.Application.AdminDashboard.Queries.GetRevenueStats;
@@ -18,16 +19,16 @@ public class AdminController : ControllerBase
 
     // GET /api/v1/admin/dashboard/stats
     [HttpGet("stats")]
-    public async Task<IActionResult> GetStats()
+    public async Task<ActionResult<AdminDashboardStatsDto>> GetDashboardStats()
     {
         var stats = await _mediator.Send(new GetAdminDashboardStatsQuery());
-
         return Ok(stats);
     }
 
     // GET /api/v1/admin/dashboard/recent-orders
     [HttpGet("recent-orders")]
-    public async Task<IActionResult> GetRecentOrders([FromQuery] GetRecentOrdersQuery query)
+    public async Task<ActionResult<List<RecentOrderDto>>> GetRecentOrders(
+        [FromQuery] GetRecentOrdersQuery query)
     {
         var orders = await _mediator.Send(query);
         return Ok(orders);
@@ -35,7 +36,8 @@ public class AdminController : ControllerBase
 
     // GET /api/v1/admin/dashboard/revenue
     [HttpGet("revenue")]
-    public async Task<IActionResult> GetRevenue([FromQuery] GetRevenueStatsQuery query)
+    public async Task<ActionResult<RevenueStatsDto>> GetRevenueStats(
+        [FromQuery] GetRevenueStatsQuery query)
     {
         var revenue = await _mediator.Send(query);
         return Ok(revenue);

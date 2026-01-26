@@ -1,9 +1,12 @@
+using ShopCore.Api.Files;
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Products.Commands.CreateProduct;
 using ShopCore.Application.Products.Commands.DeleteProduct;
 using ShopCore.Application.Products.Commands.DeleteProductImage;
 using ShopCore.Application.Products.Commands.UpdateProduct;
 using ShopCore.Application.Products.Commands.UpdateProductStatus;
 using ShopCore.Application.Products.Commands.UploadProductImages;
+using ShopCore.Application.Products.DTOs;
 using ShopCore.Application.Products.Queries.GetFeaturedProducts;
 using ShopCore.Application.Products.Queries.GetProductById;
 using ShopCore.Application.Products.Queries.GetProducts;
@@ -28,7 +31,8 @@ public class ProductsController : ControllerBase
 
     // GET /api/v1/products
     [HttpGet]
-    public async Task<IActionResult> GetProducts([FromQuery] GetProductsQuery query)
+    public async Task<ActionResult<PaginatedList<ProductDto>>> GetProducts(
+        [FromQuery] GetProductsQuery query)
     {
         var products = await _mediator.Send(query);
         return Ok(products);
@@ -36,27 +40,29 @@ public class ProductsController : ControllerBase
 
     // GET /api/v1/products/search
     [HttpGet("search")]
-    public async Task<IActionResult> SearchProducts([FromQuery] SearchProductsQuery query)
+    public async Task<ActionResult<PaginatedList<ProductDto>>> SearchProducts(
+        [FromQuery] SearchProductsQuery query)
     {
-        var result = await _mediator.Send(query);
-        return Ok(result);
+        var products = await _mediator.Send(query);
+        return Ok(products);
     }
 
     // GET /api/v1/products/featured
     [HttpGet("featured")]
-    public async Task<IActionResult> GetFeaturedProducts()
+    public async Task<ActionResult<List<ProductDto>>> GetFeaturedProducts(
+        [FromQuery] GetFeaturedProductsQuery query)
     {
-        var products = await _mediator.Send(new GetFeaturedProductsQuery());
+        var products = await _mediator.Send(query);
         return Ok(products);
     }
 
     // GET /api/v1/products/{id}
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetProductById(Guid id)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<ProductDetailDto>> GetProductById(int id)
     {
         var product = await _mediator.Send(new GetProductByIdQuery(id));
 
-        if (product == null)
+        if (product is null)
             return NotFound();
 
         return Ok(product);
@@ -69,7 +75,8 @@ public class ProductsController : ControllerBase
     // POST /api/v1/products
     [Authorize(Roles = "Vendor")]
     [HttpPost]
-    public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
+    public async Task<ActionResult<ProductDto>> CreateProduct(
+        [FromBody] CreateProductCommand command)
     {
         var product = await _mediator.Send(command);
 
@@ -78,19 +85,21 @@ public class ProductsController : ControllerBase
 
     // PUT /api/v1/products/{id}
     [Authorize(Roles = "Vendor")]
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] UpdateProductCommand command)
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<ProductDto>> UpdateProduct(
+        int id,
+        [FromBody] UpdateProductCommand command)
     {
-        command.ProductId = id;
+        var finalCommand = command with { Id = id };
 
-        var product = await _mediator.Send(command);
+        var product = await _mediator.Send(finalCommand);
         return Ok(product);
     }
 
     // DELETE /api/v1/products/{id}
     [Authorize(Roles = "Vendor")]
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteProduct(Guid id)
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteProduct(int id)
     {
         await _mediator.Send(new DeleteProductCommand(id));
         return NoContent();
@@ -98,13 +107,19 @@ public class ProductsController : ControllerBase
 
     // POST /api/v1/products/{id}/images
     [Authorize(Roles = "Vendor")]
-    [HttpPost("{id}/images")]
-    public async Task<IActionResult> UploadProductImages(
-        Guid id,
-        [FromForm] UploadProductImagesCommand command
-    )
+    [HttpPost("{id:int}/images")]
+    public async Task<ActionResult<List<ProductImageDto>>> UploadProductImages(
+        int id,
+        List<IFormFile> files)
     {
-        command.ProductId = id;
+        if (files is null || files.Count == 0)
+            return BadRequest("At least one image is required.");
+
+        var fileAdapters = files
+            .Select(f => (IFile)new FormFileAdapter(f))
+            .ToList();
+
+        var command = new UploadProductImagesCommand(id, fileAdapters);
 
         var images = await _mediator.Send(command);
         return Ok(images);
@@ -112,25 +127,40 @@ public class ProductsController : ControllerBase
 
     // DELETE /api/v1/products/{id}/images/{imageId}
     [Authorize(Roles = "Vendor")]
-    [HttpDelete("{id}/images/{imageId}")]
-    public async Task<IActionResult> DeleteProductImage(Guid id, Guid imageId)
+    [HttpDelete("{id:int}/images/{imageId:int}")]
+    public async Task<IActionResult> DeleteProductImage(
+        int id,
+        int imageId)
     {
-        await _mediator.Send(new DeleteProductImageCommand(id, imageId));
+        await _mediator.Send(
+            new DeleteProductImageCommand(id, imageId));
 
         return NoContent();
     }
 
     // PATCH /api/v1/products/{id}/status
     [Authorize(Roles = "Vendor")]
-    [HttpPatch("{id}/status")]
+    [HttpPatch("{id:int}/status")]
     public async Task<IActionResult> UpdateProductStatus(
-        Guid id,
-        [FromBody] UpdateProductStatusCommand command
-    )
+        int id,
+        [FromBody] UpdateProductStatusCommand command)
     {
-        command.ProductId = id;
+        var finalCommand = command with { Id = id };
 
-        await _mediator.Send(command);
+        await _mediator.Send(finalCommand);
+        return NoContent();
+    }
+
+    // POST /api/v1/products/{id}/specifications
+    [Authorize(Roles = "Vendor")]
+    [HttpPost("{id:int}/specifications")]
+    public async Task<IActionResult> AddProductSpecification(
+        int id,
+        [FromBody] AddProductSpecificationCommand command)
+    {
+        var finalCommand = command with { ProductId = id };
+
+        await _mediator.Send(finalCommand);
         return NoContent();
     }
 }

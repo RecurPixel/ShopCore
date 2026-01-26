@@ -1,5 +1,7 @@
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Invoices.Commands.GenerateSubscriptionInvoice;
 using ShopCore.Application.Invoices.Commands.PayInvoice;
+using ShopCore.Application.Invoices.DTOs;
 using ShopCore.Application.Invoices.Queries.DownloadInvoice;
 using ShopCore.Application.Invoices.Queries.GetInvoiceById;
 using ShopCore.Application.Invoices.Queries.GetSubscriptionInvoices;
@@ -21,24 +23,37 @@ public class InvoicesController : ControllerBase
     // User endpoints
     // ----------------
 
+
+    // GET /api/v1/invoices/unpaid
+    [HttpGet("unpaid")]
+    public async Task<ActionResult<List<InvoiceDto>>> GetUnpaidInvoices()
+    {
+        var invoices = await _mediator.Send(new GetUnpaidInvoicesQuery());
+        return Ok(invoices);
+    }
+
     // GET /api/v1/invoices/subscriptions/{id}/invoices
     [Authorize]
-    [HttpGet("subscriptions/{id}/invoices")]
-    public async Task<IActionResult> GetSubscriptionInvoices(Guid id)
+    [Authorize(Roles = "Vendor")]
+    [HttpGet("subscriptions/{subscriptionId:int}/invoices")]
+    public async Task<ActionResult<PaginatedList<InvoiceDto>>> GetSubscriptionInvoices(
+        int subscriptionId,
+        [FromQuery] GetSubscriptionInvoicesQuery query)
     {
-        var invoices = await _mediator.Send(new GetSubscriptionInvoicesQuery(id));
+        var finalQuery = query with { SubscriptionId = subscriptionId };
 
+        var invoices = await _mediator.Send(finalQuery);
         return Ok(invoices);
     }
 
     // GET /api/v1/invoices/{id}
     [Authorize]
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetInvoiceById(Guid id)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<InvoiceDto>> GetInvoiceById(int id)
     {
         var invoice = await _mediator.Send(new GetInvoiceByIdQuery(id));
 
-        if (invoice == null)
+        if (invoice is null)
             return NotFound();
 
         return Ok(invoice);
@@ -47,20 +62,30 @@ public class InvoicesController : ControllerBase
     // POST /api/v1/invoices/{id}/pay
     [Authorize]
     [HttpPost("{id}/pay")]
-    public async Task<IActionResult> PayInvoice(Guid id)
+    public async Task<ActionResult<PaymentConfirmationDto>> PayInvoice(
+        int id,
+        [FromBody] PayInvoiceCommand command)
     {
-        await _mediator.Send(new PayInvoiceCommand(id));
+        var finalCommand = command with { InvoiceId = id };
+
+        var confirmation = await _mediator.Send(finalCommand);
         return NoContent();
     }
 
     // GET /api/v1/invoices/{id}/download
     [Authorize]
-    [HttpGet("{id}/download")]
-    public async Task<IActionResult> DownloadInvoice(Guid id)
+    [HttpGet("{id:int}/download")]
+    public async Task<IActionResult> DownloadInvoice(int id)
     {
-        var file = await _mediator.Send(new DownloadInvoiceQuery(id));
+        var pdf = await _mediator.Send(new DownloadInvoiceQuery(id));
 
-        return File(file.Content, file.ContentType, file.FileName);
+        if (pdf is null || pdf.Length == 0)
+            return NotFound();
+
+        return File(
+            pdf,
+            "application/pdf",
+            $"invoice-{id}.pdf");
     }
 
     // ----------------
@@ -70,9 +95,11 @@ public class InvoicesController : ControllerBase
     // POST /api/v1/invoices/subscriptions/{id}/generate
     [Authorize(Roles = "Vendor")]
     [HttpPost("subscriptions/{id}/generate")]
-    public async Task<IActionResult> GenerateInvoice(Guid id)
+    public async Task<ActionResult<InvoiceDto>> GenerateInvoice(
+        int subscriptionId)
     {
-        await _mediator.Send(new GenerateSubscriptionInvoiceCommand(id));
-        return NoContent();
+        var invoice = await _mediator.Send(
+            new GenerateSubscriptionInvoiceCommand(subscriptionId));
+        return Ok(invoice);
     }
 }

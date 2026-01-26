@@ -1,5 +1,7 @@
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Orders.Commands.CancelOrder;
 using ShopCore.Application.Orders.Commands.CreateOrder;
+using ShopCore.Application.Orders.DTOs;
 using ShopCore.Application.Orders.Queries.GetMyOrders;
 using ShopCore.Application.Orders.Queries.GetOrderById;
 using ShopCore.Application.Orders.Queries.GetOrderInvoice;
@@ -19,50 +21,63 @@ public class OrdersController : ControllerBase
 
     // POST /api/v1/orders
     [HttpPost]
-    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand command)
+    public async Task<ActionResult<OrderDto>> CreateOrder(
+        [FromBody] CreateOrderCommand command)
     {
         var order = await _mediator.Send(command);
 
-        return CreatedAtAction(nameof(GetOrderById), new { id = order.Id }, order);
+        return CreatedAtAction(
+            nameof(GetOrderById),
+            new { id = order.Id },
+            order);
     }
 
     // GET /api/v1/orders
     [HttpGet]
-    public async Task<IActionResult> GetMyOrders([FromQuery] GetMyOrdersQuery query)
+    public async Task<ActionResult<PaginatedList<OrderDto>>> GetMyOrders(
+        [FromQuery] GetMyOrdersQuery query)
     {
         var orders = await _mediator.Send(query);
         return Ok(orders);
     }
 
     // GET /api/v1/orders/{id}
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetOrderById(int id)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<OrderDetailDto>> GetOrderById(int id)
     {
         var order = await _mediator.Send(new GetOrderByIdQuery(id));
 
-        if (order == null)
+        if (order is null)
             return NotFound();
 
         return Ok(order);
     }
 
     // POST /api/v1/orders/{id}/cancel
-    [HttpPost("{id}/cancel")]
-    public async Task<IActionResult> CancelOrder(int id)
+    [HttpPost("{id:int}/cancel")]
+    public async Task<IActionResult> CancelOrder(
+        int id,
+        [FromBody] CancelOrderCommand command)
     {
-        await _mediator.Send(new CancelOrderCommand(id));
+        var finalCommand = command with { OrderId = id };
+
+        await _mediator.Send(finalCommand);
         return NoContent();
     }
 
     // GET /api/v1/orders/{id}/invoice
-    [HttpGet("{id}/invoice")]
-    public async Task<IActionResult> GetInvoice(int id)
+    [HttpGet("{id:int}/invoice")]
+    public async Task<IActionResult> GetOrderInvoice(int id)
     {
-        var invoice = await _mediator.Send(new GetOrderInvoiceQuery(id));
+        var invoiceBytes = await _mediator.Send(
+            new GetOrderInvoiceQuery(id));
 
-        if (invoice == null)
+        if (invoiceBytes.FileContent is null || invoiceBytes.Length == 0)
             return NotFound();
 
-        return Ok(invoice);
+        return File(
+            invoiceBytes.FileContent,
+            "application/pdf",
+            $"invoice-order-{id}.pdf");
     }
 }

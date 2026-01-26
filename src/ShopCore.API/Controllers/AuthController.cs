@@ -5,6 +5,8 @@ using ShopCore.Application.Auth.Commands.RefreshToken;
 using ShopCore.Application.Auth.Commands.RegisterUser;
 using ShopCore.Application.Auth.Commands.VerifyEmail;
 using ShopCore.Application.Auth.DTOs;
+using ShopCore.Application.Users.DTOs;
+using ShopCore.Application.Users.Queries.GetCurrentUser;
 
 namespace ShopCore.Api.Controllers;
 
@@ -21,7 +23,8 @@ public class AuthController : ControllerBase
 
     // POST /api/v1/auth/register
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterUserCommand command)
+    public async Task<ActionResult<RegisterResponse>> Register(
+        [FromBody] RegisterUserCommand command)
     {
         var result = await _mediator.Send(command);
         return Ok(result);
@@ -32,10 +35,11 @@ public class AuthController : ControllerBase
     /// </summary>
     [HttpPost("login")]
     [AllowAnonymous]
-    public async Task<IActionResult> Login([FromBody] LoginCommand command)
+    public async Task<ActionResult<LoginResponse>> Login(
+        [FromBody] LoginCommand command)
     {
-        var response = await _mediator.Send(command);
-        return Ok(response);
+        var result = await _mediator.Send(command);
+        return Ok(result);
     }
 
     /// <summary>
@@ -43,15 +47,17 @@ public class AuthController : ControllerBase
     /// </summary>
     [HttpPost("refresh-token")]
     [AllowAnonymous]
-    public async Task<ActionResult<RefreshTokenResponse>> RefreshToken([FromBody] RefreshTokenCommand command)
+    public async Task<ActionResult<RefreshTokenResponse>> RefreshToken(
+        [FromBody] RefreshTokenCommand command)
     {
-        var response = await _mediator.Send(command);
-        return Ok(response);
+        var result = await _mediator.Send(command);
+        return Ok(result);
     }
 
     /// <summary>
     /// Logout and invalidate refresh token
     /// </summary>
+    [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
@@ -61,15 +67,19 @@ public class AuthController : ControllerBase
 
     // POST /api/v1/auth/forgot-password
     [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand command)
+    public async Task<IActionResult> ForgotPassword(
+        [FromBody] ForgotPasswordCommand command)
     {
         await _mediator.Send(command);
+
+        // Always return 204 to avoid email enumeration
         return NoContent();
     }
 
     // POST /api/v1/auth/reset-password
     [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand command)
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordCommand command)
     {
         await _mediator.Send(command);
         return NoContent();
@@ -77,9 +87,23 @@ public class AuthController : ControllerBase
 
     // POST /api/v1/auth/verify-email
     [HttpPost("verify-email")]
-    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailCommand command)
+    public async Task<IActionResult> VerifyEmail(
+        [FromBody] VerifyEmailCommand command)
     {
         await _mediator.Send(command);
         return NoContent();
+    }
+
+    // --------------------
+    // Current user
+    // --------------------
+
+    // GET /api/v1/auth/me
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<ActionResult<UserProfileDto>> GetCurrentUser()
+    {
+        var user = await _mediator.Send(new GetCurrentUserQuery());
+        return Ok(user);
     }
 }

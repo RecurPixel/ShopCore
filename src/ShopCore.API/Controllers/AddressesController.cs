@@ -2,6 +2,8 @@ using ShopCore.Application.Addresses.Commands.CreateAddress;
 using ShopCore.Application.Addresses.Commands.DeleteAddress;
 using ShopCore.Application.Addresses.Commands.SetDefaultAddress;
 using ShopCore.Application.Addresses.Commands.UpdateAddress;
+using ShopCore.Application.Addresses.DTOs;
+using ShopCore.Application.Addresses.Queries.GetAddressById;
 using ShopCore.Application.Addresses.Queries.GetMyAddresses;
 
 namespace ShopCore.Api.Controllers;
@@ -19,42 +21,62 @@ public class AddressesController : ControllerBase
 
     // GET /api/v1/users/me/addresses
     [HttpGet]
-    public async Task<IActionResult> GetMyAddresses()
+    public async Task<ActionResult<List<AddressDto>>> GetMyAddresses()
     {
         var addresses = await _mediator.Send(new GetMyAddressesQuery());
         return Ok(addresses);
     }
 
+    // GET /api/v1/users/me/addresses/{id}
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<AddressDto>> GetAddressById(int id)
+    {
+        var address = await _mediator.Send(
+            new GetAddressByIdQuery(id));
+
+        if (address is null)
+            return NotFound();
+
+        return Ok(address);
+    }
+
     // POST /api/v1/users/me/addresses
     [HttpPost]
-    public async Task<IActionResult> CreateAddress([FromBody] CreateAddressCommand command)
+    public async Task<ActionResult<AddressDto>> CreateAddress(
+        [FromBody] CreateAddressCommand command)
     {
         var address = await _mediator.Send(command);
 
-        return CreatedAtAction(nameof(GetMyAddresses), new { }, address);
+        return CreatedAtAction(
+            nameof(GetAddressById),
+            new { id = address.Id },
+            address);
     }
 
     // PUT /api/v1/users/me/addresses/{id}
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateAddress(Guid id, [FromBody] UpdateAddressCommand command)
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<AddressDto>> UpdateAddress(
+        int id,
+        [FromBody] UpdateAddressCommand command)
     {
-        command.AddressId = id;
+        // Enforce route → command consistency
+        var updatedCommand = command with { Id = id };
 
-        var address = await _mediator.Send(command);
+        var address = await _mediator.Send(updatedCommand);
         return Ok(address);
     }
 
     // DELETE /api/v1/users/me/addresses/{id}
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteAddress(Guid id)
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteAddress(int id)
     {
         await _mediator.Send(new DeleteAddressCommand(id));
         return NoContent();
     }
 
     // PATCH /api/v1/users/me/addresses/{id}/default
-    [HttpPatch("{id}/default")]
-    public async Task<IActionResult> SetDefaultAddress(Guid id)
+    [HttpPatch("{id:int}/default")]
+    public async Task<IActionResult> SetDefaultAddress(int id)
     {
         await _mediator.Send(new SetDefaultAddressCommand(id));
         return NoContent();

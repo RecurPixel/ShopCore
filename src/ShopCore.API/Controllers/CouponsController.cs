@@ -1,6 +1,7 @@
 using ShopCore.Application.Coupons.Commands.CreateCoupon;
 using ShopCore.Application.Coupons.Commands.DeactivateCoupon;
 using ShopCore.Application.Coupons.Commands.ValidateCoupon;
+using ShopCore.Application.Coupons.DTOs;
 using ShopCore.Application.Coupons.Queries.GetActiveCoupons;
 using ShopCore.Application.Coupons.Queries.GetAllCoupons;
 
@@ -24,7 +25,7 @@ public class CouponsController : ControllerBase
     // GET /api/v1/coupons/active
     [Authorize]
     [HttpGet("active")]
-    public async Task<IActionResult> GetActiveCoupons()
+    public async Task<ActionResult<List<CouponDto>>> GetActiveCoupons()
     {
         var coupons = await _mediator.Send(new GetActiveCouponsQuery());
         return Ok(coupons);
@@ -33,7 +34,8 @@ public class CouponsController : ControllerBase
     // POST /api/v1/coupons/validate
     [Authorize]
     [HttpPost("validate")]
-    public async Task<IActionResult> ValidateCoupon([FromBody] ValidateCouponCommand command)
+    public async Task<ActionResult<CouponValidationResultDto>> ValidateCoupon(
+        [FromBody] ValidateCouponCommand command)
     {
         var result = await _mediator.Send(command);
         return Ok(result);
@@ -46,7 +48,7 @@ public class CouponsController : ControllerBase
     // GET /api/v1/coupons
     [Authorize(Roles = "Admin")]
     [HttpGet]
-    public async Task<IActionResult> GetAllCoupons()
+    public async Task<ActionResult<List<CouponDto>>> GetAllCoupons()
     {
         var coupons = await _mediator.Send(new GetAllCouponsQuery());
         return Ok(coupons);
@@ -55,7 +57,8 @@ public class CouponsController : ControllerBase
     // POST /api/v1/coupons
     [Authorize(Roles = "Admin")]
     [HttpPost]
-    public async Task<IActionResult> CreateCoupon([FromBody] CreateCouponCommand command)
+    public async Task<ActionResult<CouponDto>> CreateCoupon(
+        [FromBody] CreateCouponCommand command)
     {
         var coupon = await _mediator.Send(command);
         return Ok(coupon);
@@ -63,8 +66,8 @@ public class CouponsController : ControllerBase
 
     // PATCH /api/v1/coupons/{id}/deactivate
     [Authorize(Roles = "Admin")]
-    [HttpPatch("{id}/deactivate")]
-    public async Task<IActionResult> DeactivateCoupon(Guid id)
+    [HttpPatch("{id:int}/deactivate")]
+    public async Task<IActionResult> DeactivateCoupon(int id)
     {
         await _mediator.Send(new DeactivateCouponCommand(id));
         return NoContent();
