@@ -1,10 +1,15 @@
+using ShopCore.Application.Products.DTOs;
+
 namespace ShopCore.Application.Products.Commands.CreateProduct;
 
-public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand>
+public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, ProductDto>
 {
-    public Task Handle(CreateProductCommand request, CancellationToken cancellationToken)
+    public Task<ProductDto> Handle(
+        CreateProductCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new ProductDto());
     }
 }

@@ -1,3 +1,8 @@
+using ShopCore.Application.Payments.Commands.ConfirmPayment;
+using ShopCore.Application.Payments.Commands.CreatePaymentIntent;
+using ShopCore.Application.Payments.Commands.HandlePaymentWebhook;
+using ShopCore.Application.Payments.Queries.GetPaymentHistory;
+
 namespace ShopCore.Api.Controllers;
 
 [ApiController]

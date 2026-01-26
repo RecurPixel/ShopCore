@@ -1,10 +1,15 @@
+using ShopCore.Application.Vendors.DTOs;
+
 namespace ShopCore.Application.Vendors.Queries.GetMyVendorStats;
 
-public class GetMyVendorStatsQueryHandler : IRequestHandler<GetMyVendorStatsQuery, object>
+public class GetMyVendorStatsQueryHandler : IRequestHandler<GetMyVendorStatsQuery, VendorStatsDto>
 {
-    public Task<object> Handle(GetMyVendorStatsQuery request, CancellationToken cancellationToken)
+    public Task<VendorStatsDto> Handle(
+        GetMyVendorStatsQuery request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement query logic
-        return Task.FromResult<object>(new { });
+        return Task.FromResult(new VendorStatsDto());
     }
 }

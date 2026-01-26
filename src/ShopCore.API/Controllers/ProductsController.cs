@@ -1,3 +1,14 @@
+using ShopCore.Application.Products.Commands.CreateProduct;
+using ShopCore.Application.Products.Commands.DeleteProduct;
+using ShopCore.Application.Products.Commands.DeleteProductImage;
+using ShopCore.Application.Products.Commands.UpdateProduct;
+using ShopCore.Application.Products.Commands.UpdateProductStatus;
+using ShopCore.Application.Products.Commands.UploadProductImages;
+using ShopCore.Application.Products.Queries.GetFeaturedProducts;
+using ShopCore.Application.Products.Queries.GetProductById;
+using ShopCore.Application.Products.Queries.GetProducts;
+using ShopCore.Application.Products.Queries.SearchProducts;
+
 namespace ShopCore.Api.Controllers;
 
 [ApiController]

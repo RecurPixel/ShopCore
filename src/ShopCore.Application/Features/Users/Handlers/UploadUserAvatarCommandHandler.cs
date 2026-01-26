@@ -1,10 +1,10 @@
 namespace ShopCore.Application.Users.Commands.UploadUserAvatar;
 
-public class UploadUserAvatarCommandHandler : IRequestHandler<UploadUserAvatarCommand>
+public class UploadUserAvatarCommandHandler : IRequestHandler<UploadUserAvatarCommand, string>
 {
-    public Task Handle(UploadUserAvatarCommand request, CancellationToken cancellationToken)
+    public Task<string> Handle(UploadUserAvatarCommand request, CancellationToken cancellationToken)
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(string.Empty);
     }
 }

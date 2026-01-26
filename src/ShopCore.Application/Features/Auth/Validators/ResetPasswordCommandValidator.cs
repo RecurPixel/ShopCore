@@ -1,3 +1,5 @@
+using ShopCore.Application.Auth.Commands.ForgotPassword;
+
 namespace ShopCore.Application.Auth.Validators;
 
 public class ResetPasswordCommandValidator : AbstractValidator<ResetPasswordCommand>

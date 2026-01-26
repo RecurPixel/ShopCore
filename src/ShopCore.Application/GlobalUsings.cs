@@ -1,9 +1,13 @@
+global using FluentValidation;
+global using MediatR;
+global using Microsoft.EntityFrameworkCore;
+global using ShopCore.Application.Common.Exceptions;
+global using ShopCore.Application.Common.Interfaces;
+global using ShopCore.Domain.Entities;
+global using ShopCore.Domain.Enums;
 global using System;
 global using System.Collections.Generic;
 global using System.Linq;
 global using System.Threading;
 global using System.Threading.Tasks;
-global using FluentValidation;
-global using MediatR;
-global using Microsoft.EntityFrameworkCore;
-global using ShopCore.Domain.Enums;
+global using ValidationException = ShopCore.Application.Common.Exceptions.ValidationException;

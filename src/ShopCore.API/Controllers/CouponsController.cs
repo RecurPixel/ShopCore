@@ -1,3 +1,9 @@
+using ShopCore.Application.Coupons.Commands.CreateCoupon;
+using ShopCore.Application.Coupons.Commands.DeactivateCoupon;
+using ShopCore.Application.Coupons.Commands.ValidateCoupon;
+using ShopCore.Application.Coupons.Queries.GetActiveCoupons;
+using ShopCore.Application.Coupons.Queries.GetAllCoupons;
+
 namespace ShopCore.Api.Controllers;
 
 [ApiController]

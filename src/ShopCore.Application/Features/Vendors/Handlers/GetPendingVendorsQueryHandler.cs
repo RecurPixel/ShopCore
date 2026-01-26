@@ -1,10 +1,16 @@
+using ShopCore.Application.Vendors.DTOs;
+
 namespace ShopCore.Application.Vendors.Queries.GetPendingVendors;
 
-public class GetPendingVendorsQueryHandler : IRequestHandler<GetPendingVendorsQuery, object>
+public class GetPendingVendorsQueryHandler
+    : IRequestHandler<GetPendingVendorsQuery, List<VendorProfileDto>>
 {
-    public Task<object> Handle(GetPendingVendorsQuery request, CancellationToken cancellationToken)
+    public Task<List<VendorProfileDto>> Handle(
+        GetPendingVendorsQuery request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement query logic
-        return Task.FromResult<object>(new { });
+        return Task.FromResult(new List<VendorProfileDto>());
     }
 }

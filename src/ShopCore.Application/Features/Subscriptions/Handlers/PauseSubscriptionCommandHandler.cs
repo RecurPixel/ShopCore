@@ -1,10 +1,16 @@
+using ShopCore.Application.Subscriptions.DTOs;
+
 namespace ShopCore.Application.Subscriptions.Commands.PauseSubscription;
 
-public class PauseSubscriptionCommandHandler : IRequestHandler<PauseSubscriptionCommand>
+public class PauseSubscriptionCommandHandler
+    : IRequestHandler<PauseSubscriptionCommand, SubscriptionDto>
 {
-    public Task Handle(PauseSubscriptionCommand request, CancellationToken cancellationToken)
+    public Task<SubscriptionDto> Handle(
+        PauseSubscriptionCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new SubscriptionDto());
     }
 }

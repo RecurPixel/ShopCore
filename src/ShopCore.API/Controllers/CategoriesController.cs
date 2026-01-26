@@ -1,3 +1,10 @@
+using ShopCore.Application.Categories.Commands.CreateCategory;
+using ShopCore.Application.Categories.Commands.DeleteCategory;
+using ShopCore.Application.Categories.Commands.UpdateCategory;
+using ShopCore.Application.Categories.Queries.GetCategories;
+using ShopCore.Application.Categories.Queries.GetCategoryById;
+using ShopCore.Application.Categories.Queries.GetProductsByCategory;
+
 namespace ShopCore.Api.Controllers;
 
 [ApiController]

@@ -1,10 +1,16 @@
+using ShopCore.Application.Reviews.DTOs;
+
 namespace ShopCore.Application.Reviews.Queries.GetProductReviews;
 
-public class GetProductReviewsQueryHandler : IRequestHandler<GetProductReviewsQuery, object>
+public class GetProductReviewsQueryHandler
+    : IRequestHandler<GetProductReviewsQuery, List<ReviewDto>>
 {
-    public Task<object> Handle(GetProductReviewsQuery request, CancellationToken cancellationToken)
+    public Task<List<ReviewDto>> Handle(
+        GetProductReviewsQuery request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement query logic
-        return Task.FromResult<object>(new { });
+        return Task.FromResult(new List<ReviewDto>());
     }
 }

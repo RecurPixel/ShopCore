@@ -1,3 +1,7 @@
+using ShopCore.Application.Payouts.Commands.CalculateVendorPayout;
+using ShopCore.Application.Payouts.Commands.ProcessVendorPayout;
+using ShopCore.Application.Payouts.Queries.GetVendorPayouts;
+
 namespace ShopCore.Api.Controllers;
 
 [ApiController]

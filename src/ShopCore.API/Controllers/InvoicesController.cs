@@ -1,3 +1,9 @@
+using ShopCore.Application.Invoices.Commands.GenerateSubscriptionInvoice;
+using ShopCore.Application.Invoices.Commands.PayInvoice;
+using ShopCore.Application.Invoices.Queries.DownloadInvoice;
+using ShopCore.Application.Invoices.Queries.GetInvoiceById;
+using ShopCore.Application.Invoices.Queries.GetSubscriptionInvoices;
+
 namespace ShopCore.Api.Controllers;
 
 [ApiController]

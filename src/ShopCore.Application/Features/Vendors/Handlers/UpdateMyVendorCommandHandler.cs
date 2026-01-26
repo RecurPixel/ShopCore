@@ -1,10 +1,15 @@
+using ShopCore.Application.Vendors.DTOs;
+
 namespace ShopCore.Application.Vendors.Commands.UpdateMyVendor;
 
-public class UpdateMyVendorCommandHandler : IRequestHandler<UpdateMyVendorCommand>
+public class UpdateMyVendorCommandHandler : IRequestHandler<UpdateMyVendorCommand, VendorProfileDto>
 {
-    public Task Handle(UpdateMyVendorCommand request, CancellationToken cancellationToken)
+    public Task<VendorProfileDto> Handle(
+        UpdateMyVendorCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new VendorProfileDto());
     }
 }

@@ -1,3 +1,5 @@
+using ShopCore.Application.Auth.Commands.Login;
+
 namespace ShopCore.Application.Auth.Validators;
 
 public class LoginCommandValidator : AbstractValidator<LoginCommand>

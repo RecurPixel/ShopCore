@@ -1,3 +1,10 @@
+using ShopCore.Application.Reviews.Commands.CreateReview;
+using ShopCore.Application.Reviews.Commands.DeleteReview;
+using ShopCore.Application.Reviews.Commands.MarkReviewHelpful;
+using ShopCore.Application.Reviews.Commands.RespondToReview;
+using ShopCore.Application.Reviews.Commands.UpdateReview;
+using ShopCore.Application.Reviews.Queries.GetProductReviews;
+
 namespace ShopCore.Api.Controllers;
 
 [ApiController]

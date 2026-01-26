@@ -1,10 +1,15 @@
+using ShopCore.Application.Deliveries.DTOs;
+
 namespace ShopCore.Application.Deliveries.Commands.FailDelivery;
 
-public class FailDeliveryCommandHandler : IRequestHandler<FailDeliveryCommand>
+public class FailDeliveryCommandHandler : IRequestHandler<FailDeliveryCommand, DeliveryDto>
 {
-    public Task Handle(FailDeliveryCommand request, CancellationToken cancellationToken)
+    public Task<DeliveryDto> Handle(
+        FailDeliveryCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new DeliveryDto());
     }
 }

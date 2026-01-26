@@ -1,10 +1,15 @@
+using ShopCore.Application.Products.DTOs;
+
 namespace ShopCore.Application.Products.Queries.GetProductById;
 
-public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, object>
+public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, ProductDetailDto>
 {
-    public Task<object> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
+    public Task<ProductDetailDto> Handle(
+        GetProductByIdQuery request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement query logic
-        return Task.FromResult<object>(new { });
+        return Task.FromResult(new ProductDetailDto());
     }
 }

@@ -1,3 +1,12 @@
+using ShopCore.Application.Subscriptions.Commands.CreateSubscription;
+using ShopCore.Application.Subscriptions.Commands.PauseSubscription;
+using ShopCore.Application.Subscriptions.Commands.ResumeSubscription;
+using ShopCore.Application.Subscriptions.Commands.SettleSubscription;
+using ShopCore.Application.Subscriptions.Commands.UpdateSubscription;
+using ShopCore.Application.Subscriptions.Queries.GetMySubscriptions;
+using ShopCore.Application.Subscriptions.Queries.GetSubscriptionById;
+using ShopCore.Application.Subscriptions.Queries.GetVendorSubscriptions;
+
 namespace ShopCore.Api.Controllers;
 
 [ApiController]

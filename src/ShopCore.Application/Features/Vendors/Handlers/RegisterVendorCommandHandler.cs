@@ -1,10 +1,15 @@
+using ShopCore.Application.Vendors.DTOs;
+
 namespace ShopCore.Application.Vendors.Commands.RegisterVendor;
 
-public class RegisterVendorCommandHandler : IRequestHandler<RegisterVendorCommand>
+public class RegisterVendorCommandHandler : IRequestHandler<RegisterVendorCommand, VendorProfileDto>
 {
-    public Task Handle(RegisterVendorCommand request, CancellationToken cancellationToken)
+    public Task<VendorProfileDto> Handle(
+        RegisterVendorCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new VendorProfileDto());
     }
 }

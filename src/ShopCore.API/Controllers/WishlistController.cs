@@ -1,3 +1,7 @@
+using ShopCore.Application.Wishlist.Commands.AddToWishlist;
+using ShopCore.Application.Wishlist.Commands.RemoveFromWishlist;
+using ShopCore.Application.Wishlist.Queries.GetWishlist;
+
 namespace ShopCore.Api.Controllers;
 
 [ApiController]

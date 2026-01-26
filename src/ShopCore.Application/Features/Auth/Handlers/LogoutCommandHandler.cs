@@ -2,9 +2,29 @@ namespace ShopCore.Application.Auth.Commands.Logout;
 
 public class LogoutCommandHandler : IRequestHandler<LogoutCommand>
 {
-    public Task Handle(LogoutCommand request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public LogoutCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        return Task.CompletedTask;
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task Handle(LogoutCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _context.Users.FindAsync(_currentUser.UserId);
+
+        if (user == null)
+            throw new NotFoundException(nameof(User), _currentUser.UserId);
+
+        // Invalidate refresh token
+        user.RefreshToken = null;
+        user.RefreshTokenExpiry = null;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

@@ -1,9 +1,11 @@
+using ShopCore.Application.Invoices.DTOs;
+
 namespace ShopCore.Application.Invoices.Queries.GetSubscriptionInvoices;
 
 public class GetSubscriptionInvoicesQueryHandler
-    : IRequestHandler<GetSubscriptionInvoicesQuery, object>
+    : IRequestHandler<GetSubscriptionInvoicesQuery, List<InvoiceDto>>
 {
-    public Task<object> Handle(
+    public Task<List<InvoiceDto>> Handle(
         GetSubscriptionInvoicesQuery request,
         CancellationToken cancellationToken
     )

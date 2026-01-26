@@ -1,3 +1,13 @@
+using ShopCore.Application.Vendors.Commands.ApproveVendor;
+using ShopCore.Application.Vendors.Commands.RegisterVendor;
+using ShopCore.Application.Vendors.Commands.SuspendVendor;
+using ShopCore.Application.Vendors.Commands.UpdateMyVendor;
+using ShopCore.Application.Vendors.Commands.UpdateVendorOrderStatus;
+using ShopCore.Application.Vendors.Queries.GetMyVendor;
+using ShopCore.Application.Vendors.Queries.GetMyVendorOrders;
+using ShopCore.Application.Vendors.Queries.GetMyVendorStats;
+using ShopCore.Application.Vendors.Queries.GetPendingVendors;
+
 namespace ShopCore.Api.Controllers;
 
 [ApiController]

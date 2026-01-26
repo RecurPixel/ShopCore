@@ -1,10 +1,16 @@
+using ShopCore.Application.Coupons.DTOs;
+
 namespace ShopCore.Application.Coupons.Commands.ValidateCoupon;
 
-public class ValidateCouponCommandHandler : IRequestHandler<ValidateCouponCommand>
+public class ValidateCouponCommandHandler
+    : IRequestHandler<ValidateCouponCommand, CouponValidationResultDto>
 {
-    public Task Handle(ValidateCouponCommand request, CancellationToken cancellationToken)
+    public Task<CouponValidationResultDto> Handle(
+        ValidateCouponCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new CouponValidationResultDto());
     }
 }

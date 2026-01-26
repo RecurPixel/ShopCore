@@ -1,6 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ShopCore.Application.Common.Interfaces;
+using ShopCore.Infrastructure.Data;
+using ShopCore.Infrastructure.Identity;
+using ShopCore.Infrastructure.Services;
 
 namespace ShopCore.Infrastructure;
 
@@ -12,22 +16,22 @@ public static class DependencyInjection
     )
     {
         // Database
-        // services.AddDbContext<ApplicationDbContext>(options =>
-        //     options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
-        // );
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+        );
 
-        // services.AddScoped<IApplicationDbContext>(provider =>
-        //     provider.GetRequiredService<ApplicationDbContext>()
-        // );
+        services.AddScoped<IApplicationDbContext>(provider =>
+            provider.GetRequiredService<ApplicationDbContext>()
+        );
 
-        // // Services
-        // services.AddScoped<ICurrentUserService, CurrentUserService>();
-        // services.AddTransient<IDateTime, DateTimeService>();
-        // services.AddTransient<IEmailService, EmailService>();
+        // Services
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddTransient<IDateTime, DateTimeService>();
+        services.AddTransient<IEmailService, EmailService>();
 
-        // // Authentication
-        // services.AddScoped<IJwtTokenService, JwtTokenService>();
-        // services.AddScoped<IPasswordHasher, PasswordHasher>();
+        // Authentication
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
 
         return services;
     }

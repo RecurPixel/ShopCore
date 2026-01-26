@@ -1,14 +1,16 @@
+using ShopCore.Application.Subscriptions.DTOs;
+
 namespace ShopCore.Application.Subscriptions.Queries.GetVendorSubscriptions;
 
 public class GetVendorSubscriptionsQueryHandler
-    : IRequestHandler<GetVendorSubscriptionsQuery, object>
+    : IRequestHandler<GetVendorSubscriptionsQuery, List<SubscriptionDto>>
 {
-    public Task<object> Handle(
+    public Task<List<SubscriptionDto>> Handle(
         GetVendorSubscriptionsQuery request,
         CancellationToken cancellationToken
     )
     {
         // TODO: Implement query logic
-        return Task.FromResult<object>(new { });
+        return Task.FromResult(new List<SubscriptionDto>());
     }
 }

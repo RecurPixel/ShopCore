@@ -1,3 +1,5 @@
+using ShopCore.Application.Auth.Commands.RegisterUser;
+
 namespace ShopCore.Application.Auth.Validators;
 
 public class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>

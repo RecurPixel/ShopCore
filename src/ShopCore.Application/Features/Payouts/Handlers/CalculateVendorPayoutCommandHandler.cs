@@ -1,10 +1,16 @@
+using ShopCore.Application.Payouts.DTOs;
+
 namespace ShopCore.Application.Payouts.Commands.CalculateVendorPayout;
 
-public class CalculateVendorPayoutCommandHandler : IRequestHandler<CalculateVendorPayoutCommand>
+public class CalculateVendorPayoutCommandHandler
+    : IRequestHandler<CalculateVendorPayoutCommand, VendorPayoutDto>
 {
-    public Task Handle(CalculateVendorPayoutCommand request, CancellationToken cancellationToken)
+    public Task<VendorPayoutDto> Handle(
+        CalculateVendorPayoutCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new VendorPayoutDto());
     }
 }

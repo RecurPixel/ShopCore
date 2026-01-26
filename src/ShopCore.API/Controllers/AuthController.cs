@@ -1,8 +1,10 @@
 using ShopCore.Application.Auth.Commands.ForgotPassword;
 using ShopCore.Application.Auth.Commands.Login;
+using ShopCore.Application.Auth.Commands.Logout;
 using ShopCore.Application.Auth.Commands.RefreshToken;
 using ShopCore.Application.Auth.Commands.RegisterUser;
 using ShopCore.Application.Auth.Commands.VerifyEmail;
+using ShopCore.Application.Auth.DTOs;
 
 namespace ShopCore.Api.Controllers;
 
@@ -25,24 +27,31 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // POST /api/v1/auth/login
+    /// <summary>
+    /// Login with email and password
+    /// </summary>
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginCommand command)
     {
-        var result = await _mediator.Send(command);
-        return Ok(result);
+        var response = await _mediator.Send(command);
+        return Ok(response);
     }
 
-    // POST /api/v1/auth/refresh-token
+    /// <summary>
+    /// Refresh access token using refresh token
+    /// </summary>
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenCommand command)
+    [AllowAnonymous]
+    public async Task<ActionResult<RefreshTokenResponse>> RefreshToken([FromBody] RefreshTokenCommand command)
     {
-        var result = await _mediator.Send(command);
-        return Ok(result);
+        var response = await _mediator.Send(command);
+        return Ok(response);
     }
 
-    // POST /api/v1/auth/logout
-    [Authorize]
+    /// <summary>
+    /// Logout and invalidate refresh token
+    /// </summary>
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {

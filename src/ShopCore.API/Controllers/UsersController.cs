@@ -1,3 +1,8 @@
+using ShopCore.Application.Users.Commands.ChangePassword;
+using ShopCore.Application.Users.Commands.UpdateCurrentUser;
+using ShopCore.Application.Users.Commands.UploadUserAvatar;
+using ShopCore.Application.Users.Queries.GetCurrentUser;
+
 namespace ShopCore.Api.Controllers;
 
 [ApiController]

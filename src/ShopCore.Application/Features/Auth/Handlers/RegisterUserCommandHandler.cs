@@ -1,6 +1,4 @@
 using ShopCore.Application.Auth.DTOs;
-using ShopCore.Application.Common.Interfaces;
-using ShopCore.Domain.Entities;
 
 namespace ShopCore.Application.Auth.Commands.RegisterUser;
 
@@ -42,21 +40,24 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
         var user = new User
         {
             Email = request.Email,
+            PasswordHash = passwordHash,  // ← Store hashed password
             FirstName = request.FirstName,
             LastName = request.LastName,
-            PasswordHash = passwordHash,
-            CreatedAt = _dateTime.UtcNow,
+            Role = request.Role,
             IsActive = true,
+            CreatedAt = DateTime.UtcNow
         };
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync(cancellationToken);
+
         return new RegisterResponse
         {
             Id = user.Id,
             Email = user.Email,
             FirstName = user.FirstName,
             LastName = user.LastName,
+            Role = user.Role.ToString()
         };
     }
 }

@@ -1,9 +1,11 @@
+using ShopCore.Application.Deliveries.DTOs;
+
 namespace ShopCore.Application.Deliveries.Queries.GetSubscriptionDeliveries;
 
 public class GetSubscriptionDeliveriesQueryHandler
-    : IRequestHandler<GetSubscriptionDeliveriesQuery, object>
+    : IRequestHandler<GetSubscriptionDeliveriesQuery, List<DeliveryDto>>
 {
-    public Task<object> Handle(
+    public Task<List<DeliveryDto>> Handle(
         GetSubscriptionDeliveriesQuery request,
         CancellationToken cancellationToken
     )

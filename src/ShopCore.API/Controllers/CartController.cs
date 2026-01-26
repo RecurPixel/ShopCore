@@ -1,3 +1,10 @@
+using ShopCore.Application.Cart.Commands.AddCartItem;
+using ShopCore.Application.Cart.Commands.ClearCart;
+using ShopCore.Application.Cart.Commands.RemoveCartItem;
+using ShopCore.Application.Cart.Commands.UpdateCartItem;
+using ShopCore.Application.Cart.Commands.ValidateCart;
+using ShopCore.Application.Cart.Queries.GetCart;
+
 namespace ShopCore.Api.Controllers;
 
 [ApiController]

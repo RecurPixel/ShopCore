@@ -1,10 +1,15 @@
+using ShopCore.Application.Deliveries.DTOs;
+
 namespace ShopCore.Application.Deliveries.Commands.SkipDelivery;
 
-public class SkipDeliveryCommandHandler : IRequestHandler<SkipDeliveryCommand>
+public class SkipDeliveryCommandHandler : IRequestHandler<SkipDeliveryCommand, DeliveryDto>
 {
-    public Task Handle(SkipDeliveryCommand request, CancellationToken cancellationToken)
+    public Task<DeliveryDto> Handle(
+        SkipDeliveryCommand request,
+        CancellationToken cancellationToken
+    )
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new DeliveryDto());
     }
 }

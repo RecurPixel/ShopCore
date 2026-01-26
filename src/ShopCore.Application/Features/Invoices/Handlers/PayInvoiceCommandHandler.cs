@@ -1,10 +1,12 @@
+using ShopCore.Application.Invoices.DTOs;
+
 namespace ShopCore.Application.Invoices.Commands.PayInvoice;
 
-public class PayInvoiceCommandHandler : IRequestHandler<PayInvoiceCommand>
+public class PayInvoiceCommandHandler : IRequestHandler<PayInvoiceCommand, InvoiceDto>
 {
-    public Task Handle(PayInvoiceCommand request, CancellationToken cancellationToken)
+    public Task<InvoiceDto> Handle(PayInvoiceCommand request, CancellationToken cancellationToken)
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        return Task.FromResult(new InvoiceDto());
     }
 }

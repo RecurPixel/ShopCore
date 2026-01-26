@@ -2,5 +2,5 @@ using ShopCore.Application.Auth.DTOs;
 
 namespace ShopCore.Application.Auth.Commands.RegisterUser;
 
-public record RegisterUserCommand(string Email, string Password, string FirstName, string LastName)
+public record RegisterUserCommand(string Email, string Password, string FirstName, string LastName, UserRole Role)
     : IRequest<RegisterResponse>;
