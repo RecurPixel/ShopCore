@@ -1,5 +1,10 @@
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Deliveries.DTOs;
 
 namespace ShopCore.Application.Deliveries.Queries.GetSubscriptionDeliveries;
 
-public record GetSubscriptionDeliveriesQuery : IRequest<List<DeliveryDto>>;
+public record GetSubscriptionDeliveriesQuery(
+    int SubscriptionId,
+    int Page = 1,
+    int PageSize = 20
+) : IRequest<PaginatedList<DeliveryDto>>;

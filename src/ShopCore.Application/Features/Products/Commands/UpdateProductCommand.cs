@@ -1,3 +1,4 @@
+using ShopCore.Application.Products.Commands.CreateProduct;
 using ShopCore.Application.Products.DTOs;
 
 namespace ShopCore.Application.Products.Commands.UpdateProduct;
@@ -25,5 +26,6 @@ public record UpdateProductCommand(
     string? MetaTitle,
     string? MetaDescription,
     string? MetaKeywords,
-    int CategoryId
+    int CategoryId,
+    List<ProductSpecInput>? Specifications = null
 ) : IRequest<ProductDto>;

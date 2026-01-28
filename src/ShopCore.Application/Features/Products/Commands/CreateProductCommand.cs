@@ -24,5 +24,11 @@ public record CreateProductCommand(
     string? MetaTitle,
     string? MetaDescription,
     string? MetaKeywords,
-    int CategoryId
+    int CategoryId,
+    List<ProductSpecInput>? Specifications = null
 ) : IRequest<ProductDto>;
+
+public record ProductSpecInput(
+    string Name,
+    string Value
+);

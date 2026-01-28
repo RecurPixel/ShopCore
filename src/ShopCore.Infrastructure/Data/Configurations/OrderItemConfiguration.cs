@@ -22,6 +22,13 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
 
         builder.Property(oi => oi.Status).HasConversion<int>();
 
+        // Tracking fields
+        builder.Property(oi => oi.TrackingNumber)
+            .HasMaxLength(100);
+
+        builder.Property(oi => oi.CancellationReason)
+            .HasMaxLength(500);
+
         // Ignore computed properties
         builder.Ignore(oi => oi.Subtotal);
         builder.Ignore(oi => oi.CommissionAmount);

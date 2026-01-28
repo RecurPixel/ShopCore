@@ -1,3 +1,5 @@
+using ShopCore.Application.Products.Commands.UpdateProduct;
+
 namespace ShopCore.Application.Products.Validators;
 
 public class UpdateProductCommandValidator : AbstractValidator<UpdateProductCommand>

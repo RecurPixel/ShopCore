@@ -28,6 +28,13 @@ public class DeliveryConfiguration : IEntityTypeConfiguration<Delivery>
 
         builder.Property(d => d.FailureReason).HasMaxLength(500);
 
+        // Driver & Proof fields (Phase 2)
+        builder.Property(d => d.DeliveryPhotoUrl).HasMaxLength(500);
+
+        builder.Property(d => d.CustomerSignatureUrl).HasMaxLength(500);
+
+        builder.Property(d => d.DeliveryNotes).HasMaxLength(1000);
+
         // Indexes
         builder.HasIndex(d => d.SubscriptionId);
         builder.HasIndex(d => d.ScheduledDate);

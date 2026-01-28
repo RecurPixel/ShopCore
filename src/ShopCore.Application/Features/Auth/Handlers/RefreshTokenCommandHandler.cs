@@ -46,7 +46,6 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         // Update refresh token in database
         user.RefreshToken = newRefreshToken;
         user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
-        user.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
 

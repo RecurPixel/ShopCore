@@ -1,3 +1,5 @@
+using ShopCore.Application.Addresses.Commands.UpdateAddress;
+
 namespace ShopCore.Application.Addresses.Validators;
 
 public class UpdateAddressCommandValidator : AbstractValidator<UpdateAddressCommand>

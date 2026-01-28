@@ -24,6 +24,10 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.Property(o => o.Total).HasPrecision(18, 2);
 
+        builder.Property(o => o.RefundedAmount)
+            .HasPrecision(18, 2)
+            .HasDefaultValue(0);
+
         builder.Property(o => o.PaymentStatus).HasConversion<int>();
 
         builder.Property(o => o.PaymentMethod).HasConversion<int>();

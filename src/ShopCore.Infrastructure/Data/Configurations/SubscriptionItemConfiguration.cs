@@ -14,6 +14,13 @@ public class SubscriptionItemConfiguration : IEntityTypeConfiguration<Subscripti
 
         builder.Property(si => si.DiscountPercentage).HasPrecision(5, 2);
 
+        // Recurring/One-Time Support
+        builder.Property(si => si.IsRecurring)
+            .HasDefaultValue(true);
+
+        builder.Property(si => si.IsDelivered)
+            .HasDefaultValue(false);
+
         // Ignore computed property
         builder.Ignore(si => si.ItemTotal);
 

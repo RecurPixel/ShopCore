@@ -35,8 +35,14 @@ public interface IApplicationDbContext
 
     // Subscriptions (PRIVATE)
     DbSet<Subscription> Subscriptions { get; }
+    DbSet<SubscriptionItem> SubscriptionItems { get; }
     DbSet<Delivery> Deliveries { get; }
+    DbSet<DeliveryItem> DeliveryItems { get; }
     DbSet<SubscriptionInvoice> SubscriptionInvoices { get; }
+
+    // Location & Onboarding
+    DbSet<VendorServiceArea> VendorServiceAreas { get; }
+    DbSet<CustomerInvitation> CustomerInvitations { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -41,4 +41,8 @@ public class VendorProfile : AuditableEntity
     public User User { get; set; } = null!;
     public ICollection<Product> Products { get; set; } = new List<Product>();
     public ICollection<VendorPayout> Payouts { get; set; } = new List<VendorPayout>();
+
+    public ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
+    public ICollection<VendorServiceArea> ServiceAreas { get; set; } = new List<VendorServiceArea>();
+    public ICollection<CustomerInvitation> CustomerInvitations { get; set; } = new List<CustomerInvitation>();
 }

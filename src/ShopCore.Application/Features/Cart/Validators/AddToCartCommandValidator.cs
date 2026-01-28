@@ -1,8 +1,10 @@
+using ShopCore.Application.Cart.Commands.AddCartItem;
+
 namespace ShopCore.Application.Cart.Validators;
 
-public class AddToCartCommandValidator : AbstractValidator<AddToCartCommand>
+public class AddCartItemCommandValidator : AbstractValidator<AddCartItemCommand>
 {
-    public AddToCartCommandValidator()
+    public AddCartItemCommandValidator()
     {
         RuleFor(x => x.ProductId).GreaterThan(0).WithMessage("Invalid product ID");
 

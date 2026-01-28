@@ -11,6 +11,11 @@ public class SubscriptionItem
     public decimal UnitPrice { get; set; } // Snapshot at subscription time
     public decimal? DiscountPercentage { get; set; }
 
+    // Recurring/One-Time Support
+    public bool IsRecurring { get; set; } = true;
+    public DateTime? OneTimeDeliveryDate { get; set; }
+    public bool IsDelivered { get; set; } = false;
+
     // Computed
     public decimal ItemTotal
     {

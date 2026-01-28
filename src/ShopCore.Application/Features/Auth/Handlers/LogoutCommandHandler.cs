@@ -18,12 +18,11 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand>
         var user = await _context.Users.FindAsync(_currentUser.UserId);
 
         if (user == null)
-            throw new NotFoundException(nameof(User), _currentUser.UserId);
+            throw new NotFoundException(nameof(User), _currentUser.UserId ?? 0);
 
         // Invalidate refresh token
         user.RefreshToken = null;
         user.RefreshTokenExpiry = null;
-        user.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
     }

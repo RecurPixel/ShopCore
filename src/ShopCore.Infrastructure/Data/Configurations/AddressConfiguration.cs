@@ -24,6 +24,23 @@ public class AddressConfiguration : IEntityTypeConfiguration<Address>
 
         builder.Property(a => a.PinCode).IsRequired().HasMaxLength(10);
 
+        // Location fields
+        builder.Property(a => a.Latitude)
+            .HasPrecision(10, 7);
+
+        builder.Property(a => a.Longitude)
+            .HasPrecision(10, 7);
+
+        builder.Property(a => a.PlaceId)
+            .HasMaxLength(255);
+
+        builder.Property(a => a.Type)
+            .HasConversion<int>()
+            .HasDefaultValue(ShopCore.Domain.Enums.AddressType.Home);
+
+        builder.Property(a => a.Landmark)
+            .HasMaxLength(200);
+
         // Indexes
         builder.HasIndex(a => a.UserId);
 

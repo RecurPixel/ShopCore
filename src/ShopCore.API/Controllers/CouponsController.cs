@@ -1,5 +1,7 @@
 using ShopCore.Application.Coupons.Commands.CreateCoupon;
 using ShopCore.Application.Coupons.Commands.DeactivateCoupon;
+using ShopCore.Application.Coupons.Commands.DeleteCoupon;
+using ShopCore.Application.Coupons.Commands.UpdateCoupon;
 using ShopCore.Application.Coupons.Commands.ValidateCoupon;
 using ShopCore.Application.Coupons.DTOs;
 using ShopCore.Application.Coupons.Queries.GetActiveCoupons;
@@ -8,7 +10,7 @@ using ShopCore.Application.Coupons.Queries.GetAllCoupons;
 namespace ShopCore.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/coupons")]
 public class CouponsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -19,11 +21,10 @@ public class CouponsController : ControllerBase
     }
 
     // ----------------
-    // User-facing APIs
+    // Public endpoints
     // ----------------
 
     // GET /api/v1/coupons/active
-    [Authorize]
     [HttpGet("active")]
     public async Task<ActionResult<List<CouponDto>>> GetActiveCoupons()
     {
@@ -64,6 +65,26 @@ public class CouponsController : ControllerBase
         return Ok(coupon);
     }
 
+    // PUT /api/v1/coupons/{id}
+    [Authorize(Roles = "Admin")]
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<CouponDto>> UpdateCoupon(int id, [FromBody] UpdateCouponRequest request)
+    {
+        var command = new UpdateCouponCommand(
+            id,
+            request.Code,
+            request.DiscountType,
+            request.DiscountValue,
+            request.MinOrderAmount,
+            request.MaxDiscountAmount,
+            request.UsageLimit,
+            request.StartDate,
+            request.EndDate,
+            request.IsActive);
+        var coupon = await _mediator.Send(command);
+        return Ok(coupon);
+    }
+
     // PATCH /api/v1/coupons/{id}/deactivate
     [Authorize(Roles = "Admin")]
     [HttpPatch("{id:int}/deactivate")]
@@ -72,4 +93,24 @@ public class CouponsController : ControllerBase
         await _mediator.Send(new DeactivateCouponCommand(id));
         return NoContent();
     }
+
+    // DELETE /api/v1/coupons/{id}
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteCoupon(int id)
+    {
+        await _mediator.Send(new DeleteCouponCommand(id));
+        return NoContent();
+    }
 }
+
+public record UpdateCouponRequest(
+    string Code,
+    string DiscountType,
+    decimal DiscountValue,
+    decimal? MinOrderAmount,
+    decimal? MaxDiscountAmount,
+    int? UsageLimit,
+    DateTime? StartDate,
+    DateTime? EndDate,
+    bool IsActive);

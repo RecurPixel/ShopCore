@@ -1,6 +1,8 @@
 using ShopCore.Application.Cart.Commands.AddCartItem;
+using ShopCore.Application.Cart.Commands.ApplyCoupon;
 using ShopCore.Application.Cart.Commands.ClearCart;
 using ShopCore.Application.Cart.Commands.RemoveCartItem;
+using ShopCore.Application.Cart.Commands.RemoveCoupon;
 using ShopCore.Application.Cart.Commands.UpdateCartItem;
 using ShopCore.Application.Cart.Commands.ValidateCart;
 using ShopCore.Application.Cart.DTOs;
@@ -9,7 +11,8 @@ using ShopCore.Application.Cart.Queries.GetCart;
 namespace ShopCore.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Authorize]
+[Route("api/v1/cart")]
 public class CartController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -30,31 +33,28 @@ public class CartController : ControllerBase
     // POST /api/v1/cart/items
     [HttpPost("items")]
     public async Task<ActionResult<CartDto>> AddToCart(
-      [FromBody] AddCartItemCommand command)
+        [FromBody] AddCartItemCommand command)
     {
         var cart = await _mediator.Send(command);
         return Ok(cart);
     }
 
-    // PUT /api/v1/cart/items/{id}
-    [HttpPut("items/{id:int}")]
+    // PUT /api/v1/cart/items/{itemId}
+    [HttpPut("items/{itemId:int}")]
     public async Task<ActionResult<CartDto>> UpdateCartItem(
-        int id,
+        int itemId,
         [FromBody] UpdateCartItemCommand command)
     {
-        var finalCommand = command with { CartItemId = id };
-
+        var finalCommand = command with { CartItemId = itemId };
         var cart = await _mediator.Send(finalCommand);
         return Ok(cart);
     }
 
-    // DELETE /api/v1/cart/items/{id}
-    [HttpDelete("items/{id:int}")]
-    public async Task<ActionResult<CartDto>> RemoveFromCart(int id)
+    // DELETE /api/v1/cart/items/{itemId}
+    [HttpDelete("items/{itemId:int}")]
+    public async Task<ActionResult<CartDto>> RemoveFromCart(int itemId)
     {
-        var cart = await _mediator.Send(
-            new RemoveCartItemCommand(id));
-
+        var cart = await _mediator.Send(new RemoveCartItemCommand(itemId));
         return Ok(cart);
     }
 
@@ -72,5 +72,22 @@ public class CartController : ControllerBase
     {
         var result = await _mediator.Send(new ValidateCartCommand());
         return Ok(result);
+    }
+
+    // POST /api/v1/cart/apply-coupon
+    [HttpPost("apply-coupon")]
+    public async Task<ActionResult<CartDto>> ApplyCoupon(
+        [FromBody] ApplyCouponCommand command)
+    {
+        var cart = await _mediator.Send(command);
+        return Ok(cart);
+    }
+
+    // DELETE /api/v1/cart/remove-coupon
+    [HttpDelete("remove-coupon")]
+    public async Task<ActionResult<CartDto>> RemoveCoupon()
+    {
+        var cart = await _mediator.Send(new RemoveCouponCommand());
+        return Ok(cart);
     }
 }

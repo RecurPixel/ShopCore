@@ -1,3 +1,5 @@
+using ShopCore.Application.Addresses.Commands.CreateAddress;
+
 namespace ShopCore.Application.Addresses.Validators;
 
 public class CreateAddressCommandValidator : AbstractValidator<CreateAddressCommand>

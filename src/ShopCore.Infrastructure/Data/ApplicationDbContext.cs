@@ -34,6 +34,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<VendorPayout> VendorPayouts { get; set; }
     public DbSet<WishlistEntity> Wishlists { get; set; }
     public DbSet<Coupon> Coupons { get; set; }
+    public DbSet<VendorServiceArea> VendorServiceAreas { get; set; }
+    public DbSet<CustomerInvitation> CustomerInvitations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -61,6 +63,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.ApplyConfiguration(new WishlistConfiguration());
         modelBuilder.ApplyConfiguration(new CouponConfiguration());
         modelBuilder.ApplyConfiguration(new VendorPayoutConfiguration());
+        modelBuilder.ApplyConfiguration(new VendorServiceAreaConfiguration());
+        modelBuilder.ApplyConfiguration(new CustomerInvitationConfiguration());
 
         // Global query filters (soft delete)
         modelBuilder.Entity<User>().HasQueryFilter(e => !e.IsDeleted);

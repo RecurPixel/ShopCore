@@ -1,14 +1,13 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Payments.Commands.ConfirmPayment;
-using ShopCore.Application.Payments.Commands.CreatePaymentIntent;
+using ShopCore.Application.Payments.Commands.CreateOrderPaymentIntent;
+using ShopCore.Application.Payments.Commands.CreateInvoicePaymentIntent;
 using ShopCore.Application.Payments.Commands.HandlePaymentWebhook;
 using ShopCore.Application.Payments.DTOs;
-using ShopCore.Application.Payments.Queries.GetPaymentHistory;
 
 namespace ShopCore.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/payments")]
 public class PaymentsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -22,13 +21,21 @@ public class PaymentsController : ControllerBase
     // User-facing APIs
     // ----------------
 
-    // POST /api/v1/payments/create-intent
+    // POST /api/v1/payments/orders/{orderId}/create-intent
     [Authorize]
-    [HttpPost("create-intent")]
-    public async Task<ActionResult<PaymentIntentDto>> CreatePaymentIntent(
-        [FromBody] CreatePaymentIntentCommand command)
+    [HttpPost("orders/{orderId:int}/create-intent")]
+    public async Task<ActionResult<PaymentIntentDto>> CreateOrderPaymentIntent(int orderId)
     {
-        var intent = await _mediator.Send(command);
+        var intent = await _mediator.Send(new CreateOrderPaymentIntentCommand(orderId));
+        return Ok(intent);
+    }
+
+    // POST /api/v1/payments/invoices/{invoiceId}/create-intent
+    [Authorize]
+    [HttpPost("invoices/{invoiceId:int}/create-intent")]
+    public async Task<ActionResult<PaymentIntentDto>> CreateInvoicePaymentIntent(int invoiceId)
+    {
+        var intent = await _mediator.Send(new CreateInvoicePaymentIntentCommand(invoiceId));
         return Ok(intent);
     }
 
@@ -42,16 +49,6 @@ public class PaymentsController : ControllerBase
         return Ok(confirmation);
     }
 
-    // GET /api/v1/payments/history
-    [Authorize]
-    [HttpGet("history")]
-    public async Task<ActionResult<PaginatedList<PaymentHistoryDto>>> GetPaymentHistory(
-        [FromQuery] GetPaymentHistoryQuery query)
-    {
-        var history = await _mediator.Send(query);
-        return Ok(history);
-    }
-
     // -------------------
     // Webhook (No auth!)
     // -------------------
@@ -61,7 +58,6 @@ public class PaymentsController : ControllerBase
     [HttpPost("webhook")]
     public async Task<IActionResult> HandleWebhook()
     {
-        // Raw body should be read inside the command/handler
         await _mediator.Send(new HandlePaymentWebhookCommand());
         return Ok();
     }

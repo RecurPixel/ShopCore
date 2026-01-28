@@ -1,8 +1,10 @@
+using ShopCore.Application.Users.Commands.UpdateCurrentUser;
+
 namespace ShopCore.Application.Users.Validators;
 
-public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
+public class UpdateCurrentUserCommandValidator : AbstractValidator<UpdateCurrentUserCommand>
 {
-    public UpdateUserCommandValidator()
+    public UpdateCurrentUserCommandValidator()
     {
         RuleFor(x => x.FirstName)
             .NotEmpty()

@@ -28,6 +28,10 @@ public class Subscription : AuditableEntity
     public decimal? DepositBalance { get; set; }
     public DateTime? DepositPaidAt { get; set; }
 
+    // One-Time Delivery Support
+    public bool IsOneTimeDelivery { get; set; } = false;
+    public bool AutoCancelAfterDelivery { get; set; } = false;
+
     // Status
     public SubscriptionStatus Status { get; set; } = SubscriptionStatus.Active;
     public DateTime? PausedAt { get; set; }

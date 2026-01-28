@@ -1,3 +1,5 @@
+using ShopCore.Application.Users.Commands.ChangePassword;
+
 namespace ShopCore.Application.Users.Validators;
 
 public class ChangePasswordCommandValidator : AbstractValidator<ChangePasswordCommand>

@@ -11,5 +11,11 @@ public record CreateAddressCommand(
     string State,
     string Country,
     string PinCode,
-    bool IsDefault
+    bool IsDefault,
+    // Location fields
+    double? Latitude,
+    double? Longitude,
+    string? PlaceId,
+    AddressType Type,
+    string? Landmark
 ) : IRequest<AddressDto>;

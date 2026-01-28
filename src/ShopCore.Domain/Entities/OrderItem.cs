@@ -20,7 +20,13 @@ public class OrderItem
     public decimal CommissionRate { get; set; } // 5.00 = 5%
 
     // Vendor Status (each vendor manages their items independently)
-    public OrderStatus Status { get; set; } = OrderStatus.Pending;
+    public OrderItemStatus Status { get; set; } = OrderItemStatus.Pending;
+
+    // Tracking fields
+    public string? TrackingNumber { get; set; }
+    public DateTime? ShippedAt { get; set; }
+    public DateTime? DeliveredAt { get; set; }
+    public string? CancellationReason { get; set; }
 
     // Computed properties
     public decimal Subtotal => Quantity * UnitPrice;

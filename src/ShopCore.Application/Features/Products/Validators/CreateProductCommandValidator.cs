@@ -1,3 +1,5 @@
+using ShopCore.Application.Products.Commands.CreateProduct;
+
 namespace ShopCore.Application.Products.Validators;
 
 public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>

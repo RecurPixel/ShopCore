@@ -30,6 +30,13 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
 
         builder.Property(s => s.Status).HasConversion<int>();
 
+        // One-Time Delivery Support
+        builder.Property(s => s.IsOneTimeDelivery)
+            .HasDefaultValue(false);
+
+        builder.Property(s => s.AutoCancelAfterDelivery)
+            .HasDefaultValue(false);
+
         builder.Property(s => s.CancellationReason).HasMaxLength(500);
 
         // Indexes

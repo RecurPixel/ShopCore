@@ -40,4 +40,5 @@ public class User : AuditableEntity
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
     public ICollection<Wishlist> Wishlists { get; set; } = new List<Wishlist>();
     public ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
+    public ICollection<CustomerInvitation> ReceivedInvitations { get; set; } = new List<CustomerInvitation>();
 }

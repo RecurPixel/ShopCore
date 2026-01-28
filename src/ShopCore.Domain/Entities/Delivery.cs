@@ -21,6 +21,13 @@ public class Delivery : AuditableEntity
     public string? DeliveryPersonName { get; set; }
     public string? FailureReason { get; set; }
 
+    // Driver & Proof fields (Phase 2)
+    public int? AssignedDriverId { get; set; }
+    public DateTime? AssignedAt { get; set; }
+    public string? DeliveryPhotoUrl { get; set; }
+    public string? CustomerSignatureUrl { get; set; }
+    public string? DeliveryNotes { get; set; }
+
     // Navigation
     public Subscription Subscription { get; set; } = null!;
     public SubscriptionInvoice? Invoice { get; set; }

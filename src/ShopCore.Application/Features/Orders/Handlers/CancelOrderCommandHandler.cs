@@ -1,10 +1,12 @@
+using ShopCore.Application.Orders.DTOs;
+
 namespace ShopCore.Application.Orders.Commands.CancelOrder;
 
-public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand>
+public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, OrderDto>
 {
-    public Task Handle(CancelOrderCommand request, CancellationToken cancellationToken)
+    public Task<OrderDto> Handle(CancelOrderCommand request, CancellationToken cancellationToken)
     {
         // TODO: Implement command logic
-        return Task.CompletedTask;
+        throw new NotImplementedException();
     }
 }
