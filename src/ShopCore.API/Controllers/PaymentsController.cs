@@ -1,6 +1,6 @@
 using ShopCore.Application.Payments.Commands.ConfirmPayment;
-using ShopCore.Application.Payments.Commands.CreateOrderPaymentIntent;
 using ShopCore.Application.Payments.Commands.CreateInvoicePaymentIntent;
+using ShopCore.Application.Payments.Commands.CreateOrderPaymentIntent;
 using ShopCore.Application.Payments.Commands.HandlePaymentWebhook;
 using ShopCore.Application.Payments.DTOs;
 
@@ -27,6 +27,7 @@ public class PaymentsController : ControllerBase
     public async Task<ActionResult<PaymentIntentDto>> CreateOrderPaymentIntent(int orderId)
     {
         var intent = await _mediator.Send(new CreateOrderPaymentIntentCommand(orderId));
+
         return Ok(intent);
     }
 

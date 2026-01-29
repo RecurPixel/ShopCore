@@ -2,6 +2,7 @@ using ShopCore.Application.Common.Models;
 using ShopCore.Application.Payouts.Commands.CalculateVendorPayout;
 using ShopCore.Application.Payouts.Commands.ProcessVendorPayout;
 using ShopCore.Application.Payouts.DTOs;
+using ShopCore.Application.Payouts.Queries.GetPendingPayoutAmount;
 using ShopCore.Application.Payouts.Queries.GetVendorPayouts;
 
 namespace ShopCore.Api.Controllers;
@@ -31,7 +32,7 @@ public class PayoutsController : ControllerBase
     [HttpGet("pending")]
     public async Task<ActionResult<VendorPayoutDto>> GetPendingPayout()
     {
-        var payout = await _mediator.Send(new GetPendingPayoutQuery());
+        var payout = await _mediator.Send(new GetPendingPayoutAmountQuery());
         return Ok(payout);
     }
 

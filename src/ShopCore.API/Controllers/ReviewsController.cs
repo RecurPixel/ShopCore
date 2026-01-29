@@ -6,6 +6,7 @@ using ShopCore.Application.Reviews.Commands.MarkReviewHelpful;
 using ShopCore.Application.Reviews.Commands.RespondToReview;
 using ShopCore.Application.Reviews.Commands.UpdateReview;
 using ShopCore.Application.Reviews.DTOs;
+using ShopCore.Application.Reviews.Queries.GetMyReviews;
 using ShopCore.Application.Reviews.Queries.GetProductReviews;
 
 namespace ShopCore.Api.Controllers;

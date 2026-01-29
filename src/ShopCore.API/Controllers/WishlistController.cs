@@ -1,5 +1,6 @@
 using ShopCore.Application.Cart.DTOs;
 using ShopCore.Application.Wishlist.Commands.AddToWishlist;
+using ShopCore.Application.Wishlist.Commands.MoveToCart;
 using ShopCore.Application.Wishlist.Commands.RemoveFromWishlist;
 using ShopCore.Application.Wishlist.DTOs;
 using ShopCore.Application.Wishlist.Queries.GetWishlist;

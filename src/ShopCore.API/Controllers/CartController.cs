@@ -83,8 +83,8 @@ public class CartController : ControllerBase
         return Ok(cart);
     }
 
-    // DELETE /api/v1/cart/remove-coupon
-    [HttpDelete("remove-coupon")]
+    // DELETE /api/v1/cart/coupon
+    [HttpDelete("coupon")]
     public async Task<ActionResult<CartDto>> RemoveCoupon()
     {
         var cart = await _mediator.Send(new RemoveCouponCommand());

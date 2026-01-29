@@ -36,8 +36,8 @@ public class InvoicesController : ControllerBase
     public async Task<IActionResult> DownloadInvoice(int id)
     {
         var pdf = await _mediator.Send(new DownloadInvoiceQuery(id));
-        if (pdf is null || pdf.Length == 0)
+        if (pdf is null || pdf.FileContent.Length == 0)
             return NotFound();
-        return File(pdf, "application/pdf", $"invoice-{id}.pdf");
+        return File(pdf.FileContent, "application/pdf", $"invoice-{id}.pdf");
     }
 }
