@@ -10,6 +10,14 @@ public class GetMyPayoutsQueryHandler : IRequestHandler<GetMyPayoutsQuery, Pagin
         CancellationToken cancellationToken)
     {
         // TODO: Implement query logic
-        throw new NotImplementedException();
+        // 1. Get current vendor from context
+        // 2. Fetch all payouts for this vendor
+        // 3. Filter by status if provided (pending, processed, failed)
+        // 4. Filter by date range if provided
+        // 5. Apply pagination (request.Page, request.PageSize)
+        // 6. Sort by date (newest first)
+        // 7. Map to PayoutDto list
+        // 8. Return PaginatedList<PayoutDto>
+        return Task.FromResult(new PaginatedList<PayoutDto>([], 0, request.Page, request.PageSize));
     }
 }

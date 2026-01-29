@@ -10,6 +10,13 @@ public class GetVendorCustomerSubscriptionsQueryHandler : IRequestHandler<GetVen
         CancellationToken cancellationToken)
     {
         // TODO: Implement query logic
-        throw new NotImplementedException();
+        // 1. Get current vendor from context
+        // 2. Find customer by user id
+        // 3. Get subscriptions for this customer that contain vendor's products
+        // 4. Apply pagination (request.Page, request.PageSize)
+        // 5. Include subscription items, delivery schedule, status
+        // 6. Map to VendorSubscriptionDto list
+        // 7. Return PaginatedList<VendorSubscriptionDto>
+        return Task.FromResult(new PaginatedList<VendorSubscriptionDto>([], 0, request.Page, request.PageSize));
     }
 }

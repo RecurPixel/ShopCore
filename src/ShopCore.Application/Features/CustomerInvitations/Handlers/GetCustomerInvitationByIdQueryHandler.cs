@@ -9,6 +9,14 @@ public class GetCustomerInvitationByIdQueryHandler : IRequestHandler<GetCustomer
         CancellationToken cancellationToken)
     {
         // TODO: Implement query logic
-        throw new NotImplementedException();
+        // 1. Get invitation by id
+        // 2. Verify current user has access (invited or vendor)
+        // 3. Mark invitation as viewed
+        // 4. Include invitation details and created vendor info
+        // 5. Include expiration status
+        // 6. Include whether customer has redeemed/accepted
+        // 7. Map to CustomerInvitationDto
+        // 8. Return invitation or null if not found
+        return Task.FromResult(default(CustomerInvitationDto?));
     }
 }

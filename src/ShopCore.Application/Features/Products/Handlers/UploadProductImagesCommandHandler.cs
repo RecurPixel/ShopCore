@@ -11,6 +11,14 @@ public class UploadProductImagesCommandHandler
     )
     {
         // TODO: Implement command logic
+        // 1. Get product by id
+        // 2. Verify vendor owns this product
+        // 3. Validate each image file (size, format, dimensions)
+        // 4. Set primary image if first upload
+        // 5. Upload images to cloud storage (Azure Blob, S3, etc.)
+        // 6. Create ProductImage entities with URLs
+        // 7. Save to database
+        // 8. Map and return List<ProductImageDto>
         return Task.FromResult(new List<ProductImageDto>());
     }
 }

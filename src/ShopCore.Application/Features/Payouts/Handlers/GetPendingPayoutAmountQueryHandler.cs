@@ -9,6 +9,12 @@ public class GetPendingPayoutAmountQueryHandler : IRequestHandler<GetPendingPayo
         CancellationToken cancellationToken)
     {
         // TODO: Implement query logic
-        throw new NotImplementedException();
+        // 1. Get current vendor from context
+        // 2. Calculate pending orders total (completed but unpaid)
+        // 3. Calculate subscription fees pending
+        // 4. Subtract commission percentage (if applicable)
+        // 5. Subtract any returns or refunds
+        // 6. Return PendingPayoutDto with amount and breakdown
+        return Task.FromResult(default(PendingPayoutDto));
     }
 }

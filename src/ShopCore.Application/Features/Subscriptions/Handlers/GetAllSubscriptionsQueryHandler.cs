@@ -7,6 +7,14 @@ public class GetAllSubscriptionsQueryHandler : IRequestHandler<GetAllSubscriptio
 {
     public Task<PaginatedList<SubscriptionDto>> Handle(GetAllSubscriptionsQuery request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        // TODO: Implement query logic
+        // 1. Fetch all subscriptions from database
+        // 2. Filter by status if provided (active, paused, cancelled)
+        // 3. Apply pagination (request.Page, request.PageSize)
+        // 4. Sort by creation date
+        // 5. Include subscription items and customer info
+        // 6. Map to SubscriptionDto list
+        // 7. Return PaginatedList<SubscriptionDto>
+        return Task.FromResult(new PaginatedList<SubscriptionDto>([], 0, request.Page, request.PageSize));
     }
 }

@@ -10,6 +10,14 @@ public class GetVendorCustomerOrdersQueryHandler : IRequestHandler<GetVendorCust
         CancellationToken cancellationToken)
     {
         // TODO: Implement query logic
-        throw new NotImplementedException();
+        // 1. Get current vendor from context
+        // 2. Find customer by user id
+        // 3. Get orders containing items from this vendor
+        // 4. Apply pagination (request.Page, request.PageSize)
+        // 5. Include only vendor's order items
+        // 6. Sort by creation date (newest first)
+        // 7. Map to VendorOrderDto list
+        // 8. Return PaginatedList<VendorOrderDto>
+        return Task.FromResult(new PaginatedList<VendorOrderDto>([], 0, request.Page, request.PageSize));
     }
 }

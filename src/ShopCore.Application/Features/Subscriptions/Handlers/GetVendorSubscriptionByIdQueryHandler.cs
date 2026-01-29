@@ -9,6 +9,11 @@ public class GetVendorSubscriptionByIdQueryHandler : IRequestHandler<GetVendorSu
         CancellationToken cancellationToken)
     {
         // TODO: Implement query logic
-        throw new NotImplementedException();
+        // 1. Get current vendor from context
+        // 2. Find subscription by id
+        // 3. Verify subscription contains items from vendor's products
+        // 4. Include customer info, items, delivery schedule
+        // 5. Map to VendorSubscriptionDto and return
+        return Task.FromResult((VendorSubscriptionDto?)null);
     }
 }

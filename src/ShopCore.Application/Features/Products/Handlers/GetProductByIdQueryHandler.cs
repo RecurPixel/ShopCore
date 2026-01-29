@@ -10,6 +10,13 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, P
     )
     {
         // TODO: Implement query logic
+        // 1. Fetch product by id from database
+        // 2. Get vendor information
+        // 3. Include all product images
+        // 4. Get reviews and ratings
+        // 5. Get subscription pricing tiers
+        // 6. Check product is published (or verify access)
+        // 7. Map to ProductDetailDto and return
         return Task.FromResult(new ProductDetailDto());
     }
 }

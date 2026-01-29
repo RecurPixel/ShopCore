@@ -6,6 +6,15 @@ public class CalculatePendingPayoutsCommandHandler : IRequestHandler<CalculatePe
 {
     public Task<PendingPayoutSummaryDto> Handle(CalculatePendingPayoutsCommand request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        // TODO: Implement command logic
+        // 1. Fetch all vendors with pending payouts
+        // 2. For each vendor: calculate total pending amount
+        // 3. Subtract commission if applicable
+        // 4. Account for refunds and returns
+        // 5. Group by status (ready for payout, in processing, etc.)
+        // 6. Calculate platform's total commission earned
+        // 7. Create summary report
+        // 8. Return PendingPayoutSummaryDto with totals
+        return Task.FromResult(default(PendingPayoutSummaryDto));
     }
 }

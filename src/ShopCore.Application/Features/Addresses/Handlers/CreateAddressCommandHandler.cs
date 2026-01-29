@@ -17,6 +17,12 @@ public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand,
     )
     {
         // TODO: Implement command logic
+        // 1. Get current user from context
+        // 2. Validate address data (pincode, coordinates, etc.)
+        // 3. Create new Address entity
+        // 4. Set as default if specified or if user has no default
+        // 5. Add to database and save
+        // 6. Map and return AddressDto
         return Task.FromResult(new AddressDto());
     }
 }

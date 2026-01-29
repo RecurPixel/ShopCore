@@ -9,6 +9,12 @@ public class GetSubscriptionCustomerInfoQueryHandler : IRequestHandler<GetSubscr
         CancellationToken cancellationToken)
     {
         // TODO: Implement query logic
-        throw new NotImplementedException();
+        // 1. Get current vendor from context
+        // 2. Find subscription by id
+        // 3. Verify vendor's products are in this subscription
+        // 4. Fetch customer information (name, contact, address, etc.)
+        // 5. Include subscription items from vendor
+        // 6. Map to SubscriptionCustomerInfoDto and return
+        return Task.FromResult((SubscriptionCustomerInfoDto?)null);
     }
 }
