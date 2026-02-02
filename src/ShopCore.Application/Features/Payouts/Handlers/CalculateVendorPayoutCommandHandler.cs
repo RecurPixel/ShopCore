@@ -5,21 +5,41 @@ namespace ShopCore.Application.Payouts.Commands.CalculateVendorPayout;
 public class CalculateVendorPayoutCommandHandler
     : IRequestHandler<CalculateVendorPayoutCommand, VendorPayoutDto>
 {
-    public Task<VendorPayoutDto> Handle(
-        CalculateVendorPayoutCommand request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+
+    public CalculateVendorPayoutCommandHandler(IApplicationDbContext context)
     {
-        // TODO: Implement command logic
-        // 1. Get vendor id from request or context
-        // 2. Fetch all completed orders for vendor in period
-        // 3. Calculate total order value
-        // 4. Calculate platform commission percentage
-        // 5. Subtract refunds and chargebacks
-        // 6. Account for pending/failed payments
-        // 7. Calculate payout amount (total - commission)
-        // 8. Create payout record
-        // 9. Map and return VendorPayoutDto with breakdown
-        return Task.FromResult(new VendorPayoutDto());
+        _context = context;
+    }
+
+    public async Task<VendorPayoutDto> Handle(CalculateVendorPayoutCommand request, CancellationToken ct)
+    {
+        var vendor = await _context.VendorProfiles.FindAsync(request.VendorId);
+        if (vendor == null)
+            throw new NotFoundException("Vendor", request.VendorId);
+
+        // Calculate from delivered orders in period
+        var deliveredOrders = await _context.OrderItems
+            .Where(oi => oi.VendorId == request.VendorId &&
+                       oi.Status == OrderStatus.Delivered &&
+                       oi.Order.DeliveredAt >= request.FromDate &&
+                       oi.Order.DeliveredAt <= request.ToDate)
+            .ToListAsync(ct);
+
+        var totalSales = deliveredOrders.Sum(oi => oi.Subtotal);
+        var commission = deliveredOrders.Sum(oi => oi.CommissionAmount);
+        var netPayout = totalSales - commission;
+
+        return new VendorPayoutDto
+        {
+            VendorId = request.VendorId,
+            VendorName = vendor.BusinessName,
+            PeriodStart = request.FromDate,
+            PeriodEnd = request.ToDate,
+            TotalSales = totalSales,
+            CommissionAmount = commission,
+            NetPayout = netPayout,
+            OrderCount = deliveredOrders.Count
+        };
     }
 }

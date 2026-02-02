@@ -4,16 +4,29 @@ namespace ShopCore.Application.Location.Commands.ReverseGeocode;
 
 public class ReverseGeocodeCommandHandler : IRequestHandler<ReverseGeocodeCommand, ReverseGeocodeResultDto>
 {
-    public Task<ReverseGeocodeResultDto> Handle(ReverseGeocodeCommand request, CancellationToken cancellationToken)
+    private readonly ILocationService _locationService;
+
+    public ReverseGeocodeCommandHandler(ILocationService locationService)
     {
-        // TODO: Implement command logic
-        // 1. Call reverse geocoding API (Google Maps, etc.) with coordinates
-        // 2. Parse address from API response
-        // 3. Extract components (street, city, pincode, state)
-        // 4. Validate address format
-        // 5. Cache result if applicable
-        // 6. Handle API errors gracefully
-        // 7. Return ReverseGeocodeResultDto with address components
-        return Task.FromResult(default(ReverseGeocodeResultDto));
+        _locationService = locationService;
     }
+
+    public async Task<ReverseGeocodeResultDto> Handle(ReverseGeocodeCommand request, CancellationToken ct)
+    {
+        var result = await _locationService.ReverseGeocodeAsync(request.Latitude, request.Longitude);
+
+        if (result == null || !result.IsSuccess)
+            throw new ValidationException("Unable to reverse geocode coordinates");
+
+        return new ReverseGeocodeResultDto
+        {
+            FormattedAddress = result.FormattedAddress,
+            City = result.City,
+            State = result.State,
+            Country = result.Country,
+            Pincode = result.Pincode,
+            PlaceId = result.PlaceId
+        };
+    }
+}
 }

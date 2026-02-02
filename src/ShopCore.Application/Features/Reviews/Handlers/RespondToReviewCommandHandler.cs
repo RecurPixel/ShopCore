@@ -4,19 +4,36 @@ namespace ShopCore.Application.Reviews.Commands.RespondToReview;
 
 public class RespondToReviewCommandHandler : IRequestHandler<RespondToReviewCommand, ReviewDto>
 {
-    public Task<ReviewDto> Handle(
-        RespondToReviewCommand request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+    private readonly IDateTime _dateTime;
+
+    public RespondToReviewCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser,
+        IDateTime dateTime)
     {
-        // TODO: Implement command logic
-        // 1. Get current vendor from context
-        // 2. Find review by id
-        // 3. Verify review is for vendor's product
-        // 4. Create vendor response
-        // 5. Save response to database
-        // 6. Mark review as responded
-        // 7. Fetch and return updated ReviewDto
-        return Task.FromResult(new ReviewDto());
+        _context = context;
+        _currentUser = currentUser;
+        _dateTime = dateTime;
+    }
+
+    public async Task Handle(RespondToReviewCommand request, CancellationToken ct)
+    {
+        var review = await _context.Reviews
+            .Include(r => r.Product)
+            .FirstOrDefaultAsync(r => r.Id == request.Id, ct);
+
+        if (review == null)
+            throw new NotFoundException("Review", request.Id);
+
+        // Verify vendor owns the product
+        if (review.Product.VendorId != _currentUser.VendorId)
+            throw new ForbiddenException("You can only respond to reviews of your products");
+
+        review.VendorResponse = request.Response;
+        review.VendorRespondedAt = _dateTime.UtcNow;
+
+        await _context.SaveChangesAsync(ct);
     }
 }

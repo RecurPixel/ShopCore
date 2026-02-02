@@ -5,21 +5,47 @@ namespace ShopCore.Application.Payouts.Commands.ProcessVendorPayout;
 public class ProcessVendorPayoutCommandHandler
     : IRequestHandler<ProcessVendorPayoutCommand, VendorPayoutDto>
 {
-    public Task<VendorPayoutDto> Handle(
-        ProcessVendorPayoutCommand request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+    private readonly IDateTime _dateTime;
+
+    public ProcessVendorPayoutCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser,
+        IDateTime dateTime)
     {
-        // TODO: Implement command logic
-        // 1. Get vendor id from request or context
-        // 2. Fetch pending payout for vendor
-        // 3. Verify payout amount and vendor bank details
-        // 4. Call payment gateway/bank API to transfer funds
-        // 5. Handle success/failure response
-        // 6. Update payout status to processed/failed
-        // 7. Create transaction record
-        // 8. Send notification to vendor
-        // 9. Map and return updated VendorPayoutDto
-        return Task.FromResult(new VendorPayoutDto());
+        _context = context;
+        _currentUser = currentUser;
+        _dateTime = dateTime;
+    }
+
+    public async Task<VendorPayoutDto> Handle(ProcessVendorPayoutCommand request, CancellationToken ct)
+    {
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can process payouts");
+
+        var payout = await _context.VendorPayouts
+            .Include(p => p.Vendor)
+            .FirstOrDefaultAsync(p => p.Id == request.PayoutId, ct);
+
+        if (payout == null)
+            throw new NotFoundException("Payout", request.PayoutId);
+
+        payout.Status = PayoutStatus.Paid;
+        payout.PaidAt = _dateTime.UtcNow;
+        payout.TransactionId = request.TransactionId;
+        payout.TransactionReference = request.Notes;
+        payout.ProcessedBy = _currentUser.UserId;
+
+        await _context.SaveChangesAsync(ct);
+
+        return new VendorPayoutDto
+        {
+            Id = payout.Id,
+            PayoutNumber = payout.PayoutNumber,
+            VendorName = payout.Vendor.BusinessName,
+            NetPayout = payout.NetPayout,
+            Status = payout.Status.ToString()
+        };
     }
 }

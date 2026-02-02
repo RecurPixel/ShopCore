@@ -4,18 +4,73 @@ namespace ShopCore.Application.Invoices.Commands.PayInvoice;
 
 public class PayInvoiceCommandHandler : IRequestHandler<PayInvoiceCommand, InvoiceDto>
 {
-    public Task<InvoiceDto> Handle(PayInvoiceCommand request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+    private readonly IDateTime _dateTime;
+
+    public PayInvoiceCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser,
+        IDateTime dateTime)
     {
-        // TODO: Implement command logic
-        // 1. Get current user from context
-        // 2. Find invoice by id
-        // 3. Verify user owns this invoice
-        // 4. Check invoice is in pending/unpaid status
-        // 5. Create payment intent for invoice amount
-        // 6. Verify payment method
-        // 7. Process payment through payment gateway
-        // 8. Update invoice status to paid
-        // 9. Create payment receipt and map return InvoiceDto
-        return Task.FromResult(new InvoiceDto());
+        _context = context;
+        _currentUser = currentUser;
+        _dateTime = dateTime;
+    }
+
+    public async Task<InvoiceDto> Handle(PayInvoiceCommand request, CancellationToken ct)
+    {
+        var invoice = await _context.SubscriptionInvoices
+            .Include(i => i.Subscription)
+            .Include(i => i.Deliveries)
+            .FirstOrDefaultAsync(i => i.Id == request.InvoiceId, ct);
+
+        if (invoice == null)
+            throw new NotFoundException("Invoice", request.InvoiceId);
+
+        if (invoice.UserId != _currentUser.UserId)
+            throw new ForbiddenException("You can only pay your own invoices");
+
+        if (invoice.Status == InvoiceStatus.Paid)
+            throw new ValidationException("Invoice is already paid");
+
+        var amountToPay = invoice.Total - invoice.PaidAmount;
+
+        invoice.PaidAmount = invoice.Total;
+        invoice.Status = InvoiceStatus.Paid;
+        invoice.PaidAt = _dateTime.UtcNow;
+        invoice.PaymentMethod = request.PaymentMethod.ToString();
+        invoice.PaymentTransactionId = request.PaymentTransactionId;
+
+        // Mark all linked deliveries as paid
+        foreach (var delivery in invoice.Deliveries)
+        {
+            delivery.PaymentStatus = PaymentStatus.Paid;
+            delivery.PaymentMethod = request.PaymentMethod.ToString();
+            delivery.PaymentTransactionId = request.PaymentTransactionId;
+            delivery.PaidAt = _dateTime.UtcNow;
+        }
+
+        // Reduce subscription unpaid amount
+        invoice.Subscription.UnpaidAmount -= amountToPay;
+        if (invoice.Subscription.UnpaidAmount < 0)
+            invoice.Subscription.UnpaidAmount = 0;
+
+        // Resume if suspended due to unpaid
+        if (invoice.Subscription.Status == SubscriptionStatus.Suspended &&
+            invoice.Subscription.UnpaidAmount < invoice.Subscription.CreditLimit)
+        {
+            invoice.Subscription.Status = SubscriptionStatus.Active;
+        }
+
+        await _context.SaveChangesAsync(ct);
+
+        return new InvoiceDto
+        {
+            Id = invoice.Id,
+            InvoiceNumber = invoice.InvoiceNumber,
+            Total = invoice.Total,
+            Status = invoice.Status.ToString()
+        };
     }
 }

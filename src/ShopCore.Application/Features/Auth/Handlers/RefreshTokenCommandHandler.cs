@@ -5,56 +5,44 @@ namespace ShopCore.Application.Auth.Commands.RefreshToken;
 public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, RefreshTokenResponse>
 {
     private readonly IApplicationDbContext _context;
-    private readonly IJwtTokenService _jwtService;
+    private readonly IJwtTokenService _jwtTokenService;
+    private readonly IDateTime _dateTime;
 
     public RefreshTokenCommandHandler(
         IApplicationDbContext context,
-        IJwtTokenService jwtService)
+        IJwtTokenService jwtTokenService,
+        IDateTime dateTime)
     {
         _context = context;
-        _jwtService = jwtService;
+        _jwtTokenService = jwtTokenService;
+        _dateTime = dateTime;
     }
 
-    public async Task<RefreshTokenResponse> Handle(
-        RefreshTokenCommand request,
-        CancellationToken cancellationToken
-    )
+    public async Task<RefreshTokenResponse> Handle(RefreshTokenCommand request, CancellationToken ct)
     {
-
-        // Find user by refresh token
+        // 1. Find user by refresh token
         var user = await _context.Users
             .Include(u => u.VendorProfile)
-            .FirstOrDefaultAsync(
-                u => u.RefreshToken == request.RefreshToken,
-                cancellationToken);
+            .FirstOrDefaultAsync(u => u.RefreshToken == request.RefreshToken, ct);
 
-        if (user == null)
-            throw new UnauthorizedException("Invalid refresh token");
+        if (user == null || user.RefreshTokenExpiry < _dateTime.UtcNow)
+            throw new UnauthorizedAccessException("Invalid or expired refresh token");
 
-        // Check if refresh token is expired
-        if (user.RefreshTokenExpiry == null || user.RefreshTokenExpiry < DateTime.UtcNow)
-            throw new UnauthorizedException("Refresh token has expired");
+        // 2. Generate new tokens
+        var accessToken = _jwtTokenService.GenerateAccessToken(user);
+        var newRefreshToken = _jwtTokenService.GenerateRefreshToken();
 
-        // Check if user is active
-        if (!user.IsActive)
-            throw new UnauthorizedException("Account is deactivated");
-
-        // Generate new tokens
-        var newAccessToken = _jwtService.GenerateAccessToken(user);
-        var newRefreshToken = _jwtService.GenerateRefreshToken();
-
-        // Update refresh token in database
+        // 3. Update user
         user.RefreshToken = newRefreshToken;
-        user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
-
-        await _context.SaveChangesAsync(cancellationToken);
+        user.RefreshTokenExpiry = _dateTime.UtcNow.AddDays(7);
+        await _context.SaveChangesAsync(ct);
 
         return new RefreshTokenResponse
         {
-            AccessToken = newAccessToken,
+            AccessToken = accessToken,
             RefreshToken = newRefreshToken,
-            ExpiresIn = 3600 // 1 hour
+            ExpiresIn = 3600
         };
-
     }
+
 }

@@ -4,16 +4,30 @@ namespace ShopCore.Application.Location.Commands.Geocode;
 
 public class GeocodeCommandHandler : IRequestHandler<GeocodeCommand, GeocodeResultDto>
 {
-    public Task<GeocodeResultDto> Handle(GeocodeCommand request, CancellationToken cancellationToken)
+    private readonly ILocationService _locationService;
+
+    public GeocodeCommandHandler(ILocationService locationService)
     {
-        // TODO: Implement command logic
-        // 1. Call geocoding API (Google Maps, etc.) with address
-        // 2. Parse coordinates (lat, lng) from API response
-        // 3. Validate coordinates are reasonable
-        // 4. Extract address components if available
-        // 5. Cache result if applicable
-        // 6. Handle API errors gracefully
-        // 7. Return GeocodeResultDto with coordinates and address
-        return Task.FromResult(default(GeocodeResultDto));
+        _locationService = locationService;
+    }
+
+    public async Task<GeocodeResultDto> Handle(GeocodeCommand request, CancellationToken ct)
+    {
+        var result = await _locationService.GeocodeAddressAsync(request.Address);
+
+        if (result == null || !result.IsSuccess)
+            throw new ValidationException("Unable to geocode address");
+
+        return new GeocodeResultDto
+        {
+            FormattedAddress = result.FormattedAddress,
+            Latitude = result.Latitude,
+            Longitude = result.Longitude,
+            PlaceId = result.PlaceId,
+            City = result.City,
+            State = result.State,
+            Country = result.Country,
+            Pincode = result.Pincode
+        };
     }
 }

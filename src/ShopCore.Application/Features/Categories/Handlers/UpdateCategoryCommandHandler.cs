@@ -4,12 +4,33 @@ namespace ShopCore.Application.Categories.Commands.UpdateCategory;
 
 public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand, CategoryDto>
 {
-    public Task<CategoryDto> Handle(
-        UpdateCategoryCommand request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public UpdateCategoryCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        return Task.FromResult(new CategoryDto());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<CategoryDto> Handle(UpdateCategoryCommand request, CancellationToken ct)
+    {
+        // Admin only
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can update categories");
+
+        var category = await _context.Categories.FindAsync(request.Id);
+        if (category == null || category.IsDeleted)
+            throw new NotFoundException("Category", request.Id);
+
+        category.Name = request.Name;
+        category.Description = request.Description;
+        category.ParentCategoryId = request.ParentCategoryId;
+        category.ImageUrl = request.ImageUrl;
+        category.DisplayOrder = request.DisplayOrder;
+
+        await _context.SaveChangesAsync(ct);
+
+        return new CategoryDto(category.Id, category.Name, category.Slug, category.Description, category.ImageUrl, null, category.ParentCategoryId, null, category.DisplayOrder, category.IsDeleted, 0);
     }
 }

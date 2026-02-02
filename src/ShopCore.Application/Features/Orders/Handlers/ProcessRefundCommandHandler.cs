@@ -7,66 +7,75 @@ public class ProcessRefundCommandHandler
     : IRequestHandler<ProcessRefundCommand, RefundResultDto>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+    private readonly IPaymentService _paymentService;
 
-    public ProcessRefundCommandHandler(IApplicationDbContext context)
+    public ProcessRefundCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser,
+        IPaymentService paymentService)
     {
         _context = context;
+        _currentUser = currentUser;
+        _paymentService = paymentService;
     }
 
-    public async Task<RefundResultDto> Handle(
-        ProcessRefundCommand request,
-        CancellationToken cancellationToken)
+    public async Task<RefundResultDto> Handle(ProcessRefundCommand request, CancellationToken ct)
     {
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can process refunds");
+
         var order = await _context.Orders
             .Include(o => o.Items)
-            .FirstOrDefaultAsync(o => o.Id == request.OrderId, cancellationToken)
-            ?? throw new NotFoundException(nameof(Order), request.OrderId);
+            .FirstOrDefaultAsync(o => o.Id == request.OrderId, ct);
 
-        var itemsToRefund = order.Items
-            .Where(i => request.OrderItemIds.Contains(i.Id))
-            .ToList();
+        if (order == null)
+            throw new NotFoundException("Order", request.OrderId);
 
-        if (itemsToRefund.Count != request.OrderItemIds.Count)
-        {
-            throw new NotFoundException("Some order items were not found");
-        }
+        if (order.PaymentStatus != PaymentStatus.Paid)
+            throw new ValidationException("Order must be paid to process refund");
 
-        decimal refundAmount = 0;
+        // Calculate refund amount from specific items
+        var itemsToRefund = order.Items.Where(i => request.OrderItemIds.Contains(i.Id)).ToList();
+        if (!itemsToRefund.Any())
+            throw new ValidationException("No valid items to refund");
 
+        var refundAmount = itemsToRefund.Sum(i => i.Subtotal);
+
+        // Process refund via payment gateway
+        var refundResult = await _paymentService.ProcessRefundAsync(
+            order.PaymentTransactionId!,
+            refundAmount,
+            request.Reason);
+
+        if (!refundResult.IsSuccess)
+            throw new ValidationException($"Refund failed: {refundResult.ErrorMessage}");
+
+        // Update order
+        order.RefundedAmount = (order.RefundedAmount ?? 0) + refundAmount;
+        order.PaymentStatus = order.RefundedAmount >= order.Total
+            ? PaymentStatus.Refunded
+            : PaymentStatus.PartiallyRefunded;
+
+        // Update items
         foreach (var item in itemsToRefund)
         {
-            if (item.Status == OrderItemStatus.Refunded)
-            {
-                continue; // Already refunded
-            }
-
-            item.Status = OrderItemStatus.Refunded;
-            refundAmount += item.Subtotal;
+            item.Status = OrderStatus.Refunded;
         }
 
-        order.RefundedAmount += refundAmount;
-        order.UpdateStatusFromItems();
+        // Update order status
+        if (order.Items.All(i => i.Status == OrderStatus.Refunded))
+            order.Status = OrderStatus.Refunded;
+        else if (order.Items.Any(i => i.Status == OrderStatus.Refunded))
+            order.Status = OrderStatus.PartiallyRefunded;
 
-        // Update payment status
-        if (order.RefundedAmount >= order.Total)
+        await _context.SaveChangesAsync(ct);
+
+        return new RefundResultDto
         {
-            order.PaymentStatus = PaymentStatus.Refunded;
-        }
-        else if (order.RefundedAmount > 0)
-        {
-            order.PaymentStatus = PaymentStatus.PartiallyRefunded;
-        }
-
-        await _context.SaveChangesAsync(cancellationToken);
-
-        // TODO: Process actual refund via payment gateway
-
-        return new RefundResultDto(
-            order.Id,
-            refundAmount,
-            null, // RefundTransactionId - to be set after payment gateway call
-            DateTime.UtcNow,
-            "Processed"
-        );
+            IsSuccess = true,
+            RefundAmount = refundAmount,
+            TransactionId = refundResult.TransactionId
+        };
     }
 }

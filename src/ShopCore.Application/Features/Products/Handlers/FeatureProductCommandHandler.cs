@@ -2,16 +2,26 @@ namespace ShopCore.Application.Products.Commands.FeatureProduct;
 
 public class FeatureProductCommandHandler : IRequestHandler<FeatureProductCommand>
 {
-    public Task Handle(FeatureProductCommand request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public FeatureProductCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Get product by id
-        // 2. Verify vendor owns this product (or admin)
-        // 3. Toggle featured status based on request
-        // 4. Update featured timestamp
-        // 5. Update search index/cache if applicable
-        // 6. Create audit log
-        // 7. Send notification to vendor
-        return Task.CompletedTask;
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task Handle(FeatureProductCommand request, CancellationToken ct)
+    {
+        var product = await _context.Products.FindAsync(request.ProductId);
+        if (product == null)
+            throw new NotFoundException("Product", request.ProductId);
+
+        // Vendor can feature their own products, admin can feature any
+        if (product.VendorId != _currentUser.VendorId && _currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("You can only feature your own products");
+
+        product.IsFeatured = request.IsFeatured;
+        await _context.SaveChangesAsync(ct);
     }
 }

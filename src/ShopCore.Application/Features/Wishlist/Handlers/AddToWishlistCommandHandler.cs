@@ -4,21 +4,34 @@ public class AddToWishlistCommandHandler : IRequestHandler<AddToWishlistCommand>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
+
     public AddToWishlistCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
         _context = context;
         _currentUser = currentUser;
     }
 
-    public Task Handle(AddToWishlistCommand request, CancellationToken cancellationToken)
+    public async Task Handle(AddToWishlistCommand request, CancellationToken ct)
     {
-        // TODO: Implement command logic
-        // 1. Get current user from _currentUser service
-        // 2. Check if product exists and is available
-        // 3. Check if product is already in wishlist
-        // 4. Create wishlist item if not exists
-        // 5. Save changes to database
-        // 6. Return success
-        return Task.CompletedTask;
+        var productExists = await _context.Products
+            .AnyAsync(p => p.Id == request.ProductId && !p.IsDeleted, ct);
+
+        if (!productExists)
+            throw new NotFoundException("Product", request.ProductId);
+
+        var exists = await _context.Wishlists
+            .AnyAsync(w => w.UserId == _currentUser.UserId && w.ProductId == request.ProductId, ct);
+
+        if (!exists)
+        {
+            var wishlistItem = new Wishlist
+            {
+                UserId = _currentUser.UserId!.Value,
+                ProductId = request.ProductId
+            };
+
+            _context.Wishlists.Add(wishlistItem);
+            await _context.SaveChangesAsync(ct);
+        }
     }
 }

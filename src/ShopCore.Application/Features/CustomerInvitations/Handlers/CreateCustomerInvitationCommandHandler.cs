@@ -1,6 +1,6 @@
-using System.Text.Json;
 using ShopCore.Application.CustomerInvitations.Commands.CreateCustomerInvitation;
 using ShopCore.Application.CustomerInvitations.DTOs;
+using System.Text.Json;
 
 namespace ShopCore.Application.CustomerInvitations.Handlers;
 
@@ -69,6 +69,28 @@ public class CreateCustomerInvitationCommandHandler
         await _context.SaveChangesAsync(cancellationToken);
 
         // TODO: Send SMS/WhatsApp/Email based on request flags
+        var invitationLink = $"https://app.shopcore.com/accept-invitation/{invitationToken}";
+
+        // if (request.SendSms)
+        // {
+        //     await _smsService.SendSmsAsync(
+        //         request.PhoneNumber,
+        //         $"You're invited to subscribe! Click: {invitationLink}");
+        // }
+
+        // if (request.SendEmail && !string.IsNullOrEmpty(request.Email))
+        // {
+        //     await _emailService.SendInvitationEmailAsync(
+        //         request.Email,
+        //         request.CustomerName,
+        //         invitationLink);
+        // }
+
+        // if (request.SendWhatsApp)
+        // {
+        //     // Send via WhatsApp (implementation depends on provider)
+        //     // await _whatsAppService.SendMessageAsync(...);
+        // }
 
         // Update status to Sent
         invitation.Status = InvitationStatus.Sent;

@@ -4,18 +4,27 @@ namespace ShopCore.Application.Cart.Commands.RemoveCoupon;
 
 public class RemoveCouponCommandHandler : IRequestHandler<RemoveCouponCommand, CartDto>
 {
-    public Task<CartDto> Handle(
-        RemoveCouponCommand request,
-        CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public RemoveCouponCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Get current user's cart
-        // 2. Verify coupon is applied to this cart
-        // 3. Remove coupon from cart
-        // 4. Recalculate cart total (remove discount)
-        // 5. Recalculate taxes if applicable
-        // 6. Update cart in database
-        // 7. Map and return updated CartDto
-        return Task.FromResult(default(CartDto));
+        _context = context;
+        _currentUser = currentUser;
     }
-}
+
+    public async Task<CartDto> Handle(RemoveCouponCommand request, CancellationToken ct)
+    {
+        var cart = await _context.Carts
+            .Include(c => c.Items)
+            .FirstOrDefaultAsync(c => c.UserId == _currentUser.UserId, ct);
+
+        if (cart != null)
+        {
+            cart.AppliedCouponCode = null;
+            cart.Discount = null;
+            await _context.SaveChangesAsync(ct);
+        }
+
+        return new CartDto { Id = cart?.Id ?? 0 };
+    }

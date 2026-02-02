@@ -5,17 +5,37 @@ namespace ShopCore.Application.Coupons.Handlers;
 
 public class UpdateCouponCommandHandler : IRequestHandler<UpdateCouponCommand, CouponDto>
 {
-    public Task<CouponDto> Handle(UpdateCouponCommand request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public UpdateCouponCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Get coupon by id
-        // 2. Verify vendor owns this coupon (or admin)
-        // 3. Validate updated coupon fields (dates, discount, limits)
-        // 4. Check for conflicts with other active coupons
-        // 5. Update coupon properties in database
-        // 6. Update related cache/search indexes
-        // 7. Create audit log of changes
-        // 8. Map and return updated CouponDto
-        return Task.FromResult(default(CouponDto));
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<CouponDto> Handle(UpdateCouponCommand request, CancellationToken ct)
+    {
+        // Admin only
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can update coupons");
+
+        var coupon = await _context.Coupons.FindAsync(request.Id);
+        if (coupon == null)
+            throw new NotFoundException("Coupon", request.Id);
+
+        coupon.Description = request.Description;
+        coupon.DiscountPercentage = request.DiscountPercentage;
+        coupon.DiscountAmount = request.DiscountAmount;
+        coupon.MinOrderValue = request.MinOrderValue;
+        coupon.MaxDiscount = request.MaxDiscount;
+        coupon.ValidFrom = request.ValidFrom;
+        coupon.ValidUntil = request.ValidUntil;
+        coupon.UsageLimit = request.UsageLimit;
+        coupon.UsageLimitPerUser = request.UsageLimitPerUser;
+
+        await _context.SaveChangesAsync(ct);
+
+        return new CouponDto { Id = coupon.Id, Code = coupon.Code };
     }
 }

@@ -5,20 +5,70 @@ namespace ShopCore.Application.Products.Commands.UploadProductImages;
 public class UploadProductImagesCommandHandler
     : IRequestHandler<UploadProductImagesCommand, List<ProductImageDto>>
 {
-    public Task<List<ProductImageDto>> Handle(
-        UploadProductImagesCommand request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+    private readonly IFileStorageService _fileStorage;
+
+    public UploadProductImagesCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser,
+        IFileStorageService fileStorage)
     {
-        // TODO: Implement command logic
-        // 1. Get product by id
-        // 2. Verify vendor owns this product
-        // 3. Validate each image file (size, format, dimensions)
-        // 4. Set primary image if first upload
-        // 5. Upload images to cloud storage (Azure Blob, S3, etc.)
-        // 6. Create ProductImage entities with URLs
-        // 7. Save to database
-        // 8. Map and return List<ProductImageDto>
-        return Task.FromResult(new List<ProductImageDto>());
+        _context = context;
+        _currentUser = currentUser;
+        _fileStorage = fileStorage;
+    }
+
+    public async Task<List<ProductImageDto>> Handle(UploadProductImagesCommand request, CancellationToken ct)
+    {
+        // 1. Find product and verify ownership
+        var product = await _context.Products
+            .FirstOrDefaultAsync(p => p.Id == request.ProductId && !p.IsDeleted, ct);
+
+        if (product == null)
+            throw new NotFoundException("Product", request.ProductId);
+
+        if (product.VendorId != _currentUser.VendorId)
+            throw new ForbiddenException("You can only upload images for your own products");
+
+        // 2. Get current max display order
+        var maxOrder = await _context.ProductImages
+            .Where(pi => pi.ProductId == request.ProductId && !pi.IsDeleted)
+            .MaxAsync(pi => (int?)pi.DisplayOrder, ct) ?? 0;
+
+        // 3. Upload images and create records
+        var images = new List<ProductImage>();
+        var currentOrder = maxOrder + 1;
+
+        foreach (var file in request.Images)
+        {
+            // Upload to storage
+            var imageUrl = await _fileStorage.UploadFileAsync(
+                file,
+                $"products/{request.ProductId}",
+                ct);
+
+            // Create image record
+            var image = new ProductImage
+            {
+                ProductId = request.ProductId,
+                ImageUrl = imageUrl,
+                IsPrimary = images.Count == 0 && maxOrder == 0, // First image is primary if no images exist
+                DisplayOrder = currentOrder++
+            };
+
+            images.Add(image);
+        }
+
+        _context.ProductImages.AddRange(images);
+        await _context.SaveChangesAsync(ct);
+
+        return images.Select(i => new ProductImageDto
+        {
+            Id = i.Id,
+            ImageUrl = i.ImageUrl,
+            IsPrimary = i.IsPrimary,
+            DisplayOrder = i.DisplayOrder
+        }).ToList();
     }
 }

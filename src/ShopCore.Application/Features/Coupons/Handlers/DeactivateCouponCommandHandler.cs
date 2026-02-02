@@ -2,9 +2,26 @@ namespace ShopCore.Application.Coupons.Commands.DeactivateCoupon;
 
 public class DeactivateCouponCommandHandler : IRequestHandler<DeactivateCouponCommand>
 {
-    public Task Handle(DeactivateCouponCommand request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public DeactivateCouponCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        return Task.CompletedTask;
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task Handle(DeactivateCouponCommand request, CancellationToken ct)
+    {
+        // Admin only
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can deactivate coupons");
+
+        var coupon = await _context.Coupons.FindAsync(request.Id);
+        if (coupon == null)
+            throw new NotFoundException("Coupon", request.Id);
+
+        coupon.IsActive = false;
+        await _context.SaveChangesAsync(ct);
     }
 }

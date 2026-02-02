@@ -4,16 +4,26 @@ namespace ShopCore.Application.Coupons.Handlers;
 
 public class DeleteCouponCommandHandler : IRequestHandler<DeleteCouponCommand>
 {
-    public Task Handle(DeleteCouponCommand request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public DeleteCouponCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Get coupon by id
-        // 2. Verify vendor owns this coupon (or admin)
-        // 3. Check if coupon is in use (active carts/orders)
-        // 4. Update coupon status to 'deleted' or soft-delete
-        // 5. Create audit log of deletion
-        // 6. Invalidate any caches
-        // 7. Handle cascading effects
-        return Task.CompletedTask;
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task Handle(DeleteCouponCommand request, CancellationToken ct)
+    {
+        // Admin only
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can delete coupons");
+
+        var coupon = await _context.Coupons.FindAsync(request.Id);
+        if (coupon == null)
+            throw new NotFoundException("Coupon", request.Id);
+
+        coupon.IsDeleted = true;
+        await _context.SaveChangesAsync(ct);
     }
 }

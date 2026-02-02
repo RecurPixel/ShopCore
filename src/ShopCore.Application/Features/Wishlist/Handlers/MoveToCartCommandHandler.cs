@@ -1,3 +1,4 @@
+using ShopCore.Application.Cart.Commands.AddCartItem;
 using ShopCore.Application.Cart.DTOs;
 
 namespace ShopCore.Application.Wishlist.Commands.MoveToCart;
@@ -6,22 +7,33 @@ public class MoveToCartCommandHandler : IRequestHandler<MoveToCartCommand, CartD
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
+    private readonly IMediator _mediator;
 
-    public MoveToCartCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
+    public MoveToCartCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser,
+        IMediator mediator)
     {
         _context = context;
         _currentUser = currentUser;
+        _mediator = mediator;
     }
 
-    public async Task<CartDto> Handle(MoveToCartCommand request, CancellationToken cancellationToken)
+    public async Task<CartDto> Handle(MoveToCartCommand request, CancellationToken ct)
     {
-        // TODO: Implement command logic
-        // 1. Get current user from _currentUser service
-        // 2. Find product in user's wishlist
-        // 3. Check if product is available for purchase
-        // 4. Add product to cart with default quantity (1)
-        // 5. Remove product from wishlist
-        // 6. Fetch and return updated cart
-        return new CartDto();
+        var wishlistItem = await _context.Wishlists
+            .FirstOrDefaultAsync(w => w.UserId == _currentUser.UserId && w.ProductId == request.ProductId, ct);
+
+        if (wishlistItem == null)
+            throw new NotFoundException("Product not in wishlist");
+
+        // Add to cart
+        var cartDto = await _mediator.Send(new AddCartItemCommand(request.ProductId, 1), ct);
+
+        // Remove from wishlist
+        _context.Wishlists.Remove(wishlistItem);
+        await _context.SaveChangesAsync(ct);
+
+        return cartDto;
     }
 }

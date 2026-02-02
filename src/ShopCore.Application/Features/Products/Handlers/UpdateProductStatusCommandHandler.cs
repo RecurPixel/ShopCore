@@ -5,21 +5,46 @@ namespace ShopCore.Application.Products.Commands.UpdateProductStatus;
 public class UpdateProductStatusCommandHandler
     : IRequestHandler<UpdateProductStatusCommand, ProductDto>
 {
-    public Task<ProductDto> Handle(
-        UpdateProductStatusCommand request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public UpdateProductStatusCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Get product by id
-        // 2. Verify vendor owns this product (or admin)
-        // 3. Validate status transition rules (e.g., can't go from deleted back to active)
-        // 4. Check if status change affects related data (subscriptions, orders)
-        // 5. Update product status in database
-        // 6. Create audit log of status change
-        // 7. Invalidate caches
-        // 8. Notify vendor if status changed by admin
-        // 9. Map and return updated ProductDto
-        return Task.FromResult(new ProductDto());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<ProductDto> Handle(UpdateProductStatusCommand request, CancellationToken ct)
+    {
+        // 1. Find product
+        var product = await _context.Products
+            .FirstOrDefaultAsync(p => p.Id == request.Id && !p.IsDeleted, ct);
+
+        if (product == null)
+            throw new NotFoundException("Product", request.Id);
+
+        // 2. Verify ownership
+        if (product.VendorId != _currentUser.VendorId)
+            throw new ForbiddenException("You can only update your own products");
+
+        // 3. Update status
+        product.Status = request.Status;
+
+        // 4. If marking as active, verify required fields
+        if (request.Status == ProductStatus.Active)
+        {
+            if (string.IsNullOrWhiteSpace(product.Description))
+                throw new ValidationException("Description is required for active products");
+
+            var hasImages = await _context.ProductImages
+                .AnyAsync(pi => pi.ProductId == product.Id && !pi.IsDeleted, ct);
+
+            if (!hasImages)
+                throw new ValidationException("At least one image is required for active products");
+        }
+
+        await _context.SaveChangesAsync(ct);
     }
 }
