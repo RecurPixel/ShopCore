@@ -25,7 +25,6 @@ public class GetAddressByIdQueryHandler : IRequestHandler<GetAddressByIdQuery, A
             .Select(a => new AddressDto
             {
                 Id = a.Id,
-                UserId = a.UserId,
                 FullName = a.FullName,
                 PhoneNumber = a.PhoneNumber,
                 AddressLine1 = a.AddressLine1,
@@ -36,10 +35,7 @@ public class GetAddressByIdQueryHandler : IRequestHandler<GetAddressByIdQuery, A
                 Latitude = a.Latitude,
                 Longitude = a.Longitude,
                 PlaceId = a.PlaceId,
-                Landmark = a.Landmark,
-                AddressType = a.AddressType,
-                IsDefault = a.IsDefault,
-                CreatedAt = a.CreatedAt
+                IsDefault = a.IsDefault
             })
             .FirstOrDefaultAsync(cancellationToken);
 

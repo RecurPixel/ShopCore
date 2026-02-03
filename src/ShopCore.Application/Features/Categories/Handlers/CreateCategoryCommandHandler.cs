@@ -34,17 +34,19 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
         _context.Categories.Add(category);
         await _context.SaveChangesAsync(ct);
 
-        return new CategoryDto(
-            category.Id,
-            category.Name,
-            category.Slug,
-            category.Description,
-            category.ImageUrl,
-            category.ParentCategoryId,
-            null,
-            category.DisplayOrder,
-            true,
-            0);
+        return new CategoryDto
+        {
+            Id = category.Id,
+            Name = category.Name,
+            Slug = category.Slug,
+            Description = category.Description,
+            ImageUrl = category.ImageUrl,
+            ParentCategoryId = category.ParentCategoryId,
+            ParentCategoryName = category.ParentCategory?.Name,
+            DisplayOrder = category.DisplayOrder,
+            IsActive = true,
+            ProductCount = 0
+        };
     }
 
     private async Task<string> GenerateUniqueSlugAsync(string name, CancellationToken ct)

@@ -1,8 +1,8 @@
 namespace ShopCore.Application.Users.DTOs;
 
-public class UpdateUserDto
+public record UpdateUserDto
 {
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string PhoneNumber { get; set; } = string.Empty;
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
+    public string PhoneNumber { get; init; } = string.Empty;
 }

@@ -5,7 +5,7 @@ public record CouponDto
     public int Id { get; init; }
     public string Code { get; init; } = string.Empty;
     public string? Description { get; init; }
-    public CouponType Type { get; init; }
+    public string Type { get; init; } = string.Empty;
     public decimal? DiscountPercentage { get; init; }
     public decimal? DiscountAmount { get; init; }
     public decimal? MinOrderValue { get; init; }

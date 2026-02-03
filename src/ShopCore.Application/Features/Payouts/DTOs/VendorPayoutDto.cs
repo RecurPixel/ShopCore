@@ -10,8 +10,9 @@ public record VendorPayoutDto
     public decimal GrossAmount { get; init; }
     public decimal PlatformFee { get; init; }
     public decimal NetAmount { get; init; }
-    public PayoutStatus Status { get; init; }
-    public string? TransactionId { get; init; }
+    public string Status { get; init; } = string.Empty;
+    public string? PayoutMethod { get; init; }
+    public string? PayoutTransactionId { get; init; }
     public DateTime? ProcessedAt { get; init; }
     public string? Notes { get; init; }
 }

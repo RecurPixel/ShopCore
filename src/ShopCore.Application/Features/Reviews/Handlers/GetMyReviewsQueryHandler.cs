@@ -32,7 +32,7 @@ public class GetMyReviewsQueryHandler : IRequestHandler<GetMyReviewsQuery, Pagin
                 Id = r.Id,
                 ProductId = r.ProductId,
                 ProductName = r.Product.Name,
-                ProductImage = r.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
+                ProductImageUrl = r.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
                 Rating = r.Rating,
                 Title = r.Title,
                 Comment = r.Comment,

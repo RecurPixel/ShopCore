@@ -61,7 +61,7 @@ public class CompleteDeliveryCommandHandler : IRequestHandler<CompleteDeliveryCo
 
         if (request.PaymentMethod.HasValue)
         {
-            delivery.PaymentMethod = request.PaymentMethod.Value.ToString();
+            delivery.PaymentMethod = request.PaymentMethod.Value;
             delivery.PaymentTransactionId = request.PaymentTransactionId;
             delivery.PaidAt = DateTime.UtcNow;
             delivery.PaymentStatus = PaymentStatus.Paid;

@@ -11,6 +11,6 @@ public record UpdateAddressCommand(
     string City,
     string State,
     string Country,
-    string PinCode,
+    string Pincode,
     bool IsDefault
 ) : IRequest<AddressDto>;

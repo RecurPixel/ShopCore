@@ -12,4 +12,5 @@ public record CategoryDto
     public int DisplayOrder { get; init; }
     public bool IsActive { get; init; }
     public int ProductCount { get; init; }
+    public List<CategoryDto> SubCategories { get; init; } = new();
 }

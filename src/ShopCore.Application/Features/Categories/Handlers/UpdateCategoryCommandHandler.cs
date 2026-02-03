@@ -31,6 +31,17 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
 
         await _context.SaveChangesAsync(ct);
 
-        return new CategoryDto(category.Id, category.Name, category.Slug, category.Description, category.ImageUrl, null, category.ParentCategoryId, null, category.DisplayOrder, category.IsDeleted, 0);
+        return new CategoryDto
+        {
+            Id = category.Id,
+            Name = category.Name,
+            Slug = category.Slug,
+            Description = category.Description,
+            ImageUrl = category.ImageUrl,
+            ParentCategoryId = category.ParentCategoryId,
+            ParentCategoryName = category.ParentCategory?.Name,
+            DisplayOrder = category.DisplayOrder,
+            IsActive = category.IsDeleted
+        };
     }
 }

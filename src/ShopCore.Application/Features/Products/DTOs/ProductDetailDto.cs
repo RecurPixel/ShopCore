@@ -1,26 +1,28 @@
 namespace ShopCore.Application.Products.DTOs;
 
-public class ProductDetailDto
+public record ProductDetailDto
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Slug { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public string? ShortDescription { get; set; }
-    public decimal Price { get; set; }
-    public decimal? CompareAtPrice { get; set; }
-    public decimal DiscountPercentage { get; set; }
-    public int StockQuantity { get; set; }
-    public string? SKU { get; set; }
-    public bool IsInStock { get; set; }
-    public bool IsOnSale { get; set; }
-    public bool IsFeatured { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public decimal AverageRating { get; set; }
-    public int ReviewCount { get; set; }
-    public int ViewCount { get; set; }
-    public string CategoryName { get; set; } = string.Empty;
-    public string VendorName { get; set; } = string.Empty;
-    public List<ProductImageDto> Images { get; set; } = new();
-    public List<ProductSpecificationDto> Specifications { get; set; } = new();
+    public int Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string Slug { get; init; } = string.Empty;
+    public string? Description { get; init; }
+    public string? ShortDescription { get; init; }
+    public decimal Price { get; init; }
+    public decimal? CompareAtPrice { get; init; }
+    public decimal DiscountPercentage { get; init; }
+    public int StockQuantity { get; init; }
+    public string? SKU { get; init; }
+    public bool IsInStock { get; init; }
+    public bool IsOnSale { get; init; }
+    public bool IsFeatured { get; init; }
+    public string Status { get; init; } = string.Empty;
+    public decimal AverageRating { get; init; }
+    public int ReviewCount { get; init; }
+    public int ViewCount { get; init; }
+    public int CategoryId { get; init; }
+    public string CategoryName { get; init; } = string.Empty;
+    public int VendorId { get; init; }
+    public string VendorName { get; init; } = string.Empty;
+    public List<ProductImageDto> Images { get; init; } = new();
+    public List<ProductSpecificationDto> Specifications { get; init; } = new();
 }

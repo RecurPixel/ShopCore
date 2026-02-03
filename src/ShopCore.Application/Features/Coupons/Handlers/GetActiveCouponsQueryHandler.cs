@@ -38,7 +38,8 @@ public class GetActiveCouponsQueryHandler : IRequestHandler<GetActiveCouponsQuer
                 UsageLimit = c.UsageLimit,
                 UsageCount = c.UsageCount,
                 UsageLimitPerUser = c.UsageLimitPerUser,
-                IsActive = c.IsActive
+                IsActive = c.IsActive,
+                IsValid = c.IsValid
             })
             .ToListAsync(cancellationToken);
     }

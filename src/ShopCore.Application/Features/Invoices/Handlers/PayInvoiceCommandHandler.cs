@@ -39,14 +39,14 @@ public class PayInvoiceCommandHandler : IRequestHandler<PayInvoiceCommand, Invoi
         invoice.PaidAmount = invoice.Total;
         invoice.Status = InvoiceStatus.Paid;
         invoice.PaidAt = _dateTime.UtcNow;
-        invoice.PaymentMethod = request.PaymentMethod.ToString();
+        invoice.PaymentMethod = request.PaymentMethod;
         invoice.PaymentTransactionId = request.PaymentTransactionId;
 
         // Mark all linked deliveries as paid
         foreach (var delivery in invoice.Deliveries)
         {
             delivery.PaymentStatus = PaymentStatus.Paid;
-            delivery.PaymentMethod = request.PaymentMethod.ToString();
+            delivery.PaymentMethod = request.PaymentMethod;
             delivery.PaymentTransactionId = request.PaymentTransactionId;
             delivery.PaidAt = _dateTime.UtcNow;
         }

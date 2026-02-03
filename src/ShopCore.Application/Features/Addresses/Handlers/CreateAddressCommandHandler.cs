@@ -51,7 +51,7 @@ public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand,
             City = request.City,
             State = request.State,
             Country = request.Country,
-            PinCode = request.PinCode,
+            Pincode = request.Pincode,
             IsDefault = request.IsDefault || !hasAddresses,
             Latitude = request.Latitude,
             Longitude = request.Longitude,
@@ -72,7 +72,7 @@ public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand,
             AddressLine2 = address.AddressLine2,
             City = address.City,
             State = address.State,
-            Pincode = address.PinCode,
+            Pincode = address.Pincode,
             IsDefault = address.IsDefault
         };
     }

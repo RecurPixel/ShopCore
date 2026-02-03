@@ -1,8 +1,7 @@
-namespace ShopCore.Application.Addresses.DTOs;
+namespace ShopCore.Application.Orders.DTOs;
 
-public record AddressDto
+public record OrderAddressDto
 {
-    public int Id { get; init; }
     public string FullName { get; init; } = string.Empty;
     public string PhoneNumber { get; init; } = string.Empty;
     public string AddressLine1 { get; init; } = string.Empty;
@@ -10,8 +9,5 @@ public record AddressDto
     public string City { get; init; } = string.Empty;
     public string State { get; init; } = string.Empty;
     public string Pincode { get; init; } = string.Empty;
-    public double? Latitude { get; init; }
-    public double? Longitude { get; init; }
-    public string? PlaceId { get; init; }
-    public bool IsDefault { get; init; }
+    public string? Landmark { get; init; }
 }

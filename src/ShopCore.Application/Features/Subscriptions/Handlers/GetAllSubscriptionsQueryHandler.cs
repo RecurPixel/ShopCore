@@ -85,7 +85,7 @@ public class GetAllSubscriptionsQueryHandler : IRequestHandler<GetAllSubscriptio
                 AddressLine2 = subscription.DeliveryAddress.AddressLine2,
                 City = subscription.DeliveryAddress.City,
                 State = subscription.DeliveryAddress.State,
-                Pincode = subscription.DeliveryAddress.PinCode,
+                Pincode = subscription.DeliveryAddress.Pincode,
                 Latitude = subscription.DeliveryAddress.Latitude,
                 Longitude = subscription.DeliveryAddress.Longitude,
                 PlaceId = subscription.DeliveryAddress.PlaceId,
@@ -104,7 +104,7 @@ public class GetAllSubscriptionsQueryHandler : IRequestHandler<GetAllSubscriptio
             DepositAmount = subscription.DepositAmount,
             DepositPaid = subscription.DepositPaid,
             DepositBalance = subscription.DepositBalance,
-            Status = subscription.Status,
+            Status = subscription.Status.ToString(),
             TotalDeliveries = subscription.TotalDeliveries,
             CompletedDeliveries = subscription.CompletedDeliveries,
             FailedDeliveries = subscription.FailedDeliveries,
@@ -113,10 +113,13 @@ public class GetAllSubscriptionsQueryHandler : IRequestHandler<GetAllSubscriptio
                 Id = i.Id,
                 ProductId = i.ProductId,
                 ProductName = i.Product.Name,
-                ProductImage = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
+                ProductImageUrl = i.Product.Images.FirstOrDefault(img => img.IsPrimary)?.ImageUrl,
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
-                LineTotal = i.Quantity * i.UnitPrice
+                LineTotal = i.Quantity * i.UnitPrice,
+                TotalPrice = i.Quantity * i.UnitPrice,
+                VendorId = subscription.VendorId,
+                VendorName = subscription.Vendor.BusinessName
             }).ToList()
 
         };

@@ -27,7 +27,6 @@ public class GetMyAddressesQueryHandler : IRequestHandler<GetMyAddressesQuery, L
             .Select(a => new AddressDto
             {
                 Id = a.Id,
-                UserId = a.UserId,
                 FullName = a.FullName,
                 PhoneNumber = a.PhoneNumber,
                 AddressLine1 = a.AddressLine1,
@@ -38,10 +37,7 @@ public class GetMyAddressesQueryHandler : IRequestHandler<GetMyAddressesQuery, L
                 Latitude = a.Latitude,
                 Longitude = a.Longitude,
                 PlaceId = a.PlaceId,
-                Landmark = a.Landmark,
-                AddressType = a.AddressType,
                 IsDefault = a.IsDefault,
-                CreatedAt = a.CreatedAt
             })
             .ToListAsync(cancellationToken);
     }

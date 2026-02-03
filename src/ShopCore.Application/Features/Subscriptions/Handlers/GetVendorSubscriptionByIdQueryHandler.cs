@@ -36,7 +36,7 @@ public class GetVendorSubscriptionByIdQueryHandler : IRequestHandler<GetVendorSu
             throw new ForbiddenException("You can only view your own subscriptions");
 
         var address = subscription.DeliveryAddress;
-        var fullAddress = $"{address.AddressLine1}, {address.City}, {address.State} - {address.PinCode}";
+        var fullAddress = $"{address.AddressLine1}, {address.City}, {address.State} - {address.Pincode}";
 
         var lastDelivery = subscription.Deliveries
             .Where(d => d.Status == DeliveryStatus.Delivered)
@@ -61,7 +61,7 @@ public class GetVendorSubscriptionByIdQueryHandler : IRequestHandler<GetVendorSu
                 Id = i.Id,
                 ProductId = i.ProductId,
                 ProductName = i.Product.Name,
-                ProductImage = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
+                ProductImageUrl = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
                 TotalPrice = i.Quantity * i.UnitPrice

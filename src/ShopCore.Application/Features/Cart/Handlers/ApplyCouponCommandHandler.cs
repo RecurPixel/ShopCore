@@ -21,7 +21,12 @@ public class ApplyCouponCommandHandler : IRequestHandler<ApplyCouponCommand, Car
     public async Task<CartDto> Handle(ApplyCouponCommand request, CancellationToken ct)
     {
         var cart = await _context.Carts
-            .Include(c => c.Items).ThenInclude(i => i.Product)
+            .Include(c => c.Items)
+                .ThenInclude(i => i.Product)
+                    .ThenInclude(p => p.Vendor)
+            .Include(c => c.Items)
+                .ThenInclude(i => i.Product)
+                    .ThenInclude(p => p.Images)
             .FirstOrDefaultAsync(c => c.UserId == _currentUser.UserId, ct);
 
         if (cart == null || !cart.Items.Any())
@@ -68,17 +73,36 @@ public class ApplyCouponCommandHandler : IRequestHandler<ApplyCouponCommand, Car
 
     private Task<CartDto> BuildCartDtoAsync(Domain.Entities.Cart cart)
     {
-        var subtotal = cart.Items.Sum(i => i.Quantity * i.Price);
-        var tax = (subtotal - (cart.Discount ?? 0)) * 0.18m;
-        var total = subtotal + tax - (cart.Discount ?? 0);
+        var items = cart.Items
+            .Where(ci => !ci.Product.IsDeleted && ci.Product.Status == ProductStatus.Active)
+            .Select(ci => new CartItemDto
+            {
+                Id = ci.Id,
+                ProductId = ci.ProductId,
+                ProductName = ci.Product.Name,
+                ProductImageUrl = ci.Product.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl,
+                Price = ci.Product.Price,
+                Quantity = ci.Quantity,
+                Subtotal = ci.Product.Price * ci.Quantity,
+                IsInStock = !ci.Product.TrackInventory || ci.Product.StockQuantity >= ci.Quantity,
+                VendorId = ci.Product.VendorId,
+                VendorName = ci.Product.Vendor.BusinessName
+            })
+            .ToList();
+
+        var subtotal = items.Sum(i => i.Subtotal);
+        var discount = cart.Discount ?? 0;
+        var tax = (subtotal - discount) * 0.18m;
 
         return Task.FromResult(new CartDto
         {
             Id = cart.Id,
+            Items = items,
             Subtotal = subtotal,
+            Discount = discount,
             Tax = tax,
-            Discount = cart.Discount ?? 0,
-            Total = total,
+            TotalAmount = subtotal + tax - discount,
+            ItemCount = items.Sum(i => i.Quantity),
             AppliedCouponCode = cart.AppliedCouponCode
         });
     }

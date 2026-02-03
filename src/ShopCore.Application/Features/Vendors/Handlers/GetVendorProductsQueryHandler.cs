@@ -22,6 +22,7 @@ public class GetVendorProductsQueryHandler : IRequestHandler<GetVendorProductsQu
         var query = _context.Products
             .AsNoTracking()
             .Include(p => p.Category)
+            .Include(p => p.Vendor)
             .Include(p => p.Images)
             .Where(p => p.VendorId == request.VendorId.Value);
 
@@ -46,10 +47,15 @@ public class GetVendorProductsQueryHandler : IRequestHandler<GetVendorProductsQu
                 DiscountPercentage = p.DiscountPercentage,
                 IsOnSale = p.IsOnSale,
                 IsInStock = p.IsInStock,
-                CategoryName = p.Category.Name,
+                PrimaryImageUrl = p.Images.FirstOrDefault(i => i.IsPrimary) != null
+                    ? p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
+                    : null,
                 AverageRating = p.AverageRating,
                 ReviewCount = p.ReviewCount,
-                PrimaryImageUrl = p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category.Name,
+                VendorId = p.VendorId,
+                VendorName = p.Vendor.BusinessName
             })
             .ToListAsync(cancellationToken);
 

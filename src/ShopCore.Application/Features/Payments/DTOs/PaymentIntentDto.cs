@@ -7,5 +7,6 @@ public record PaymentIntentDto
     public decimal Amount { get; init; }
     public string Currency { get; init; } = "INR";
     public PaymentStatus Status { get; init; }
-    public string? RazorpayOrderId { get; init; }
+    public string Gateway { get; init; } = string.Empty;
+    public string? GatewayOrderId { get; init; }
 }

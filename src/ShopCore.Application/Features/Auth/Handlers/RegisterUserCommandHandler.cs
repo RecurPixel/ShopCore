@@ -72,8 +72,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
             Email = user.Email,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Role = user.Role.ToString(),
-            IsEmailVerified = user.IsEmailVerified
+            Role = user.Role.ToString()
         };
     }
 }

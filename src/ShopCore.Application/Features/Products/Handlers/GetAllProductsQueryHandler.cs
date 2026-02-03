@@ -45,7 +45,9 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
                     : p.Images.FirstOrDefault() != null ? p.Images.FirstOrDefault()!.ImageUrl : null,
                 AverageRating = p.AverageRating,
                 ReviewCount = p.ReviewCount,
+                CategoryId = p.CategoryId,
                 CategoryName = p.Category.Name,
+                VendorId = p.VendorId,
                 VendorName = p.Vendor.BusinessName
             })
             .ToListAsync(ct);

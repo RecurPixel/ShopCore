@@ -20,8 +20,10 @@ public class ResendInvitationCommandHandler
         ResendInvitationCommand request,
         CancellationToken cancellationToken)
     {
-        var userId = _currentUserService.UserId
-            ?? throw new UnauthorizedAccessException("User not authenticated");
+        if (_currentUserService.UserId == 0)
+            throw new UnauthorizedAccessException("User not authenticated");
+
+        var userId = _currentUserService.UserId;
 
         var vendor = await _context.VendorProfiles
             .FirstOrDefaultAsync(v => v.UserId == userId, cancellationToken)

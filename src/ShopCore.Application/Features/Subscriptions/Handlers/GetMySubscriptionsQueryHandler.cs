@@ -57,13 +57,20 @@ public class GetMySubscriptionsQueryHandler
                 ItemCount = s.Items.Count,
                 Items = s.Items.Select(si => new SubscriptionItemDto
                 {
+                    Id = si.Id,
                     ProductId = si.ProductId,
                     ProductName = si.Product.Name,
-                    ProductImage = si.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
+                    ProductImageUrl = si.Product.Images.FirstOrDefault(i => i.IsPrimary) != null
+                        ? si.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
+                        : null,
                     Quantity = si.Quantity,
                     UnitPrice = si.UnitPrice,
+                    LineTotal = si.Quantity * si.UnitPrice,
+                    TotalPrice = si.Quantity * si.UnitPrice,
                     IsRecurring = si.IsRecurring,
-                    OneTimeDeliveryDate = si.OneTimeDeliveryDate
+                    OneTimeDeliveryDate = si.OneTimeDeliveryDate,
+                    VendorId = s.VendorId,
+                    VendorName = s.Vendor.BusinessName
                 }).ToList(),
                 CreatedAt = s.CreatedAt
             })

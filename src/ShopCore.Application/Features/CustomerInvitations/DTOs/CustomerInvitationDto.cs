@@ -4,6 +4,7 @@ public record CustomerInvitationDto
 {
     public int Id { get; init; }
     public int VendorId { get; init; }
+    public int InvitedUserId { get; init; }
     public string VendorName { get; init; } = string.Empty;
     public string CustomerName { get; init; } = string.Empty;
     public string PhoneNumber { get; init; } = string.Empty;
@@ -14,6 +15,8 @@ public record CustomerInvitationDto
     public DateTime SentAt { get; init; }
     public DateTime ExpiresAt { get; init; }
     public DateTime? AcceptedAt { get; init; }
+    public DateTime? RejectedAt { get; init; }
+    public string? InvitationToken { get; init; }
 }
 
 public record InvitationDetailsDto

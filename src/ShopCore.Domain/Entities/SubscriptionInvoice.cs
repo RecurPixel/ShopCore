@@ -26,7 +26,8 @@ public class SubscriptionInvoice : AuditableEntity
 
     // Payment details
     public DateTime? PaidAt { get; set; }
-    public string? PaymentMethod { get; set; }
+    public PaymentMethod? PaymentMethod { get; set; }
+    public PaymentGateway PaymentGateway { get; set; } = PaymentGateway.None;
     public string? PaymentTransactionId { get; set; }
 
     // Generation tracking

@@ -6,7 +6,7 @@ public record VendorOrderItemDto
     public int ProductId { get; init; }
     public string ProductName { get; init; } = string.Empty;
     public string? ProductSKU { get; init; }
-    public string? ProductImage { get; init; }
+    public string? ProductImageUrl { get; init; }
     public int Quantity { get; init; }
     public decimal UnitPrice { get; init; }
     public decimal Subtotal { get; init; }

@@ -113,14 +113,14 @@ public class ConfirmPaymentCommandHandler
         invoice.PaidAmount = invoice.Total;
         invoice.Status = InvoiceStatus.Paid;
         invoice.PaidAt = _dateTime.UtcNow;
-        invoice.PaymentMethod = PaymentMethod.Online.ToString();
+        invoice.PaymentMethod = PaymentMethod.Online;
         invoice.PaymentTransactionId = razorpayPaymentId;
 
         // Mark all linked deliveries as paid
         foreach (var delivery in invoice.Deliveries)
         {
             delivery.PaymentStatus = PaymentStatus.Paid;
-            delivery.PaymentMethod = PaymentMethod.Online.ToString();
+            delivery.PaymentMethod = PaymentMethod.Online;
             delivery.PaymentTransactionId = razorpayPaymentId;
             delivery.PaidAt = _dateTime.UtcNow;
         }

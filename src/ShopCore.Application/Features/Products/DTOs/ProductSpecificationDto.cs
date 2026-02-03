@@ -1,7 +1,7 @@
 namespace ShopCore.Application.Products.DTOs;
 
-public class ProductSpecificationDto
+public record ProductSpecificationDto
 {
-    public string Name { get; set; } = string.Empty;
-    public string Value { get; set; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public string Value { get; init; } = string.Empty;
 }

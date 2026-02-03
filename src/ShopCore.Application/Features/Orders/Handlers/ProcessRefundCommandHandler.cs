@@ -73,9 +73,11 @@ public class ProcessRefundCommandHandler
 
         return new RefundResultDto
         {
-            IsSuccess = true,
+            OrderId = order.Id,
             RefundAmount = refundAmount,
-            TransactionId = refundResult.TransactionId
+            RefundTransactionId = refundResult.TransactionId,
+            RefundedAt = DateTime.UtcNow,
+            Status = "Initiated"
         };
     }
 }

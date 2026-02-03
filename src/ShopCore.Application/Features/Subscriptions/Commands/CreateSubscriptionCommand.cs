@@ -14,8 +14,3 @@ public record CreateSubscriptionCommand(
     decimal? DepositAmount
 ) : IRequest<SubscriptionDto>;
 
-public record SubscriptionItemDto
-{
-    public int ProductId { get; init; }
-    public int Quantity { get; init; }
-}

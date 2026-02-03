@@ -33,7 +33,7 @@ public class ProcessVendorPayoutCommandHandler
 
         payout.Status = PayoutStatus.Paid;
         payout.PaidAt = _dateTime.UtcNow;
-        payout.TransactionId = request.TransactionId;
+        payout.PayoutTransactionId = request.TransactionId;
         payout.TransactionReference = request.Notes;
         payout.ProcessedBy = _currentUser.UserId;
 
@@ -42,10 +42,17 @@ public class ProcessVendorPayoutCommandHandler
         return new VendorPayoutDto
         {
             Id = payout.Id,
-            PayoutNumber = payout.PayoutNumber,
+            VendorId = payout.VendorId,
             VendorName = payout.Vendor.BusinessName,
-            NetPayout = payout.NetPayout,
-            Status = payout.Status.ToString()
+            PeriodFrom = payout.PeriodStart,
+            PeriodTo = payout.PeriodEnd,
+            GrossAmount = payout.TotalSales,
+            PlatformFee = payout.CommissionAmount,
+            NetAmount = payout.NetPayout,
+            Status = payout.Status.ToString(),
+            PayoutMethod = payout.PayoutMethod?.ToString(),
+            PayoutTransactionId = payout.PayoutTransactionId,
+            ProcessedAt = payout.PaidAt
         };
     }
 }

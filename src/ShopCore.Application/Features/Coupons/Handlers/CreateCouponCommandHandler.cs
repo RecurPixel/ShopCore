@@ -46,6 +46,23 @@ public class CreateCouponCommandHandler : IRequestHandler<CreateCouponCommand, C
         _context.Coupons.Add(coupon);
         await _context.SaveChangesAsync(ct);
 
-        return new CouponDto { Id = coupon.Id, Code = coupon.Code, Type = coupon.Type.ToString() };
+        return new CouponDto
+        {
+            Id = coupon.Id,
+            Code = coupon.Code,
+            Description = coupon.Description,
+            Type = coupon.Type.ToString(),
+            DiscountPercentage = coupon.DiscountPercentage,
+            DiscountAmount = coupon.DiscountAmount,
+            MinOrderValue = coupon.MinOrderValue,
+            MaxDiscount = coupon.MaxDiscount,
+            ValidFrom = coupon.ValidFrom,
+            ValidUntil = coupon.ValidUntil,
+            UsageLimit = coupon.UsageLimit,
+            UsageCount = coupon.UsageCount,
+            UsageLimitPerUser = coupon.UsageLimitPerUser,
+            IsActive = coupon.IsActive,
+            IsValid = coupon.IsValid
+        };
     }
 }

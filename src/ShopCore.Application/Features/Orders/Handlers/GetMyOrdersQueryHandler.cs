@@ -50,7 +50,7 @@ public class GetMyOrdersQueryHandler : IRequestHandler<GetMyOrdersQuery, Paginat
                 OrderNumber = o.OrderNumber,
                 Status = o.Status.ToString(),
                 PaymentStatus = o.PaymentStatus.ToString(),
-                Total = o.Total,
+                TotalAmount = o.Total,
                 ItemCount = o.Items.Count,
                 CreatedAt = o.CreatedAt
             })

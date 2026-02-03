@@ -7,6 +7,7 @@ public record PaymentHistoryDto
     public string ReferenceNumber { get; init; } = string.Empty;
     public decimal Amount { get; init; }
     public string PaymentMethod { get; init; } = string.Empty;
+    public string Gateway { get; init; } = string.Empty;
     public string? TransactionId { get; init; }
     public string Status { get; init; } = string.Empty;
     public DateTime PaidAt { get; init; }

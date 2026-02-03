@@ -27,19 +27,20 @@ public class GetVendorPayoutsQueryHandler
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(ct);
 
-        return payouts.Select(p => new VendorPayoutDto(
-            p.Id,
-            p.VendorId,
-            p.Vendor.BusinessName,
-            p.PeriodStart,
-            p.PeriodEnd,
-            p.TotalSales,
-            p.CommissionAmount,
-            p.NetPayout,
-            p.Status,
-            p.TransactionId,
-            p.PaidAt,
-            null
-        )).ToList();
+        return payouts.Select(p => new VendorPayoutDto
+        {
+            Id = p.Id,
+            VendorId = p.VendorId,
+            VendorName = p.Vendor.BusinessName,
+            PeriodFrom = p.PeriodStart,
+            PeriodTo = p.PeriodEnd,
+            GrossAmount = p.TotalSales,
+            PlatformFee = p.CommissionAmount,
+            NetAmount = p.NetPayout,
+            Status = p.Status.ToString(),
+            PayoutMethod = p.PayoutMethod?.ToString(),
+            PayoutTransactionId = p.PayoutTransactionId,
+            ProcessedAt = p.PaidAt
+        }).ToList();
     }
 }

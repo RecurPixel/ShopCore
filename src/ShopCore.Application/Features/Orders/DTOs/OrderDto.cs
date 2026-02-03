@@ -1,12 +1,12 @@
 namespace ShopCore.Application.Orders.DTOs;
 
-public class OrderDto
+public record OrderDto
 {
-    public int Id { get; set; }
-    public string OrderNumber { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public string PaymentStatus { get; set; } = string.Empty;
-    public decimal Total { get; set; }
-    public int ItemCount { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public int Id { get; init; }
+    public string OrderNumber { get; init; } = string.Empty;
+    public string Status { get; init; } = string.Empty;
+    public string PaymentStatus { get; init; } = string.Empty;
+    public decimal TotalAmount { get; init; }
+    public int ItemCount { get; init; }
+    public DateTime CreatedAt { get; init; }
 }

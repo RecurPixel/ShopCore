@@ -31,8 +31,8 @@ public class GetCustomerInvitationByIdQueryHandler : IRequestHandler<GetCustomer
                 VendorId = ci.VendorId,
                 VendorName = ci.Vendor.BusinessName,
                 CustomerName = ci.CustomerName,
-                CustomerPhone = ci.CustomerPhone,
-                CustomerEmail = ci.CustomerEmail,
+                PhoneNumber = ci.CustomerPhone,
+                Email = ci.CustomerEmail,
                 DeliveryAddress = ci.DeliveryAddress,
                 InvitationToken = ci.InvitationToken,
                 Status = ci.Status.ToString(),
@@ -40,7 +40,6 @@ public class GetCustomerInvitationByIdQueryHandler : IRequestHandler<GetCustomer
                 AcceptedAt = ci.AcceptedAt,
                 RejectedAt = ci.RejectedAt,
                 ExpiresAt = ci.ExpiresAt,
-                CreatedAt = ci.CreatedAt
             })
             .FirstOrDefaultAsync(cancellationToken);
     }

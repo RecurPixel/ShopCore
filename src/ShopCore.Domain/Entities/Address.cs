@@ -10,7 +10,7 @@ public class Address : AuditableEntity
     public string City { get; set; } = string.Empty;
     public string State { get; set; } = string.Empty;
     public string Country { get; set; } = "India";
-    public string PinCode { get; set; } = string.Empty;
+    public string Pincode { get; set; } = string.Empty;
     public bool IsDefault { get; set; }
 
     // Location fields

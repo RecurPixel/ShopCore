@@ -24,18 +24,55 @@ public class UpdateCouponCommandHandler : IRequestHandler<UpdateCouponCommand, C
         if (coupon == null)
             throw new NotFoundException("Coupon", request.Id);
 
-        coupon.Description = request.Description;
-        coupon.DiscountPercentage = request.DiscountPercentage;
-        coupon.DiscountAmount = request.DiscountAmount;
-        coupon.MinOrderValue = request.MinOrderValue;
-        coupon.MaxDiscount = request.MaxDiscount;
-        coupon.ValidFrom = request.ValidFrom;
-        coupon.ValidUntil = request.ValidUntil;
+        // Parse discount type
+        var discountType = request.DiscountType?.ToLowerInvariant() switch
+        {
+            "percentage" => CouponType.Percentage,
+            "fixed" or "fixedamount" => CouponType.FixedAmount,
+            _ => coupon.Type // Keep existing if not specified
+        };
+
+        coupon.Code = request.Code;
+        coupon.Type = discountType;
+
+        // Set discount value based on type
+        if (discountType == CouponType.Percentage)
+        {
+            coupon.DiscountPercentage = request.DiscountValue;
+            coupon.DiscountAmount = null;
+        }
+        else
+        {
+            coupon.DiscountAmount = request.DiscountValue;
+            coupon.DiscountPercentage = null;
+        }
+
+        coupon.MinOrderValue = request.MinOrderAmount;
+        coupon.MaxDiscount = request.MaxDiscountAmount;
+        coupon.ValidFrom = request.StartDate ?? coupon.ValidFrom;
+        coupon.ValidUntil = request.EndDate ?? coupon.ValidUntil;
         coupon.UsageLimit = request.UsageLimit;
-        coupon.UsageLimitPerUser = request.UsageLimitPerUser;
+        coupon.IsActive = request.IsActive;
 
         await _context.SaveChangesAsync(ct);
 
-        return new CouponDto { Id = coupon.Id, Code = coupon.Code };
+        return new CouponDto
+        {
+            Id = coupon.Id,
+            Code = coupon.Code,
+            Description = coupon.Description,
+            Type = coupon.Type.ToString(),
+            DiscountPercentage = coupon.DiscountPercentage,
+            DiscountAmount = coupon.DiscountAmount,
+            MinOrderValue = coupon.MinOrderValue,
+            MaxDiscount = coupon.MaxDiscount,
+            ValidFrom = coupon.ValidFrom,
+            ValidUntil = coupon.ValidUntil,
+            UsageLimit = coupon.UsageLimit,
+            UsageCount = coupon.UsageCount,
+            UsageLimitPerUser = coupon.UsageLimitPerUser,
+            IsActive = coupon.IsActive,
+            IsValid = coupon.IsValid
+        };
     }
 }

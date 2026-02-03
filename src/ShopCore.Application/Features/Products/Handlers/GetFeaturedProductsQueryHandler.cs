@@ -30,23 +30,21 @@ public class GetFeaturedProductsQueryHandler
                 Id = p.Id,
                 Name = p.Name,
                 Slug = p.Slug,
-                Description = p.Description,
                 ShortDescription = p.ShortDescription,
                 Price = p.Price,
                 CompareAtPrice = p.CompareAtPrice,
                 DiscountPercentage = p.DiscountPercentage,
                 IsOnSale = p.IsOnSale,
-                StockQuantity = p.StockQuantity,
                 IsInStock = p.IsInStock,
-                IsFeatured = p.IsFeatured,
+                PrimaryImageUrl = p.Images.FirstOrDefault(i => i.IsPrimary) != null
+                    ? p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
+                    : null,
+                AverageRating = p.AverageRating,
+                ReviewCount = p.ReviewCount,
                 CategoryId = p.CategoryId,
                 CategoryName = p.Category.Name,
                 VendorId = p.VendorId,
-                VendorName = p.Vendor.BusinessName,
-                AverageRating = p.AverageRating,
-                ReviewCount = p.ReviewCount,
-                PrimaryImage = p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
-                Images = p.Images.OrderBy(i => i.DisplayOrder).Select(i => i.ImageUrl).ToList()
+                VendorName = p.Vendor.BusinessName
             })
             .ToListAsync(cancellationToken);
     }

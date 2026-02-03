@@ -74,7 +74,7 @@ public class PauseSubscriptionCommandHandler
                 AddressLine2 = subscription.DeliveryAddress.AddressLine2,
                 City = subscription.DeliveryAddress.City,
                 State = subscription.DeliveryAddress.State,
-                Pincode = subscription.DeliveryAddress.PinCode,
+                Pincode = subscription.DeliveryAddress.Pincode,
                 Latitude = subscription.DeliveryAddress.Latitude,
                 Longitude = subscription.DeliveryAddress.Longitude,
                 IsDefault = subscription.DeliveryAddress.IsDefault
@@ -92,7 +92,7 @@ public class PauseSubscriptionCommandHandler
             DepositAmount = subscription.DepositAmount,
             DepositPaid = subscription.DepositPaid,
             DepositBalance = subscription.DepositBalance,
-            Status = subscription.Status,
+            Status = subscription.Status.ToString(),
             TotalDeliveries = subscription.TotalDeliveries,
             CompletedDeliveries = subscription.CompletedDeliveries,
             FailedDeliveries = subscription.FailedDeliveries,
@@ -101,7 +101,7 @@ public class PauseSubscriptionCommandHandler
                 Id = i.Id,
                 ProductId = i.ProductId,
                 ProductName = i.Product.Name,
-                ProductImage = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
+                ProductImageUrl = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
                 TotalPrice = i.Quantity * i.UnitPrice

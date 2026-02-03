@@ -16,13 +16,18 @@ public class UpdateCartItemCommandHandler : IRequestHandler<UpdateCartItemComman
     public async Task<CartDto> Handle(UpdateCartItemCommand request, CancellationToken ct)
     {
         var cart = await _context.Carts
-            .Include(c => c.Items).ThenInclude(i => i.Product).ThenInclude(p => p.Vendor)
+            .Include(c => c.Items)
+                .ThenInclude(i => i.Product)
+                    .ThenInclude(p => p.Vendor)
+            .Include(c => c.Items)
+                .ThenInclude(i => i.Product)
+                    .ThenInclude(p => p.Images)
             .FirstOrDefaultAsync(c => c.UserId == _currentUser.UserId, ct);
 
         if (cart == null)
             throw new NotFoundException("Cart not found");
 
-        var cartItem = cart.Items.FirstOrDefaultAsync(i => i.ProductId == request.ProductId && !i.IsDeleted);
+        var cartItem = _context.CartItems.FirstOrDefaultAsync(i => i.ProductId == request.ProductId && !i.IsDeleted);
         if (cartItem == null)
             throw new NotFoundException("Product not in cart");
 
@@ -47,28 +52,29 @@ public class UpdateCartItemCommandHandler : IRequestHandler<UpdateCartItemComman
             Id = i.Id,
             ProductId = i.ProductId,
             ProductName = i.Product.Name,
+            ProductImageUrl = i.Product.Images.FirstOrDefault(img => img.IsPrimary)?.ImageUrl,
             Price = i.Price,
             Quantity = i.Quantity,
             Subtotal = i.Quantity * i.Price,
+            IsInStock = !i.Product.TrackInventory || i.Product.StockQuantity >= i.Quantity,
             VendorId = i.Product.VendorId,
-            VendorName = i.Product.Vendor.BusinessName,
-            ImageUrl = i.Product.Images.FirstOrDefault(img => img.IsPrimary)?.ImageUrl
+            VendorName = i.Product.Vendor.BusinessName
         }).ToList();
 
         var subtotal = items.Sum(i => i.Subtotal);
-        var tax = subtotal * 0.18m;
-        var total = subtotal + tax;
+        var discount = cart.Discount ?? 0;
+        var tax = (subtotal - discount) * 0.18m;
 
         return new CartDto
         {
             Id = cart.Id,
             Items = items,
             Subtotal = subtotal,
+            Discount = discount,
             Tax = tax,
-            Total = total,
+            TotalAmount = subtotal + tax - discount,
             ItemCount = items.Sum(i => i.Quantity),
-            AppliedCouponCode = cart.AppliedCouponCode,
-            Discount = cart.Discount ?? 0
+            AppliedCouponCode = cart.AppliedCouponCode
         };
     }
 }

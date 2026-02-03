@@ -27,6 +27,7 @@ public class Order : AuditableEntity
     // Payment
     public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Unpaid;
     public PaymentMethod PaymentMethod { get; set; }
+    public PaymentGateway PaymentGateway { get; set; } = PaymentGateway.None;
     public string? PaymentTransactionId { get; set; }
     public DateTime? PaidAt { get; set; }
 

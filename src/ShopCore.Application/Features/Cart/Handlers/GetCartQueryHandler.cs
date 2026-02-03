@@ -1,5 +1,4 @@
 using ShopCore.Application.Cart.DTOs;
-using CartEntity = ShopCore.Domain.Entities.Cart;
 
 namespace ShopCore.Application.Cart.Queries.GetCart;
 
@@ -36,8 +35,9 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery, CartDto>
             {
                 Items = new List<CartItemDto>(),
                 Subtotal = 0,
+                Discount = 0,
                 Tax = 0,
-                Total = 0,
+                TotalAmount = 0,
                 ItemCount = 0
             };
         }
@@ -49,28 +49,30 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery, CartDto>
                 Id = ci.Id,
                 ProductId = ci.ProductId,
                 ProductName = ci.Product.Name,
-                ProductSlug = ci.Product.Slug,
-                ProductImage = ci.Product.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl,
-                VendorId = ci.Product.VendorId,
-                VendorName = ci.Product.Vendor.BusinessName,
+                ProductImageUrl = ci.Product.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl,
                 Price = ci.Product.Price,
                 Quantity = ci.Quantity,
                 Subtotal = ci.Product.Price * ci.Quantity,
                 IsInStock = !ci.Product.TrackInventory || ci.Product.StockQuantity >= ci.Quantity,
-                MaxQuantity = ci.Product.TrackInventory ? ci.Product.StockQuantity : 999
+                VendorId = ci.Product.VendorId,
+                VendorName = ci.Product.Vendor.BusinessName
             })
             .ToList();
 
         var subtotal = items.Sum(i => i.Subtotal);
-        var tax = subtotal * 0.18m; // 18% GST
+        var discount = cart.Discount ?? 0;
+        var tax = (subtotal - discount) * 0.18m; // 18% GST
 
         return new CartDto
         {
+            Id = cart.Id,
             Items = items,
             Subtotal = subtotal,
+            Discount = discount,
             Tax = tax,
-            Total = subtotal + tax,
-            ItemCount = items.Sum(i => i.Quantity)
+            TotalAmount = subtotal + tax - discount,
+            ItemCount = items.Sum(i => i.Quantity),
+            AppliedCouponCode = cart.AppliedCouponCode
         };
     }
 }

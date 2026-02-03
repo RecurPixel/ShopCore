@@ -1,15 +1,15 @@
 namespace ShopCore.Application.Users.DTOs;
 
-public class UserProfileDto
+public record UserProfileDto
 {
-    public int Id { get; set; }
-    public string Email { get; set; } = string.Empty;
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string FullName { get; set; } = string.Empty;
-    public string PhoneNumber { get; set; } = string.Empty;
-    public string? AvatarUrl { get; set; }
-    public string Role { get; set; } = string.Empty;
-    public bool IsEmailVerified { get; set; }
-    public DateTime? LastLoginAt { get; set; }
+    public int Id { get; init; }
+    public string Email { get; init; } = string.Empty;
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
+    public string FullName { get; init; } = string.Empty;
+    public string PhoneNumber { get; init; } = string.Empty;
+    public string? AvatarUrl { get; init; }
+    public string Role { get; init; } = string.Empty;
+    public bool IsEmailVerified { get; init; }
+    public DateTime? LastLoginAt { get; init; }
 }

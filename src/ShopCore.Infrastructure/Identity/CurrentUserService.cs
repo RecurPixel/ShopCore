@@ -15,14 +15,14 @@ public class CurrentUserService : ICurrentUserService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public int? UserId
+    public int UserId
     {
         get
         {
             var userIdClaim = _httpContextAccessor.HttpContext?.User?
                 .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            return int.TryParse(userIdClaim, out var id) ? id : null;
+            return int.TryParse(userIdClaim, out var id) ? id : -1;
         }
     }
 

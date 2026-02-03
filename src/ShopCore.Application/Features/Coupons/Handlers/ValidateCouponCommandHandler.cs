@@ -20,22 +20,22 @@ public class ValidateCouponCommandHandler
             .FirstOrDefaultAsync(c => c.Code == request.CouponCode.ToUpperInvariant(), ct);
 
         if (coupon == null || !coupon.IsActive)
-            return new CouponValidationResultDto { IsValid = false, Message = "Invalid coupon code" };
+            return new CouponValidationResultDto { IsValid = false, ErrorMessage = "Invalid coupon code" };
 
         if (_dateTime.UtcNow < coupon.ValidFrom)
-            return new CouponValidationResultDto { IsValid = false, Message = "Coupon not yet valid" };
+            return new CouponValidationResultDto { IsValid = false, ErrorMessage = "Coupon not yet valid" };
 
         if (_dateTime.UtcNow > coupon.ValidUntil)
-            return new CouponValidationResultDto { IsValid = false, Message = "Coupon has expired" };
+            return new CouponValidationResultDto { IsValid = false, ErrorMessage = "Coupon has expired" };
 
         if (coupon.UsageLimit.HasValue && coupon.UsageCount >= coupon.UsageLimit)
-            return new CouponValidationResultDto { IsValid = false, Message = "Coupon usage limit reached" };
+            return new CouponValidationResultDto { IsValid = false, ErrorMessage = "Coupon usage limit reached" };
 
         if (coupon.MinOrderValue.HasValue && request.OrderTotal < coupon.MinOrderValue)
             return new CouponValidationResultDto
             {
                 IsValid = false,
-                Message = $"Minimum order value ₹{coupon.MinOrderValue} required"
+                ErrorMessage = $"Minimum order value ₹{coupon.MinOrderValue} required"
             };
 
         // Calculate discount
@@ -55,7 +55,24 @@ public class ValidateCouponCommandHandler
         {
             IsValid = true,
             DiscountAmount = discount,
-            Message = $"Coupon applied! You save ₹{discount}"
+            Coupon = new CouponDto
+            {
+                Id = coupon.Id,
+                Code = coupon.Code,
+                Description = coupon.Description,
+                Type = coupon.Type.ToString(),
+                DiscountPercentage = coupon.DiscountPercentage,
+                DiscountAmount = coupon.DiscountAmount,
+                MinOrderValue = coupon.MinOrderValue,
+                MaxDiscount = coupon.MaxDiscount,
+                ValidFrom = coupon.ValidFrom,
+                ValidUntil = coupon.ValidUntil,
+                UsageLimit = coupon.UsageLimit,
+                UsageCount = coupon.UsageCount,
+                UsageLimitPerUser = coupon.UsageLimitPerUser,
+                IsActive = coupon.IsActive,
+                IsValid = coupon.IsValid
+            }
         };
     }
 }

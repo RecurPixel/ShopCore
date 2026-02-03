@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Deliveries.DTOs;
 
 namespace ShopCore.Application.Deliveries.Queries.GetVendorDeliveries;
@@ -62,7 +61,7 @@ public class GetVendorDeliveriesQueryHandler : IRequestHandler<GetVendorDeliveri
                 Status = d.Status.ToString(),
                 PaymentStatus = d.PaymentStatus.ToString(),
                 TotalAmount = d.TotalAmount,
-                PaymentMethod = d.PaymentMethod,
+                PaymentMethod = d.PaymentMethod.HasValue ? d.PaymentMethod.Value.ToString() : null,
                 PaidAt = d.PaidAt,
                 DeliveryPersonName = d.DeliveryPersonName,
                 FailureReason = d.FailureReason,

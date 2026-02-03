@@ -31,7 +31,7 @@ public class GetVendorOrderItemsQueryHandler : IRequestHandler<GetVendorOrderIte
                 ProductId = oi.ProductId,
                 ProductName = oi.ProductName,
                 ProductSKU = oi.ProductSKU,
-                ProductImage = oi.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
+                ProductImageUrl = oi.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
                 Quantity = oi.Quantity,
                 UnitPrice = oi.UnitPrice,
                 Subtotal = oi.Subtotal,

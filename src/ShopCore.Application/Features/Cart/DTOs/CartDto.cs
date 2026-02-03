@@ -1,11 +1,13 @@
 namespace ShopCore.Application.Cart.DTOs;
 
-public class CartDto
+public record CartDto
 {
-    public int Id { get; set; }
-    public List<CartItemDto> Items { get; set; } = new();
-    public decimal Subtotal { get; set; }
-    public decimal Tax { get; set; }
-    public decimal Total { get; set; }
-    public int ItemCount { get; set; }
+    public int Id { get; init; }
+    public List<CartItemDto> Items { get; init; } = new();
+    public decimal Subtotal { get; init; }
+    public decimal Discount { get; init; }
+    public decimal Tax { get; init; }
+    public decimal TotalAmount { get; init; }
+    public int ItemCount { get; init; }
+    public string? AppliedCouponCode { get; init; }
 }

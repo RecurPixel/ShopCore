@@ -10,7 +10,7 @@ public record CreateAddressCommand(
     string City,
     string State,
     string Country,
-    string PinCode,
+    string Pincode,
     bool IsDefault,
     // Location fields
     double? Latitude,

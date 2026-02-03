@@ -100,13 +100,13 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
             invoice.PaidAmount = invoice.Total;
             invoice.Status = InvoiceStatus.Paid;
             invoice.PaidAt = _dateTime.UtcNow;
-            invoice.PaymentMethod = webhookEvent.Method ?? PaymentMethod.Online.ToString();
+            invoice.PaymentMethod = ParsePaymentMethod(webhookEvent.Method);
             invoice.PaymentTransactionId = webhookEvent.PaymentId;
 
             foreach (var delivery in invoice.Deliveries)
             {
                 delivery.PaymentStatus = PaymentStatus.Paid;
-                delivery.PaymentMethod = webhookEvent.Method ?? PaymentMethod.Online.ToString();
+                delivery.PaymentMethod = ParsePaymentMethod(webhookEvent.Method);
                 delivery.PaymentTransactionId = webhookEvent.PaymentId;
                 delivery.PaidAt = _dateTime.UtcNow;
             }
@@ -181,5 +181,20 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
         });
 
         await _context.SaveChangesAsync(ct);
+    }
+
+    private static PaymentMethod ParsePaymentMethod(string? method)
+    {
+        if (string.IsNullOrEmpty(method))
+            return PaymentMethod.Online;
+
+        return method.ToLower() switch
+        {
+            "card" => PaymentMethod.Card,
+            "upi" => PaymentMethod.UPI,
+            "netbanking" => PaymentMethod.NetBanking,
+            "wallet" => PaymentMethod.Wallet,
+            _ => PaymentMethod.Online
+        };
     }
 }

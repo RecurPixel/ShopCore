@@ -60,7 +60,9 @@ public class SearchProductsQueryHandler : IRequestHandler<SearchProductsQuery, P
                     : null,
                 AverageRating = p.AverageRating,
                 ReviewCount = p.ReviewCount,
+                CategoryId = p.CategoryId,
                 CategoryName = p.Category != null ? p.Category.Name : string.Empty,
+                VendorId = p.VendorId,
                 VendorName = p.Vendor != null ? p.Vendor.BusinessName : string.Empty
             })
             .ToListAsync(cancellationToken);

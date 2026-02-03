@@ -29,7 +29,7 @@ public class GetAdminDashboardStatsQueryHandler
             TotalOrders = await _context.Orders.CountAsync(cancellationToken),
 
             // Vendor status breakdown
-            PendingVendors = await _context.VendorProfiles
+            PendingVendorApprovals = await _context.VendorProfiles
                 .CountAsync(v => v.Status == VendorStatus.PendingApproval, cancellationToken),
             ActiveVendors = await _context.VendorProfiles
                 .CountAsync(v => v.Status == VendorStatus.Active, cancellationToken),

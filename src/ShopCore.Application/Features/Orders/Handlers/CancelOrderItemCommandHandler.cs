@@ -70,12 +70,13 @@ public class CancelOrderItemCommandHandler
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return new CancellationResultDto(
-            order.Id,
-            orderItem.Id,
-            DateTime.UtcNow,
-            refundAmount,
+        return new CancellationResultDto
+        {
+            OrderId = order.Id,
+            OrderItemId = orderItem.Id,
+            CancelledAt = DateTime.UtcNow,
+            RefundAmount = refundAmount,
             "Pending" // TODO: Integrate with payment gateway
-        );
+        };
     }
 }

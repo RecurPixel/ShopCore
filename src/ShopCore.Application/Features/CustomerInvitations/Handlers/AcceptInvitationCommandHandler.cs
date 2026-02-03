@@ -1,5 +1,6 @@
 using ShopCore.Application.CustomerInvitations.Commands.AcceptInvitation;
 using ShopCore.Application.CustomerInvitations.DTOs;
+using ShopCore.Application.Subscriptions.Commands.CreateSubscription;
 using ShopCore.Application.Subscriptions.DTOs;
 
 namespace ShopCore.Application.CustomerInvitations.Handlers;
@@ -60,8 +61,8 @@ public class AcceptInvitationCommandHandler
                 Email = invitation.Email ?? $"{invitation.PhoneNumber}@temp.com",
                 PhoneNumber = invitation.PhoneNumber,
                 PasswordHash = !string.IsNullOrEmpty(request.Password)
-                    ? _passwordHasher.HashPassword(request.Password)
-                    : _passwordHasher.HashPassword(Guid.NewGuid().ToString()), // Temp password
+                    ? _passwordHasher.Hash(request.Password)
+                    : _passwordHasher.Hash(Guid.NewGuid().ToString()), // Temp password
                 Role = UserRole.Customer,
                 IsEmailVerified = false,
                 IsPhoneVerified = true, // Assume verified via invitation
@@ -87,7 +88,7 @@ public class AcceptInvitationCommandHandler
             State = "Unknown",
             Country = "India",
             PinCode = invitation.Pincode,
-            Landmark = invitation.Landmark,
+            Landmark = "Unknown",
             Type = AddressType.Home,
             IsDefault = true
         };
@@ -99,7 +100,7 @@ public class AcceptInvitationCommandHandler
         var items = System.Text.Json.JsonSerializer.Deserialize<List<InvitationItemInput>>(invitation.ItemsJson);
 
         // Create subscription using existing CreateSubscriptionCommand
-        var subscriptionItems = items.Select(i => new SubscriptionItemDto(i.ProductId, i.Quantity)).ToList();
+        var subscriptionItems = items.Select(i => new SubscriptionItemDto { Id = i.ProductId, Quantity = i.Quantity }).ToList();
 
         var createSubCommand = new CreateSubscriptionCommand(
             VendorId: invitation.VendorId,
@@ -126,7 +127,7 @@ public class AcceptInvitationCommandHandler
         // Update invitation
         invitation.Status = InvitationStatus.Accepted;
         invitation.AcceptedAt = _dateTime.UtcNow;
-        invitation.AcceptedByUserId = user.Id;
+        invitation.UserId = user.Id;
 
         await _context.SaveChangesAsync(ct);
 
@@ -142,8 +143,6 @@ public class AcceptInvitationCommandHandler
         {
             UserId = user.Id,
             SubscriptionId = subscription.Id,
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
             Message = "Subscription created successfully!"
         };
     }

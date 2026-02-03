@@ -22,7 +22,7 @@ public class AddressConfiguration : IEntityTypeConfiguration<Address>
 
         builder.Property(a => a.State).IsRequired().HasMaxLength(100);
 
-        builder.Property(a => a.PinCode).IsRequired().HasMaxLength(10);
+        builder.Property(a => a.Pincode).IsRequired().HasMaxLength(10);
 
         // Location fields
         builder.Property(a => a.Latitude)

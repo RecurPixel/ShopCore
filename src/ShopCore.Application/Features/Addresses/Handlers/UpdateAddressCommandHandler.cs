@@ -43,7 +43,7 @@ public class UpdateAddressCommandHandler : IRequestHandler<UpdateAddressCommand,
         address.City = request.City;
         address.State = request.State;
         address.Country = request.Country;
-        address.PinCode = request.PinCode;
+        address.Pincode = request.Pincode;
         address.IsDefault = request.IsDefault;
 
         await _context.SaveChangesAsync(ct);
@@ -57,7 +57,7 @@ public class UpdateAddressCommandHandler : IRequestHandler<UpdateAddressCommand,
             AddressLine2 = address.AddressLine2,
             City = address.City,
             State = address.State,
-            Pincode = address.PinCode,
+            Pincode = address.Pincode,
             IsDefault = address.IsDefault
         };
     }

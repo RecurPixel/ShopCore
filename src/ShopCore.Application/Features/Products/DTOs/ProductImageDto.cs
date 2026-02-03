@@ -1,9 +1,9 @@
 namespace ShopCore.Application.Products.DTOs;
 
-public class ProductImageDto
+public record ProductImageDto
 {
-    public int Id { get; set; }
-    public string ImageUrl { get; set; } = string.Empty;
-    public bool IsPrimary { get; set; }
-    public int DisplayOrder { get; set; }
+    public int Id { get; init; }
+    public string ImageUrl { get; init; } = string.Empty;
+    public bool IsPrimary { get; init; }
+    public int DisplayOrder { get; init; }
 }

@@ -14,7 +14,8 @@ public class Delivery : AuditableEntity
 
     // Total for entire delivery (all items)
     public decimal TotalAmount { get; set; }
-    public string? PaymentMethod { get; set; }
+    public PaymentMethod? PaymentMethod { get; set; }
+    public PaymentGateway PaymentGateway { get; set; } = PaymentGateway.None;
     public DateTime? PaidAt { get; set; }
     public string? PaymentTransactionId { get; set; }
 

@@ -18,8 +18,8 @@ public class VendorPayout : AuditableEntity
     // Payment details
     public PayoutStatus Status { get; set; } = PayoutStatus.Pending;
     public DateTime? PaidAt { get; set; }
-    public string? PaymentMethod { get; set; } // "Bank Transfer", "UPI", etc.
-    public string? TransactionId { get; set; }
+    public PayoutMethod? PayoutMethod { get; set; }
+    public string? PayoutTransactionId { get; set; }
     public string? TransactionReference { get; set; }
 
     // Processing
