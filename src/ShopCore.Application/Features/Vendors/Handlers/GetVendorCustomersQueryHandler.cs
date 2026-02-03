@@ -47,9 +47,9 @@ public class GetVendorCustomersQueryHandler : IRequestHandler<GetVendorCustomers
                 .Select(u => new VendorCustomerDto
                 {
                     UserId = u.Id,
-                    Name = u.FirstName + " " + u.LastName,
+                    FullName = u.FirstName + " " + u.LastName,
                     Email = u.Email,
-                    PhoneNumber = u.PhoneNumber
+                    Phone = u.PhoneNumber
                 })
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -82,10 +82,12 @@ public class GetVendorCustomersQueryHandler : IRequestHandler<GetVendorCustomers
             }
         }
 
-        return new PaginatedList<VendorCustomerDto>(
-            items,
-            totalCount,
-            request.Page,
-            request.PageSize);
+        return new PaginatedList<VendorCustomerDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

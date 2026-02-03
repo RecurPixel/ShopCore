@@ -1,12 +1,13 @@
 namespace ShopCore.Application.Location.DTOs;
 
-public record ReverseGeocodeResultDto(
-    string FormattedAddress,
-    string? AddressLine1,
-    string? AddressLine2,
-    string? City,
-    string? State,
-    string? Country,
-    string? PinCode,
-    string? PlaceId
-);
+public record ReverseGeocodeResultDto
+{
+    public string FormattedAddress { get; init; } = string.Empty;
+    public string? AddressLine1 { get; init; }
+    public string? AddressLine2 { get; init; }
+    public string? City { get; init; }
+    public string? State { get; init; }
+    public string? Country { get; init; }
+    public string? PinCode { get; init; }
+    public string? PlaceId { get; init; }
+}

@@ -6,7 +6,6 @@ using ShopCore.Application.Addresses.Commands.UpdateAddress;
 using ShopCore.Application.Addresses.DTOs;
 using ShopCore.Application.Addresses.Queries.GetAddressById;
 using ShopCore.Application.Addresses.Queries.GetMyAddresses;
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Deliveries.DTOs;
 using ShopCore.Application.Deliveries.Queries.GetSubscriptionDeliveries;
 using ShopCore.Application.Invoices.DTOs;

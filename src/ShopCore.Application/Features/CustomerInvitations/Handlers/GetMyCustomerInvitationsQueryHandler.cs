@@ -67,8 +67,7 @@ public class GetMyCustomerInvitationsQueryHandler
             Items = items,
             Page = request.Page,
             PageSize = request.PageSize,
-            TotalItems = totalCount,
-            TotalPages = totalPages
+            TotalItems = totalCount
         };
     }
 }

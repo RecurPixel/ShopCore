@@ -2,7 +2,7 @@ using ShopCore.Application.Products.DTOs;
 
 namespace ShopCore.Application.Products.Queries.GetProducts;
 
-public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, List<ProductDto>>
+public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, PaginatedList<ProductDto>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -63,24 +63,24 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, List<Pr
                 Price = p.Price,
                 CompareAtPrice = p.CompareAtPrice,
                 DiscountPercentage = p.DiscountPercentage,
-                IsOnSale = p.IsOnSale,
-                StockQuantity = p.StockQuantity,
                 IsInStock = p.IsInStock,
-                IsFeatured = p.IsFeatured,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category.Name,
-                VendorId = p.VendorId,
-                VendorName = p.Vendor.BusinessName,
+                IsOnSale = p.IsOnSale,
+                PrimaryImageUrl = p.Images.FirstOrDefault(i => i.IsPrimary) != null
+                    ? p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
+                    : null,
                 AverageRating = p.AverageRating,
                 ReviewCount = p.ReviewCount,
-                PrimaryImage = p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
+                CategoryName = p.Category != null ? p.Category.Name : string.Empty,
+                VendorName = p.Vendor != null ? p.Vendor.BusinessName : string.Empty
             })
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<ProductDto>(
-            items,
-            totalCount,
-            request.Page,
-            request.PageSize);
+        return new PaginatedList<ProductDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

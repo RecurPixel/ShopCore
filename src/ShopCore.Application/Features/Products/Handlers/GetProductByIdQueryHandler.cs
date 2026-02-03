@@ -11,7 +11,7 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, P
         _context = context;
     }
 
-    public async Task<ProductDto> Handle(
+    public async Task<ProductDetailDto> Handle(
         GetProductByIdQuery request,
         CancellationToken cancellationToken)
     {
@@ -21,8 +21,8 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, P
             .Include(p => p.Vendor)
             .Include(p => p.Images)
             .Include(p => p.Specifications)
-            .Where(p => p.Id == request.ProductId)
-            .Select(p => new ProductDto
+            .Where(p => p.Id == request.Id)
+            .Select(p => new ProductDetailDto
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -31,58 +31,40 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, P
                 ShortDescription = p.ShortDescription,
                 Price = p.Price,
                 CompareAtPrice = p.CompareAtPrice,
-                CostPerItem = p.CostPerItem,
                 DiscountPercentage = p.DiscountPercentage,
-                IsOnSale = p.IsOnSale,
                 StockQuantity = p.StockQuantity,
                 SKU = p.SKU,
-                Barcode = p.Barcode,
-                TrackInventory = p.TrackInventory,
                 IsInStock = p.IsInStock,
-                Weight = p.Weight,
-                WeightUnit = p.WeightUnit,
-                Dimensions = p.Dimensions,
-                Status = p.Status.ToString(),
+                IsOnSale = p.IsOnSale,
                 IsFeatured = p.IsFeatured,
-                IsSubscriptionAvailable = p.IsSubscriptionAvailable,
-                SubscriptionDiscount = p.SubscriptionDiscount,
-                MetaTitle = p.MetaTitle,
-                MetaDescription = p.MetaDescription,
-                MetaKeywords = p.MetaKeywords,
-                ViewCount = p.ViewCount,
-                OrderCount = p.OrderCount,
+                Status = p.Status.ToString(),
                 AverageRating = p.AverageRating,
                 ReviewCount = p.ReviewCount,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category.Name,
-                CategorySlug = p.Category.Slug,
-                VendorId = p.VendorId,
-                VendorName = p.Vendor.BusinessName,
-                VendorRating = p.Vendor.AverageRating,
-                PrimaryImage = p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
-                Images = p.Images.OrderBy(i => i.DisplayOrder).Select(i => i.ImageUrl).ToList(),
+                ViewCount = p.ViewCount,
+                CategoryName = p.Category != null ? p.Category.Name : string.Empty,
+                VendorName = p.Vendor != null ? p.Vendor.BusinessName : string.Empty,
+                Images = p.Images.OrderBy(i => i.DisplayOrder).Select(i => new ProductImageDto
+                {
+                    Id = i.Id,
+                    ImageUrl = i.ImageUrl,
+                    IsPrimary = i.IsPrimary,
+                    DisplayOrder = i.DisplayOrder
+                }).ToList(),
                 Specifications = p.Specifications.Select(s => new ProductSpecificationDto
                 {
                     Name = s.Name,
                     Value = s.Value
-                }).ToList(),
-                CreatedAt = p.CreatedAt
+                }).ToList()
             })
             .FirstOrDefaultAsync(cancellationToken);
 
         if (product == null)
-            throw new NotFoundException(nameof(Product), request.ProductId);
+            throw new NotFoundException(nameof(Product), request.Id);
 
-        // Increment view count (async, don't await)
-        _ = Task.Run(async () =>
-        {
-            var productEntity = await _context.Products.FindAsync(request.ProductId);
-            if (productEntity != null)
-            {
-                productEntity.ViewCount++;
-                await _context.SaveChangesAsync();
-            }
-        });
+        // Increment view count
+        await _context.Products
+            .Where(p => p.Id == request.Id)
+            .ExecuteUpdateAsync(p => p.SetProperty(x => x.ViewCount, x => x.ViewCount + 1), cancellationToken);
 
         return product;
     }

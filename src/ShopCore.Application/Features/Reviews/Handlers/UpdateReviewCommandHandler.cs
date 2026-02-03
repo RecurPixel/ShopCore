@@ -18,7 +18,6 @@ public class UpdateReviewCommandHandler : IRequestHandler<UpdateReviewCommand, R
         var review = await _context.Reviews
             .Include(r => r.Product)
             .Include(r => r.User)
-            .Include(r => r.Images)
             .FirstOrDefaultAsync(r => r.Id == request.Id, ct);
 
         if (review == null || review.UserId != _currentUser.UserId)
@@ -38,26 +37,26 @@ public class UpdateReviewCommandHandler : IRequestHandler<UpdateReviewCommand, R
                 .Where(r => r.ProductId == review.ProductId)
                 .AverageAsync(r => r.Rating, ct);
 
-            product.AverageRating = avgRating;
+            product.AverageRating = (decimal)avgRating;
             await _context.SaveChangesAsync(ct);
         }
 
-        return new ReviewDto(
-            Id: review.Id,
-            ProductId: review.ProductId,
-            ProductName: review.Product.Name,
-            UserId: review.UserId,
-            UserName: review.User.FullName,
-            UserAvatarUrl: review.User.AvatarUrl,
-            Rating: review.Rating,
-            Title: review.Title,
-            Comment: review.Comment,
-            ImageUrls: review.Images.Select(i => i.ImageUrl).ToList(),
-            IsVerifiedPurchase: review.IsVerifiedPurchase,
-            HelpfulCount: review.HelpfulCount,
-            VendorResponse: review.VendorResponse,
-            VendorRespondedAt: review.VendorRespondedAt,
-            CreatedAt: review.CreatedAt
-        );
+        return new ReviewDto
+        {
+            Id = review.Id,
+            ProductId = review.ProductId,
+            ProductName = review.Product.Name,
+            UserId = review.UserId,
+            UserName = review.User.FullName,
+            UserAvatar = review.User.AvatarUrl,
+            Rating = review.Rating,
+            Title = review.Title,
+            Comment = review.Comment,
+            IsVerifiedPurchase = review.IsVerifiedPurchase,
+            HelpfulCount = review.HelpfulCount,
+            VendorResponse = review.VendorResponse,
+            VendorRespondedAt = review.VendorRespondedAt,
+            CreatedAt = review.CreatedAt
+        };
     }
 }

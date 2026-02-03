@@ -3,6 +3,7 @@ global using MediatR;
 global using Microsoft.EntityFrameworkCore;
 global using ShopCore.Application.Common.Exceptions;
 global using ShopCore.Application.Common.Interfaces;
+global using ShopCore.Application.Common.Models;
 global using ShopCore.Domain.Entities;
 global using ShopCore.Domain.Enums;
 global using System;

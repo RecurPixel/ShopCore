@@ -100,13 +100,14 @@ public class CreateOneTimeDeliveryCommandHandler
         _context.Deliveries.Add(delivery);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return new OneTimeDeliveryDto(
-            subscription.Id,
-            delivery.Id,
-            request.DeliveryDate,
-            totalAmount,
-            delivery.PaymentStatus
-        );
+        return new OneTimeDeliveryDto
+        {
+            SubscriptionId = subscription.Id,
+            DeliveryId = delivery.Id,
+            DeliveryDate = request.DeliveryDate,
+            TotalAmount = totalAmount,
+            PaymentStatus = delivery.PaymentStatus
+        };
     }
 
     private static string GenerateSubscriptionNumber()

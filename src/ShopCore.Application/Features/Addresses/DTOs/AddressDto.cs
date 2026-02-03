@@ -10,5 +10,8 @@ public class AddressDto
     public string City { get; set; } = string.Empty;
     public string State { get; set; } = string.Empty;
     public string Pincode { get; set; } = string.Empty;
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+    public string? PlaceId { get; set; }
     public bool IsDefault { get; set; }
 }

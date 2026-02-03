@@ -7,7 +7,6 @@ using ShopCore.Application.Categories.DTOs;
 using ShopCore.Application.Categories.Queries.GetCategories;
 using ShopCore.Application.Categories.Queries.GetCategoryById;
 using ShopCore.Application.Categories.Queries.GetProductsByCategory;
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Products.DTOs;
 
 namespace ShopCore.Api.Controllers;

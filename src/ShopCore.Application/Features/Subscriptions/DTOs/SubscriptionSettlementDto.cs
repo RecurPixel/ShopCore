@@ -1,10 +1,11 @@
 namespace ShopCore.Application.Subscriptions.DTOs;
 
-public record SubscriptionSettlementDto(
-    int SubscriptionId,
-    decimal TotalUnpaidAmount,
-    decimal AmountSettled,
-    decimal RemainingBalance,
-    bool IsFullySettled,
-    DateTime SettledAt
-);
+public record SubscriptionSettlementDto
+{
+    public int SubscriptionId { get; init; }
+    public decimal TotalUnpaidAmount { get; init; }
+    public decimal AmountSettled { get; init; }
+    public decimal RemainingBalance { get; init; }
+    public bool IsFullySettled { get; init; }
+    public DateTime? SettledAt { get; init; }
+}

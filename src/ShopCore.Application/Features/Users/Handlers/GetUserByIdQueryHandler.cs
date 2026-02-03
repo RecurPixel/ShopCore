@@ -22,22 +22,23 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDet
 
         var user = await _context.Users
             .Where(u => u.Id == request.Id)
-            .Select(u => new UserDetailDto(
-                u.Id,
-                u.Email,
-                u.FirstName,
-                u.LastName,
-                u.PhoneNumber,
-                u.AvatarUrl,
-                u.Role.ToString(),
-                u.IsActive ? "Active" : "Inactive",
-                u.IsEmailVerified,
-                u.Addresses.Count,
-                u.Orders.Count,
-                u.Subscriptions.Count,
-                u.CreatedAt,
-                u.LastLoginAt
-            ))
+            .Select(u => new UserDetailDto
+            {
+                Id = u.Id,
+                Email = u.Email,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                PhoneNumber = u.PhoneNumber,
+                AvatarUrl = u.AvatarUrl,
+                Role = u.Role.ToString(),
+                Status = u.IsActive ? "Active" : "Inactive",
+                IsEmailVerified = u.IsEmailVerified,
+                AddressCount = u.Addresses.Count,
+                OrderCount = u.Orders.Count,
+                SubscriptionCount = u.Subscriptions.Count,
+                CreatedAt = u.CreatedAt,
+                LastLoginAt = u.LastLoginAt
+            })
             .FirstOrDefaultAsync(ct);
 
         return user;

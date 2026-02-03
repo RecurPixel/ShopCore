@@ -56,6 +56,12 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Pagin
             })
             .ToListAsync(ct);
 
-        return new PaginatedList<OrderDto>(items, totalCount, request.Page, request.PageSize);
+        return new PaginatedList<OrderDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

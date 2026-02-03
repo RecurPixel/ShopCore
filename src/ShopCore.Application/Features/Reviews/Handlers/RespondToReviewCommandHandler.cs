@@ -23,7 +23,6 @@ public class RespondToReviewCommandHandler : IRequestHandler<RespondToReviewComm
         var review = await _context.Reviews
             .Include(r => r.Product)
             .Include(r => r.User)
-            .Include(r => r.Images)
             .FirstOrDefaultAsync(r => r.Id == request.ReviewId, ct);
 
         if (review == null)
@@ -38,22 +37,22 @@ public class RespondToReviewCommandHandler : IRequestHandler<RespondToReviewComm
 
         await _context.SaveChangesAsync(ct);
 
-        return new ReviewDto(
-            Id: review.Id,
-            ProductId: review.ProductId,
-            ProductName: review.Product.Name,
-            UserId: review.UserId,
-            UserName: review.User.FullName,
-            UserAvatarUrl: review.User.AvatarUrl,
-            Rating: review.Rating,
-            Title: review.Title,
-            Comment: review.Comment,
-            ImageUrls: review.Images.Select(i => i.ImageUrl).ToList(),
-            IsVerifiedPurchase: review.IsVerifiedPurchase,
-            HelpfulCount: review.HelpfulCount,
-            VendorResponse: review.VendorResponse,
-            VendorRespondedAt: review.VendorRespondedAt,
-            CreatedAt: review.CreatedAt
-        );
+        return new ReviewDto
+        {
+            Id = review.Id,
+            ProductId = review.ProductId,
+            ProductName = review.Product.Name,
+            UserId = review.UserId,
+            UserName = review.User.FullName,
+            UserAvatar = review.User.AvatarUrl,
+            Rating = review.Rating,
+            Title = review.Title,
+            Comment = review.Comment,
+            IsVerifiedPurchase = review.IsVerifiedPurchase,
+            HelpfulCount = review.HelpfulCount,
+            VendorResponse = review.VendorResponse,
+            VendorRespondedAt = review.VendorRespondedAt,
+            CreatedAt = review.CreatedAt
+        };
     }
 }

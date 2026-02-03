@@ -3,7 +3,7 @@ using ShopCore.Application.Payments.DTOs;
 namespace ShopCore.Application.Payments.Queries.GetPaymentHistory;
 
 public class GetPaymentHistoryQueryHandler
-    : IRequestHandler<GetPaymentHistoryQuery, List<PaymentHistoryDto>>
+    : IRequestHandler<GetPaymentHistoryQuery, PaginatedList<PaymentHistoryDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
@@ -65,10 +65,12 @@ public class GetPaymentHistoryQueryHandler
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<PaymentHistoryDto>(
-            items,
-            totalCount,
-            request.Page,
-            request.PageSize);
+        return new PaginatedList<PaymentHistoryDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

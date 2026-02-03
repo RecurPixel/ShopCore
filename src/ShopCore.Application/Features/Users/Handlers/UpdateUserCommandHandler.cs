@@ -46,15 +46,16 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserD
 
         await _context.SaveChangesAsync(ct);
 
-        return new UserDto(
-            user.Id,
-            user.Email,
-            user.FirstName,
-            user.LastName,
-            user.PhoneNumber,
-            user.Role.ToString(),
-            user.IsActive ? "Active" : "Inactive",
-            user.CreatedAt
-        );
+        return new UserDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber,
+            Role = user.Role.ToString(),
+            Status = user.IsActive ? "Active" : "Inactive",
+            CreatedAt = user.CreatedAt
+        };
     }
 }

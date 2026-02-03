@@ -41,15 +41,16 @@ public class AddVendorServiceAreaCommandHandler
         _context.VendorServiceAreas.Add(serviceArea);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return new VendorServiceAreaDto(
-            serviceArea.Id,
-            serviceArea.VendorId,
-            serviceArea.AreaName,
-            serviceArea.City,
-            serviceArea.State,
-            serviceArea.Pincodes,
-            serviceArea.IsActive,
-            serviceArea.CreatedAt
-        );
+        return new VendorServiceAreaDto
+        {
+            Id = serviceArea.Id,
+            VendorId = serviceArea.VendorId,
+            AreaName = serviceArea.AreaName,
+            City = serviceArea.City,
+            State = serviceArea.State,
+            Pincodes = serviceArea.Pincodes,
+            IsActive = serviceArea.IsActive,
+            CreatedAt = serviceArea.CreatedAt
+        };
     }
 }

@@ -1,11 +1,15 @@
 namespace ShopCore.Application.Subscriptions.DTOs;
 
-public record SubscriptionItemDto(
-    int Id,
-    int ProductId,
-    string ProductName,
-    string? ProductImageUrl,
-    int Quantity,
-    decimal UnitPrice,
-    decimal LineTotal
-);
+public record SubscriptionItemDto
+{
+    public int Id { get; init; }
+    public int ProductId { get; init; }
+    public string ProductName { get; init; } = string.Empty;
+    public string? ProductImage { get; init; }
+    public int Quantity { get; init; }
+    public decimal UnitPrice { get; init; }
+    public decimal LineTotal { get; init; }
+    public decimal TotalPrice { get; init; }
+    public bool IsRecurring { get; init; }
+    public DateTime? OneTimeDeliveryDate { get; init; }
+}

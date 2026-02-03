@@ -36,7 +36,7 @@ public class GetVendorSubscriptionByIdQueryHandler : IRequestHandler<GetVendorSu
             throw new ForbiddenException("You can only view your own subscriptions");
 
         var address = subscription.DeliveryAddress;
-        var fullAddress = $"{address.AddressLine1}, {address.City}, {address.State} - {address.Pincode}";
+        var fullAddress = $"{address.AddressLine1}, {address.City}, {address.State} - {address.PinCode}";
 
         var lastDelivery = subscription.Deliveries
             .Where(d => d.Status == DeliveryStatus.Delivered)
@@ -45,28 +45,30 @@ public class GetVendorSubscriptionByIdQueryHandler : IRequestHandler<GetVendorSu
 
         var totalAmount = subscription.Items.Sum(i => i.Quantity * i.UnitPrice);
 
-        return new VendorSubscriptionDto(
-            subscription.Id,
-            subscription.UserId,
-            subscription.User.FullName,
-            subscription.User.PhoneNumber,
-            fullAddress,
-            subscription.Status.ToString(),
-            subscription.Frequency.ToString(),
-            subscription.StartDate,
-            subscription.NextDeliveryDate,
-            subscription.Items.Select(i => new SubscriptionItemDto(
-                i.Id,
-                i.ProductId,
-                i.Product.Name,
-                i.Product.ImageUrl,
-                i.Quantity,
-                i.UnitPrice,
-                i.Quantity * i.UnitPrice
-            )).ToList(),
-            totalAmount,
-            subscription.CreatedAt,
-            lastDelivery?.ActualDeliveryDate
-        );
+        return new VendorSubscriptionDto
+        {
+            Id = subscription.Id,
+            CustomerId = subscription.UserId,
+            CustomerName = subscription.User.FullName,
+            CustomerPhone = subscription.User.PhoneNumber,
+            DeliveryAddress = fullAddress,
+            Status = subscription.Status.ToString(),
+            Frequency = subscription.Frequency.ToString(),
+            StartDate = subscription.StartDate,
+            NextDeliveryDate = subscription.NextDeliveryDate,
+            Items = subscription.Items.Select(i => new SubscriptionItemDto
+            {
+                Id = i.Id,
+                ProductId = i.ProductId,
+                ProductName = i.Product.Name,
+                ProductImage = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+                TotalPrice = i.Quantity * i.UnitPrice
+            }).ToList(),
+            TotalAmount = totalAmount,
+            CreatedAt = subscription.CreatedAt,
+            LastDeliveryDate = lastDelivery?.ActualDeliveryDate
+        };
     }
 }

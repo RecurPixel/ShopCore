@@ -1,4 +1,5 @@
 using ShopCore.Application.Reports.DTOs;
+using ShopCore.Application.Vendors.DTOs;
 
 namespace ShopCore.Application.Reports.Queries.GetVendorPerformance;
 
@@ -47,23 +48,25 @@ public class GetVendorPerformanceQueryHandler : IRequestHandler<GetVendorPerform
             .Where(v => vendorIds.Contains(v.Id))
             .ToDictionaryAsync(v => v.Id, ct);
 
-        var topVendors = vendorSales.Select(vs => new TopVendorDto(
-            vs.VendorId,
-            vendors.TryGetValue(vs.VendorId, out var v) ? v.BusinessName : "Unknown",
-            vs.Revenue,
-            vs.OrderCount,
-            vendors.TryGetValue(vs.VendorId, out var vr) ? vr.AverageRating : 0
-        )).ToList();
+        var topVendors = vendorSales.Select(vs => new TopVendorDto
+        {
+            VendorId = vs.VendorId,
+            VendorName = vendors.TryGetValue(vs.VendorId, out var v) ? v.BusinessName : "Unknown",
+            Revenue = vs.Revenue,
+            OrderCount = vs.OrderCount,
+            Rating = vendors.TryGetValue(vs.VendorId, out var vr) ? vr.AverageRating : 0
+        }).ToList();
 
         var averageRating = await _context.VendorProfiles
             .Where(v => v.Status == VendorStatus.Active && v.TotalReviews > 0)
             .AverageAsync(v => (decimal?)v.AverageRating, ct) ?? 0;
 
-        return new VendorPerformanceReportDto(
-            totalVendors,
-            activeVendors,
-            topVendors,
-            Math.Round(averageRating, 2)
-        );
+        return new VendorPerformanceReportDto
+        {
+            TotalVendors = totalVendors,
+            ActiveVendors = activeVendors,
+            TopVendors = topVendors,
+            AverageRating = Math.Round(averageRating, 2)
+        };
     }
 }

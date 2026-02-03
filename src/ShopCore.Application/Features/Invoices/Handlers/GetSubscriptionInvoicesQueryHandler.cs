@@ -63,10 +63,12 @@ public class GetSubscriptionInvoicesQueryHandler
             })
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<InvoiceDto>(
-            items,
-            totalCount,
-            request.Page,
-            request.PageSize);
+        return new PaginatedList<InvoiceDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

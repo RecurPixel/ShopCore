@@ -45,7 +45,13 @@ public class GetVendorInvoicesQueryHandler : IRequestHandler<GetVendorInvoicesQu
 
         var items = invoices.Select(MapToDto).ToList();
 
-        return new PaginatedList<InvoiceDto>(items, totalCount, request.Page, request.PageSize);
+        return new PaginatedList<InvoiceDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 
     private static InvoiceDto MapToDto(SubscriptionInvoice invoice)

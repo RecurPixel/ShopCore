@@ -58,10 +58,12 @@ public class GetProductReviewsQueryHandler
             })
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<ReviewDto>(
-            items,
-            totalCount,
-            request.Page,
-            request.PageSize);
+        return new PaginatedList<ReviewDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

@@ -1,5 +1,4 @@
 using ShopCore.Api.Files;
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Reviews.Commands.CreateReview;
 using ShopCore.Application.Reviews.Commands.DeleteReview;
 using ShopCore.Application.Reviews.Commands.MarkReviewHelpful;

@@ -1,6 +1,5 @@
 using ShopCore.Application.AdminDashboard.DTOs;
 using ShopCore.Application.AdminDashboard.Queries.GetAdminDashboardStats;
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Orders.DTOs;
 using ShopCore.Application.Orders.Queries.GetAllOrders;
 using ShopCore.Application.Orders.Queries.GetOrderById;

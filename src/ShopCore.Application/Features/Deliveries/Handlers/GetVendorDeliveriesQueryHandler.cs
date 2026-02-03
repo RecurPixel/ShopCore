@@ -70,10 +70,12 @@ public class GetVendorDeliveriesQueryHandler : IRequestHandler<GetVendorDeliveri
             })
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<DeliveryDto>(
-            items,
-            totalCount,
-            request.Page,
-            request.PageSize);
+        return new PaginatedList<DeliveryDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

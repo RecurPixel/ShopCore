@@ -50,6 +50,12 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
             })
             .ToListAsync(ct);
 
-        return new PaginatedList<ProductDto>(items, totalCount, request.Page, request.PageSize);
+        return new PaginatedList<ProductDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

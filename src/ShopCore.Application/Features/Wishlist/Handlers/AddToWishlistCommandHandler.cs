@@ -1,3 +1,5 @@
+using WishlistNew = ShopCore.Domain.Entities.Wishlist;
+
 namespace ShopCore.Application.Wishlist.Commands.AddToWishlist;
 
 public class AddToWishlistCommandHandler : IRequestHandler<AddToWishlistCommand>
@@ -24,10 +26,12 @@ public class AddToWishlistCommandHandler : IRequestHandler<AddToWishlistCommand>
 
         if (!exists)
         {
-            var wishlistItem = new Wishlist
+            var wishlistItem = new WishlistNew
             {
                 UserId = _currentUser.UserId!.Value,
-                ProductId = request.ProductId
+                ProductId = request.ProductId,
+                User = null!,
+                Product = null!
             };
 
             _context.Wishlists.Add(wishlistItem);

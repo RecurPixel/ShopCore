@@ -3,3 +3,4 @@ global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using ShopCore.Application.Common.Interfaces;
+global using ShopCore.Application.Common.Models;

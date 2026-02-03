@@ -45,21 +45,20 @@ public class GetVendorProductsQueryHandler : IRequestHandler<GetVendorProductsQu
                 CompareAtPrice = p.CompareAtPrice,
                 DiscountPercentage = p.DiscountPercentage,
                 IsOnSale = p.IsOnSale,
-                StockQuantity = p.StockQuantity,
                 IsInStock = p.IsInStock,
-                Status = p.Status.ToString(),
-                CategoryId = p.CategoryId,
                 CategoryName = p.Category.Name,
                 AverageRating = p.AverageRating,
                 ReviewCount = p.ReviewCount,
-                PrimaryImage = p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
+                PrimaryImageUrl = p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
             })
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<ProductDto>(
-            items,
-            totalCount,
-            request.Page,
-            request.PageSize);
+        return new PaginatedList<ProductDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

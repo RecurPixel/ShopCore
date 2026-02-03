@@ -49,18 +49,25 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, Paginat
             .OrderByDescending(u => u.CreatedAt)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(u => new UserDto(
-                u.Id,
-                u.Email,
-                u.FirstName,
-                u.LastName,
-                u.PhoneNumber,
-                u.Role.ToString(),
-                u.IsActive ? "Active" : "Inactive",
-                u.CreatedAt
-            ))
+            .Select(u => new UserDto
+            {
+                Id = u.Id,
+                Email = u.Email,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                PhoneNumber = u.PhoneNumber,
+                Role = u.Role.ToString(),
+                Status = u.IsActive ? "Active" : "Inactive",
+                CreatedAt = u.CreatedAt
+            })
             .ToListAsync(ct);
 
-        return new PaginatedList<UserDto>(items, totalCount, request.Page, request.PageSize);
+        return new PaginatedList<UserDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

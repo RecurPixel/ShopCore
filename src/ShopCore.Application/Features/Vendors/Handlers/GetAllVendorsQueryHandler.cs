@@ -61,10 +61,12 @@ public class GetAllVendorsQueryHandler : IRequestHandler<GetAllVendorsQuery, Pag
             })
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<VendorProfileDto>(
-            items,
-            totalCount,
-            request.Page,
-            request.PageSize);
+        return new PaginatedList<VendorProfileDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

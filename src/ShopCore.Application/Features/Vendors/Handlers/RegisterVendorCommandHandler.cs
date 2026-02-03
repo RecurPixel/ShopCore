@@ -19,9 +19,14 @@ public class RegisterVendorCommandHandler : IRequestHandler<RegisterVendorComman
         RegisterVendorCommand request,
         CancellationToken ct)
     {
+        if (!_currentUser.UserId.HasValue)
+            throw new UnauthorizedAccessException("User ID is not available");
+
+        var userId = _currentUser.UserId.Value;
+
         // Check if user already has a vendor profile
         var existingVendor = await _context.VendorProfiles
-            .FirstOrDefaultAsync(v => v.UserId == _currentUser.UserId, ct);
+            .FirstOrDefaultAsync(v => v.UserId == userId, ct);
 
         if (existingVendor != null)
             throw new BadRequestException("You already have a vendor profile");
@@ -35,7 +40,7 @@ public class RegisterVendorCommandHandler : IRequestHandler<RegisterVendorComman
 
         var vendor = new VendorProfile
         {
-            UserId = _currentUser.UserId,
+            UserId = userId,
             BusinessName = request.BusinessName,
             BusinessDescription = request.BusinessDescription,
             BusinessLogo = request.BusinessLogo,
@@ -55,28 +60,29 @@ public class RegisterVendorCommandHandler : IRequestHandler<RegisterVendorComman
         _context.VendorProfiles.Add(vendor);
         await _context.SaveChangesAsync(ct);
 
-        return new VendorProfileDto(
-            vendor.Id,
-            vendor.UserId,
-            vendor.BusinessName,
-            vendor.BusinessDescription,
-            vendor.BusinessLogo,
-            vendor.BusinessAddress,
-            vendor.GstNumber,
-            vendor.PanNumber,
-            vendor.BankName,
-            vendor.BankAccountNumber,
-            vendor.BankIfscCode,
-            vendor.BankAccountHolderName,
-            vendor.RequiresDeposit,
-            vendor.DefaultDepositAmount,
-            vendor.DefaultBillingCycleDays,
-            vendor.Status,
-            vendor.AverageRating,
-            vendor.TotalReviews,
-            vendor.TotalProducts,
-            vendor.TotalOrders,
-            vendor.CreatedAt
-        );
+        return new VendorProfileDto
+        {
+            Id = vendor.Id,
+            UserId = vendor.UserId,
+            BusinessName = vendor.BusinessName,
+            BusinessDescription = vendor.BusinessDescription,
+            BusinessLogo = vendor.BusinessLogo,
+            BusinessAddress = vendor.BusinessAddress,
+            GstNumber = vendor.GstNumber,
+            PanNumber = vendor.PanNumber,
+            BankName = vendor.BankName,
+            BankAccountNumber = vendor.BankAccountNumber,
+            BankIfscCode = vendor.BankIfscCode,
+            BankAccountHolderName = vendor.BankAccountHolderName,
+            RequiresDeposit = vendor.RequiresDeposit,
+            DefaultDepositAmount = vendor.DefaultDepositAmount,
+            DefaultBillingCycleDays = vendor.DefaultBillingCycleDays,
+            Status = vendor.Status.ToString(),
+            Rating = vendor.AverageRating,
+            TotalReviews = vendor.TotalReviews,
+            TotalProducts = vendor.TotalProducts,
+            TotalOrders = vendor.TotalOrders,
+            CreatedAt = vendor.CreatedAt
+        };
     }
 }

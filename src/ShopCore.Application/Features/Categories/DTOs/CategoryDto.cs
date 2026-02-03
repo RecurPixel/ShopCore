@@ -1,14 +1,15 @@
 namespace ShopCore.Application.Categories.DTOs;
 
-public record CategoryDto(
-    int Id,
-    string Name,
-    string Slug,
-    string? Description,
-    string? ImageUrl,
-    int? ParentCategoryId,
-    string? ParentCategoryName,
-    int DisplayOrder,
-    bool IsActive,
-    int ProductCount
-);
+public record CategoryDto
+{
+    public int Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string Slug { get; init; } = string.Empty;
+    public string? Description { get; init; }
+    public string? ImageUrl { get; init; }
+    public int? ParentCategoryId { get; init; }
+    public string? ParentCategoryName { get; init; }
+    public int DisplayOrder { get; init; }
+    public bool IsActive { get; init; }
+    public int ProductCount { get; init; }
+}

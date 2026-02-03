@@ -1,16 +1,18 @@
 namespace ShopCore.Application.Reports.DTOs;
 
-public record CustomerAnalyticsReportDto(
-    int TotalCustomers,
-    int NewCustomersThisMonth,
-    int ActiveCustomers,
-    decimal AverageOrderValue,
-    decimal CustomerRetentionRate,
-    List<CustomerSegmentDto> CustomerSegments
-);
+public record CustomerAnalyticsReportDto
+{
+    public int TotalCustomers { get; init; }
+    public int NewCustomersThisMonth { get; init; }
+    public int ActiveCustomers { get; init; }
+    public decimal AverageOrderValue { get; init; }
+    public decimal CustomerRetentionRate { get; init; }
+    public List<CustomerSegmentDto> CustomerSegments { get; init; } = new();
+}
 
-public record CustomerSegmentDto(
-    string Segment,
-    int CustomerCount,
-    decimal TotalSpent
-);
+public record CustomerSegmentDto
+{
+    public string Segment { get; init; } = string.Empty;
+    public int CustomerCount { get; init; }
+    public decimal TotalSpent { get; init; }
+}

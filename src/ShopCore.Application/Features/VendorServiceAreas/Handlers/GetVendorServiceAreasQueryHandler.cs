@@ -39,16 +39,17 @@ public class GetVendorServiceAreasQueryHandler
         var serviceAreas = await _context.VendorServiceAreas
             .Where(sa => sa.VendorId == vendorId)
             .OrderBy(sa => sa.AreaName)
-            .Select(sa => new VendorServiceAreaDto(
-                sa.Id,
-                sa.VendorId,
-                sa.AreaName,
-                sa.City,
-                sa.State,
-                sa.Pincodes,
-                sa.IsActive,
-                sa.CreatedAt
-            ))
+            .Select(sa => new VendorServiceAreaDto
+            {
+                Id = sa.Id,
+                VendorId = sa.VendorId,
+                AreaName = sa.AreaName,
+                City = sa.City,
+                State = sa.State,
+                Pincodes = sa.Pincodes,
+                IsActive = sa.IsActive,
+                CreatedAt = sa.CreatedAt
+            })
             .ToListAsync(cancellationToken);
 
         return serviceAreas;

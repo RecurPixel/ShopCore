@@ -57,15 +57,16 @@ public class AddOneTimeItemToSubscriptionCommandHandler
         _context.SubscriptionItems.Add(subscriptionItem);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return new SubscriptionItemResultDto(
-            subscriptionItem.Id,
-            subscriptionItem.ProductId,
-            product.Name,
-            subscriptionItem.Quantity,
-            subscriptionItem.UnitPrice,
-            subscriptionItem.IsRecurring,
-            subscriptionItem.OneTimeDeliveryDate,
-            subscriptionItem.IsDelivered
-        );
+        return new SubscriptionItemResultDto
+        {
+            Id = subscriptionItem.Id,
+            ProductId = subscriptionItem.ProductId,
+            ProductName = product.Name,
+            Quantity = subscriptionItem.Quantity,
+            UnitPrice = subscriptionItem.UnitPrice,
+            IsRecurring = subscriptionItem.IsRecurring,
+            OneTimeDeliveryDate = subscriptionItem.OneTimeDeliveryDate,
+            IsDelivered = subscriptionItem.IsDelivered
+        };
     }
 }

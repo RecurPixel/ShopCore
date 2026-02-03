@@ -2,7 +2,7 @@ using ShopCore.Application.Orders.DTOs;
 
 namespace ShopCore.Application.Orders.Queries.GetMyOrders;
 
-public class GetMyOrdersQueryHandler : IRequestHandler<GetMyOrdersQuery, List<OrderDto>>
+public class GetMyOrdersQueryHandler : IRequestHandler<GetMyOrdersQuery, PaginatedList<OrderDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
@@ -50,17 +50,18 @@ public class GetMyOrdersQueryHandler : IRequestHandler<GetMyOrdersQuery, List<Or
                 OrderNumber = o.OrderNumber,
                 Status = o.Status.ToString(),
                 PaymentStatus = o.PaymentStatus.ToString(),
-                PaymentMethod = o.PaymentMethod.ToString(),
                 Total = o.Total,
                 ItemCount = o.Items.Count,
                 CreatedAt = o.CreatedAt
             })
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<OrderDto>(
-            items,
-            totalCount,
-            request.Page,
-            request.PageSize);
+        return new PaginatedList<OrderDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

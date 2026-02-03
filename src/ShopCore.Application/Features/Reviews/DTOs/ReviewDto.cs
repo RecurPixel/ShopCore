@@ -1,19 +1,20 @@
 namespace ShopCore.Application.Reviews.DTOs;
 
-public record ReviewDto(
-    int Id,
-    int ProductId,
-    string ProductName,
-    int UserId,
-    string UserName,
-    string? UserAvatarUrl,
-    int Rating,
-    string? Title,
-    string? Comment,
-    List<string>? ImageUrls,
-    bool IsVerifiedPurchase,
-    int HelpfulCount,
-    string? VendorResponse,
-    DateTime? VendorRespondedAt,
-    DateTime CreatedAt
-);
+public record ReviewDto
+{
+    public int Id { get; init; }
+    public int ProductId { get; init; }
+    public string ProductName { get; init; } = string.Empty;
+    public int UserId { get; init; }
+    public string UserName { get; init; } = string.Empty;
+    public string? UserAvatar { get; init; }
+    public int Rating { get; init; }
+    public string? Title { get; init; }
+    public string? Comment { get; init; }
+    public List<string>? ImageUrls { get; init; }
+    public bool IsVerifiedPurchase { get; init; }
+    public int HelpfulCount { get; init; }
+    public string? VendorResponse { get; init; }
+    public DateTime? VendorRespondedAt { get; init; }
+    public DateTime CreatedAt { get; init; }
+}

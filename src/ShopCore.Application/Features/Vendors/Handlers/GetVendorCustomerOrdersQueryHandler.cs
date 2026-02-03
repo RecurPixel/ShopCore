@@ -46,10 +46,12 @@ public class GetVendorCustomerOrdersQueryHandler : IRequestHandler<GetVendorCust
             })
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<VendorOrderDto>(
-            items,
-            totalCount,
-            request.Page,
-            request.PageSize);
+        return new PaginatedList<VendorOrderDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

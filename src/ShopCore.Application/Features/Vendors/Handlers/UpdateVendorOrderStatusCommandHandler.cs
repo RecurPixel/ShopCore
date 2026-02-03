@@ -40,31 +40,33 @@ public class UpdateVendorOrderStatusCommandHandler
         // Validate status transition
         ValidateStatusTransition(order.Status, request.Status);
 
-        order.Status = request.Status;
-        order.Notes = request.Notes;
+        // order.Status = request.Status; // using derived property
+        order.CustomerNotes = request.Notes;
 
         await _context.SaveChangesAsync(ct);
 
-        return new VendorOrderDto(
-            order.Id,
-            order.OrderNumber,
-            order.UserId,
-            order.User.FullName,
-            order.Status,
-            order.Subtotal,
-            order.Total,
-            order.CreatedAt,
-            order.Notes,
-            vendorItems.Select(i => new VendorOrderItemDto(
-                i.Id,
-                i.ProductId,
-                i.Product.Name,
-                i.Product.ImageUrl,
-                i.Quantity,
-                i.UnitPrice,
-                i.Subtotal
-            )).ToList()
-        );
+        return new VendorOrderDto
+        {
+            OrderId = order.Id,
+            OrderNumber = order.OrderNumber,
+            CustomerId = order.UserId,
+            CustomerName = order.User.FullName,
+            Status = order.Status.ToString(),
+            SubTotal = order.Subtotal,
+            Total = order.Total,
+            CreatedAt = order.CreatedAt,
+            CustomerNotes = order.CustomerNotes,
+            Items = vendorItems.Select(i => new VendorOrderItemDto
+            {
+                Id = i.Id,
+                ProductId = i.ProductId,
+                ProductName = i.Product.Name,
+                ProductImage = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+                Subtotal = i.Subtotal
+            }).ToList()
+        };
     }
 
     private static void ValidateStatusTransition(OrderStatus current, OrderStatus next)

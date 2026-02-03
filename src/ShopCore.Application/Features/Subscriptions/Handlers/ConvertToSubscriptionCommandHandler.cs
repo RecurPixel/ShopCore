@@ -56,33 +56,43 @@ public class ConvertToSubscriptionCommandHandler
         await _context.SaveChangesAsync(cancellationToken);
 
         // Return updated subscription
-        return new SubscriptionDto(
-            subscription.Id,
-            subscription.SubscriptionNumber,
-            subscription.UserId,
-            subscription.VendorId,
-            subscription.Vendor.BusinessName,
-            subscription.DeliveryAddressId,
-            null!, // AddressDto - simplified for now
-            subscription.Frequency,
-            subscription.CustomFrequencyDays,
-            subscription.StartDate,
-            subscription.EndDate,
-            subscription.NextDeliveryDate,
-            subscription.PreferredDeliveryTime,
-            subscription.BillingCycleDays,
-            subscription.NextBillingDate,
-            subscription.UnpaidAmount,
-            subscription.CreditLimit,
-            subscription.DepositAmount,
-            subscription.DepositPaid,
-            subscription.DepositBalance,
-            subscription.Status,
-            subscription.TotalDeliveries,
-            subscription.CompletedDeliveries,
-            subscription.FailedDeliveries,
-            new List<SubscriptionItemDto>()
-        );
+        return new SubscriptionDto
+        {
+            Id = subscription.Id,
+            SubscriptionNumber = subscription.SubscriptionNumber,
+            UserId = subscription.UserId,
+            VendorId = subscription.VendorId,
+            VendorName = subscription.Vendor.BusinessName,
+            DeliveryAddressId = subscription.DeliveryAddressId,
+            DeliveryAddress = null, // AddressDto - simplified for now
+            Frequency = subscription.Frequency.ToString(),
+            CustomFrequencyDays = subscription.CustomFrequencyDays,
+            StartDate = subscription.StartDate,
+            EndDate = subscription.EndDate,
+            NextDeliveryDate = subscription.NextDeliveryDate,
+            PreferredDeliveryTime = subscription.PreferredDeliveryTime,
+            BillingCycleDays = subscription.BillingCycleDays,
+            NextBillingDate = subscription.NextBillingDate,
+            UnpaidAmount = subscription.UnpaidAmount,
+            CreditLimit = subscription.CreditLimit,
+            DepositAmount = subscription.DepositAmount,
+            DepositPaid = subscription.DepositPaid,
+            DepositBalance = subscription.DepositBalance,
+            Status = subscription.Status,
+            TotalDeliveries = subscription.TotalDeliveries,
+            CompletedDeliveries = subscription.CompletedDeliveries,
+            FailedDeliveries = subscription.FailedDeliveries,
+            Items = subscription.Items.Select(i => new SubscriptionItemDto
+            {
+                Id = i.Id,
+                ProductId = i.ProductId,
+                ProductName = i.Product.Name,
+                ProductImage = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+                TotalPrice = i.Quantity * i.UnitPrice
+            }).ToList()
+        };
     }
 
     private static DateTime CalculateNextDeliveryDate(DateTime from, SubscriptionFrequency frequency)

@@ -45,10 +45,12 @@ public class GetVendorCustomerSubscriptionsQueryHandler : IRequestHandler<GetVen
             })
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<VendorSubscriptionDto>(
-            items,
-            totalCount,
-            request.Page,
-            request.PageSize);
+        return new PaginatedList<VendorSubscriptionDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

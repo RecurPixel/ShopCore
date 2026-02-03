@@ -34,17 +34,10 @@ public class GetWishlistQueryHandler : IRequestHandler<GetWishlistQuery, Wishlis
                 Id = w.Id,
                 ProductId = w.ProductId,
                 ProductName = w.Product.Name,
-                ProductSlug = w.Product.Slug,
-                ProductImage = w.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
+                ProductImageUrl = w.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
                 Price = w.Product.Price,
                 CompareAtPrice = w.Product.CompareAtPrice,
-                DiscountPercentage = w.Product.DiscountPercentage,
-                IsOnSale = w.Product.IsOnSale,
                 IsInStock = w.Product.IsInStock,
-                CategoryName = w.Product.Category.Name,
-                VendorName = w.Product.Vendor.BusinessName,
-                AverageRating = w.Product.AverageRating,
-                ReviewCount = w.Product.ReviewCount,
                 AddedAt = w.CreatedAt
             })
             .ToListAsync(cancellationToken);

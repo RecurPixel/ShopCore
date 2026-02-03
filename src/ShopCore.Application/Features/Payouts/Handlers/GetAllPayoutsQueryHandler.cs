@@ -58,6 +58,12 @@ public class GetAllPayoutsQueryHandler : IRequestHandler<GetAllPayoutsQuery, Pag
             p.PaidAt
         )).ToList();
 
-        return new PaginatedList<PayoutDto>(items, totalCount, request.Page, request.PageSize);
+        return new PaginatedList<PayoutDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

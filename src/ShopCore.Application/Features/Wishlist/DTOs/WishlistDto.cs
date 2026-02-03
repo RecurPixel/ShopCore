@@ -1,14 +1,21 @@
 namespace ShopCore.Application.Wishlist.DTOs;
 
-public record WishlistDto(int Id, int UserId, List<WishlistItemDto> Items, int TotalItems);
+public record WishlistDto
+{
+    public int Id { get; init; }
+    public int UserId { get; init; }
+    public List<WishlistItemDto> Items { get; init; } = new();
+    public int TotalItems { get; init; }
+}
 
-public record WishlistItemDto(
-    int Id,
-    int ProductId,
-    string ProductName,
-    string? ProductImageUrl,
-    decimal Price,
-    decimal? CompareAtPrice,
-    bool IsInStock,
-    DateTime AddedAt
-);
+public record WishlistItemDto
+{
+    public int Id { get; init; }
+    public int ProductId { get; init; }
+    public string ProductName { get; init; } = string.Empty;
+    public string? ProductImageUrl { get; init; }
+    public decimal Price { get; init; }
+    public decimal? CompareAtPrice { get; init; }
+    public bool IsInStock { get; init; }
+    public DateTime AddedAt { get; init; }
+}

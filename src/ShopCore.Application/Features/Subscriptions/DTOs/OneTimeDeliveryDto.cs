@@ -1,24 +1,25 @@
 namespace ShopCore.Application.Subscriptions.DTOs;
 
-public record OneTimeDeliveryDto(
-    int SubscriptionId,
-    int DeliveryId,
-    DateTime DeliveryDate,
-    decimal TotalAmount,
-    PaymentStatus PaymentStatus
-);
+public record OneTimeDeliveryDto
+{
+    public int SubscriptionId { get; init; }
+    public int DeliveryId { get; init; }
+    public DateTime DeliveryDate { get; init; }
+    public decimal TotalAmount { get; init; }
+    public PaymentStatus PaymentStatus { get; init; }
+}
 
-public record SubscriptionItemResultDto(
-    int Id,
-    int ProductId,
-    string ProductName,
-    int Quantity,
-    decimal UnitPrice,
-    bool IsRecurring,
-    DateTime? OneTimeDeliveryDate,
-    bool IsDelivered
-);
-
+public record SubscriptionItemResultDto
+{
+    public int Id { get; init; }
+    public int ProductId { get; init; }
+    public string ProductName { get; init; } = string.Empty;
+    public int Quantity { get; init; }
+    public decimal UnitPrice { get; init; }
+    public bool IsRecurring { get; init; }
+    public DateTime? OneTimeDeliveryDate { get; init; }
+    public bool IsDelivered { get; init; }
+}
 public enum PaymentOption
 {
     AddToBill = 1,
@@ -26,7 +27,8 @@ public enum PaymentOption
     PayOnDelivery = 3
 }
 
-public record OrderItemInput(
-    int ProductId,
-    int Quantity
-);
+public record OrderItemInput
+{
+    public int ProductId { get; init; }
+    public int Quantity { get; init; }
+}

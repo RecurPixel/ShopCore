@@ -10,4 +10,8 @@ public record UpdateSubscriptionCommand(
     string? PreferredDeliveryTime
 ) : IRequest<SubscriptionDto>;
 
-public record SubscriptionItemDto(int ProductId, int Quantity);
+public record SubscriptionItemDto
+{
+    public int ProductId { get; init; }
+    public int Quantity { get; init; }
+}

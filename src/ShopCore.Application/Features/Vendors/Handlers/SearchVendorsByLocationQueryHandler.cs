@@ -40,16 +40,14 @@ public class SearchVendorsByLocationQueryHandler
         var vendors = await query
             .Select(v => new VendorSearchResultDto
             {
-                Id = v.Id,
+                VendorId = v.Id,
                 BusinessName = v.BusinessName,
                 BusinessDescription = v.BusinessDescription,
-                BusinessLogo = v.BusinessLogo,
+                LogoUrl = v.BusinessLogo,
                 AverageRating = v.AverageRating,
                 TotalReviews = v.TotalReviews,
                 TotalProducts = v.Products.Count(p => p.Status == ProductStatus.Active),
-                RequiresDeposit = v.RequiresDeposit,
-                DefaultDepositAmount = v.DefaultDepositAmount,
-                ServiceAreas = v.ServiceAreas
+                ServingAreas = v.ServiceAreas
                     .Where(sa => sa.IsActive)
                     .Select(sa => sa.AreaName)
                     .ToList()

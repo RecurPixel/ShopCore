@@ -3,7 +3,7 @@ using ShopCore.Application.Subscriptions.DTOs;
 namespace ShopCore.Application.Subscriptions.Queries.GetMySubscriptions;
 
 public class GetMySubscriptionsQueryHandler
-    : IRequestHandler<GetMySubscriptionsQuery, List<SubscriptionDto>>
+    : IRequestHandler<GetMySubscriptionsQuery, PaginatedList<SubscriptionDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
@@ -69,10 +69,11 @@ public class GetMySubscriptionsQueryHandler
             })
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<SubscriptionDto>(
-            items,
-            totalCount,
-            request.Page,
-            request.PageSize);
+        return new PaginatedList<SubscriptionDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
-}
