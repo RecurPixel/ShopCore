@@ -28,3 +28,4 @@ public class RemoveCouponCommandHandler : IRequestHandler<RemoveCouponCommand, C
 
         return new CartDto { Id = cart?.Id ?? 0 };
     }
+}

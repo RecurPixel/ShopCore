@@ -5,15 +5,62 @@ namespace ShopCore.Application.Users.Queries.GetAllUsers;
 
 public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, PaginatedList<UserDto>>
 {
-    public Task<PaginatedList<UserDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetAllUsersQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic
-        // 1. Fetch all users from database
-        // 2. Apply filters if provided (role, status, search term)
-        // 3. Apply pagination (request.Page, request.PageSize)
-        // 4. Sort by creation date or name
-        // 5. Map to UserDto list
-        // 6. Return PaginatedList<UserDto>
-        return Task.FromResult(new PaginatedList<UserDto>([], 0, request.Page, request.PageSize));
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<PaginatedList<UserDto>> Handle(GetAllUsersQuery request, CancellationToken ct)
+    {
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can view all users");
+
+        var query = _context.Users.AsQueryable();
+
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+            var search = request.Search.ToLower();
+            query = query.Where(u =>
+                u.Email.ToLower().Contains(search) ||
+                u.FirstName.ToLower().Contains(search) ||
+                u.LastName.ToLower().Contains(search));
+        }
+
+        if (!string.IsNullOrEmpty(request.Role) && Enum.TryParse<UserRole>(request.Role, out var role))
+        {
+            query = query.Where(u => u.Role == role);
+        }
+
+        if (!string.IsNullOrEmpty(request.Status))
+        {
+            var isActive = request.Status.Equals("Active", StringComparison.OrdinalIgnoreCase);
+            query = query.Where(u => u.IsActive == isActive);
+        }
+
+        var totalCount = await query.CountAsync(ct);
+
+        var items = await query
+            .OrderByDescending(u => u.CreatedAt)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .Select(u => new UserDto(
+                u.Id,
+                u.Email,
+                u.FirstName,
+                u.LastName,
+                u.PhoneNumber,
+                u.Role.ToString(),
+                u.IsActive ? "Active" : "Inactive",
+                u.CreatedAt
+            ))
+            .ToListAsync(ct);
+
+        return new PaginatedList<UserDto>(items, totalCount, request.Page, request.PageSize);
     }
 }

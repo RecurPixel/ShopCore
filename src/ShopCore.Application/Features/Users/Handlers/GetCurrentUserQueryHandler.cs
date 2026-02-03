@@ -4,17 +4,37 @@ namespace ShopCore.Application.Users.Queries.GetCurrentUser;
 
 public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, UserProfileDto>
 {
-    public Task<UserProfileDto> Handle(
-        GetCurrentUserQuery request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetCurrentUserQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic
-        // 1. Get current user from context/claims
-        // 2. Fetch user from database with all details
-        // 3. Get user's addresses, preferences, etc.
-        // 4. Map to UserProfileDto
-        // 5. Return user profile
-        return Task.FromResult(new UserProfileDto());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<UserProfileDto> Handle(GetCurrentUserQuery request, CancellationToken ct)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == _currentUser.UserId, ct);
+
+        if (user == null)
+            throw new NotFoundException("User", _currentUser.UserId);
+
+        return new UserProfileDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            FullName = user.FullName,
+            PhoneNumber = user.PhoneNumber,
+            AvatarUrl = user.AvatarUrl,
+            Role = user.Role.ToString(),
+            IsEmailVerified = user.IsEmailVerified,
+            LastLoginAt = user.LastLoginAt
+        };
     }
 }

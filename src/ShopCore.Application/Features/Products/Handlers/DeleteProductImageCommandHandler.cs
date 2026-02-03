@@ -50,3 +50,4 @@ public class DeleteProductImageCommandHandler : IRequestHandler<DeleteProductIma
 
         await _context.SaveChangesAsync(ct);
     }
+}

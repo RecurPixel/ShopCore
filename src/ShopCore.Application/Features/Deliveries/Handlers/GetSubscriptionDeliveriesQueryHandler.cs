@@ -1,23 +1,65 @@
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Deliveries.DTOs;
 
 namespace ShopCore.Application.Deliveries.Queries.GetSubscriptionDeliveries;
 
 public class GetSubscriptionDeliveriesQueryHandler
-    : IRequestHandler<GetSubscriptionDeliveriesQuery, List<DeliveryDto>>
+    : IRequestHandler<GetSubscriptionDeliveriesQuery, PaginatedList<DeliveryDto>>
 {
-    public Task<List<DeliveryDto>> Handle(
-        GetSubscriptionDeliveriesQuery request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetSubscriptionDeliveriesQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic        // 1. Get current user from context
-        // 2. Find subscription by id
-        // 3. Verify user owns this subscription
-        // 4. Fetch all deliveries for this subscription
-        // 5. Filter by status if provided (scheduled, in-transit, delivered, failed)
-        // 6. Filter by date range if provided
-        // 7. Include delivery items and tracking info
-        // 8. Sort by scheduled date and apply pagination
-        // 9. Map to DeliveryDto list and return        return Task.FromResult<object>(new { });
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<PaginatedList<DeliveryDto>> Handle(
+        GetSubscriptionDeliveriesQuery request,
+        CancellationToken cancellationToken)
+    {
+        var query = _context.Deliveries
+            .AsNoTracking()
+            .Include(d => d.Items)
+            .Include(d => d.Invoice)
+            .Where(d => d.SubscriptionId == request.SubscriptionId
+                     && (d.Subscription.UserId == _currentUser.UserId
+                         || d.Subscription.VendorId == _currentUser.VendorId));
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(d => d.ScheduledDate)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .Select(d => new DeliveryDto
+            {
+                Id = d.Id,
+                DeliveryNumber = d.DeliveryNumber,
+                SubscriptionId = d.SubscriptionId,
+                ScheduledDate = d.ScheduledDate,
+                ActualDeliveryDate = d.ActualDeliveryDate,
+                Status = d.Status.ToString(),
+                PaymentStatus = d.PaymentStatus.ToString(),
+                TotalAmount = d.TotalAmount,
+                PaymentMethod = d.PaymentMethod,
+                PaidAt = d.PaidAt,
+                DeliveryPersonName = d.DeliveryPersonName,
+                FailureReason = d.FailureReason,
+                InvoiceId = d.InvoiceId,
+                InvoiceNumber = d.Invoice != null ? d.Invoice.InvoiceNumber : null,
+                ItemCount = d.Items.Count,
+                CreatedAt = d.CreatedAt
+            })
+            .ToListAsync(cancellationToken);
+
+        return new PaginatedList<DeliveryDto>(
+            items,
+            totalCount,
+            request.Page,
+            request.PageSize);
     }
 }

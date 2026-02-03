@@ -4,21 +4,106 @@ namespace ShopCore.Application.Deliveries.Commands.CompleteDelivery;
 
 public class CompleteDeliveryCommandHandler : IRequestHandler<CompleteDeliveryCommand, DeliveryDto>
 {
-    public Task<DeliveryDto> Handle(
-        CompleteDeliveryCommand request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public CompleteDeliveryCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Get delivery by id
-        // 2. Verify current user is delivery person
-        // 3. Check delivery is in in-transit status
-        // 4. Update delivery status to completed
-        // 5. Record completion timestamp and location
-        // 6. Save delivery proof/signature if provided
-        // 7. Update related order status
-        // 8. Trigger post-delivery tasks (ratings, refund eligibility)
-        // 9. Map and return updated DeliveryDto
-        return Task.FromResult(new DeliveryDto());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<DeliveryDto> Handle(
+        CompleteDeliveryCommand request,
+        CancellationToken ct)
+    {
+        var delivery = await _context.Deliveries
+            .Include(d => d.Subscription)
+            .Include(d => d.Items)
+                .ThenInclude(i => i.Product)
+            .FirstOrDefaultAsync(d => d.Id == request.Id, ct);
+
+        if (delivery == null)
+            throw new NotFoundException("Delivery", request.Id);
+
+        // Verify vendor owns this delivery
+        if (delivery.Subscription.VendorId != _currentUser.VendorId)
+            throw new ForbiddenException("You can only complete your own deliveries");
+
+        if (delivery.Status == DeliveryStatus.Delivered)
+            throw new BadRequestException("Delivery is already completed");
+
+        if (delivery.Status == DeliveryStatus.Cancelled || delivery.Status == DeliveryStatus.Skipped)
+            throw new BadRequestException($"Cannot complete a {delivery.Status} delivery");
+
+        // Update item statuses if provided
+        if (request.ItemStatuses?.Any() == true)
+        {
+            foreach (var itemStatus in request.ItemStatuses)
+            {
+                var item = delivery.Items.FirstOrDefault(i => i.Id == itemStatus.DeliveryItemId);
+                if (item != null)
+                {
+                    item.Status = itemStatus.Status;
+                    item.Notes = itemStatus.Notes;
+                }
+            }
+        }
+
+        // Complete the delivery
+        delivery.Status = DeliveryStatus.Delivered;
+        delivery.ActualDeliveryDate = DateTime.UtcNow;
+        delivery.DeliveryPhotoUrl = request.DeliveryPhotoUrl;
+        delivery.CustomerSignatureUrl = request.CustomerSignatureUrl;
+        delivery.DeliveryNotes = request.DeliveryNotes;
+
+        if (request.PaymentMethod.HasValue)
+        {
+            delivery.PaymentMethod = request.PaymentMethod.Value.ToString();
+            delivery.PaymentTransactionId = request.PaymentTransactionId;
+            delivery.PaidAt = DateTime.UtcNow;
+            delivery.PaymentStatus = PaymentStatus.Paid;
+        }
+
+        // Update subscription statistics
+        delivery.Subscription.CompletedDeliveries++;
+
+        await _context.SaveChangesAsync(ct);
+
+        return MapToDto(delivery);
+    }
+
+    private static DeliveryDto MapToDto(Delivery delivery)
+    {
+        PaymentMethod? paymentMethod = null;
+        if (!string.IsNullOrEmpty(delivery.PaymentMethod) &&
+            Enum.TryParse<PaymentMethod>(delivery.PaymentMethod, out var pm))
+        {
+            paymentMethod = pm;
+        }
+
+        return new DeliveryDto(
+            delivery.Id,
+            delivery.SubscriptionId,
+            delivery.Subscription.SubscriptionNumber,
+            delivery.ScheduledDate,
+            delivery.ActualDeliveryDate,
+            delivery.Status,
+            delivery.FailureReason,
+            null,
+            delivery.TotalAmount,
+            paymentMethod,
+            delivery.PaymentTransactionId,
+            delivery.Items.Select(i => new DeliveryItemDto(
+                i.Id,
+                i.ProductId,
+                i.Product.Name,
+                i.Quantity,
+                i.UnitPrice,
+                i.Quantity * i.UnitPrice
+            )).ToList()
+        );
     }
 }

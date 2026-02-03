@@ -2,19 +2,47 @@ namespace ShopCore.Application.Subscriptions.Commands.CancelSubscription;
 
 public class CancelSubscriptionCommandHandler : IRequestHandler<CancelSubscriptionCommand>
 {
-    public Task Handle(
-        CancelSubscriptionCommand request,
-        CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public CancelSubscriptionCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Get current user from context
-        // 2. Find subscription by id
-        // 3. Verify user owns the subscription
-        // 4. Check subscription status (can't cancel if already cancelled)
-        // 5. Mark subscription as cancelled
-        // 6. Cancel pending deliveries
-        // 7. Process refunds if necessary
-        // 8. Save changes to database
-        return Task.CompletedTask;
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task Handle(
+        CancelSubscriptionCommand request,
+        CancellationToken ct)
+    {
+        var subscription = await _context.Subscriptions
+            .Include(s => s.Deliveries)
+            .FirstOrDefaultAsync(s => s.Id == request.SubscriptionId, ct);
+
+        if (subscription == null)
+            throw new NotFoundException("Subscription", request.SubscriptionId);
+
+        if (subscription.UserId != _currentUser.UserId && _currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("You can only cancel your own subscriptions");
+
+        if (subscription.Status == SubscriptionStatus.Cancelled)
+            throw new BadRequestException("Subscription is already cancelled");
+
+        subscription.Status = SubscriptionStatus.Cancelled;
+        subscription.CancelledAt = DateTime.UtcNow;
+        subscription.EndDate = DateTime.UtcNow;
+
+        // Cancel pending deliveries
+        var pendingDeliveries = subscription.Deliveries
+            .Where(d => d.Status == DeliveryStatus.Scheduled || d.Status == DeliveryStatus.Pending);
+
+        foreach (var delivery in pendingDeliveries)
+        {
+            delivery.Status = DeliveryStatus.Cancelled;
+        }
+
+        await _context.SaveChangesAsync(ct);
     }
 }

@@ -4,17 +4,37 @@ namespace ShopCore.Application.Vendors.Queries.GetVendorById;
 
 public class GetVendorByIdQueryHandler : IRequestHandler<GetVendorByIdQuery, VendorPublicProfileDto?>
 {
-    public Task<VendorPublicProfileDto?> Handle(
+    private readonly IApplicationDbContext _context;
+
+    public GetVendorByIdQueryHandler(IApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<VendorPublicProfileDto?> Handle(
         GetVendorByIdQuery request,
         CancellationToken cancellationToken)
     {
-        // TODO: Implement query logic
-        // 1. Find vendor by id
-        // 2. Verify vendor is approved/active
-        // 3. Get vendor's public info (name, logo, description, rating)
-        // 4. Get vendor's service areas
-        // 5. Get vendor statistics (product count, reviews, ratings)
-        // 6. Map to VendorPublicProfileDto and return
-        return Task.FromResult((VendorPublicProfileDto?)null);
+        return await _context.VendorProfiles
+            .AsNoTracking()
+            .Include(v => v.User)
+            .Where(v => v.Id == request.Id && v.Status == VendorStatus.Active)
+            .Select(v => new VendorPublicProfileDto
+            {
+                Id = v.Id,
+                BusinessName = v.BusinessName,
+                BusinessDescription = v.BusinessDescription,
+                BusinessLogo = v.BusinessLogo,
+                BusinessAddress = v.BusinessAddress,
+                PhoneNumber = v.User.PhoneNumber,
+                AverageRating = v.AverageRating,
+                TotalReviews = v.TotalReviews,
+                TotalProducts = v.TotalProducts,
+                IsDeliveryAvailable = v.RequiresDeposit,
+                RequiresDeposit = v.RequiresDeposit,
+                DefaultDepositAmount = v.DefaultDepositAmount,
+                MemberSince = v.CreatedAt
+            })
+            .FirstOrDefaultAsync(cancellationToken);
     }
 }

@@ -5,20 +5,70 @@ namespace ShopCore.Application.Payments.Queries.GetPaymentHistory;
 public class GetPaymentHistoryQueryHandler
     : IRequestHandler<GetPaymentHistoryQuery, List<PaymentHistoryDto>>
 {
-    public Task<List<PaymentHistoryDto>> Handle(
-        GetPaymentHistoryQuery request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetPaymentHistoryQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic
-        // 1. Get current user from context
-        // 2. Fetch all payment records for user
-        // 3. Filter by date range if provided
-        // 4. Filter by status if provided (pending, completed, failed, refunded)
-        // 5. Include transaction details and amounts
-        // 6. Include related order or invoice info
-        // 7. Sort by date (newest first) and apply pagination
-        // 8. Map to PaymentHistoryDto list and return
-        return Task.FromResult(new List<PaymentHistoryDto>());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<PaginatedList<PaymentHistoryDto>> Handle(
+        GetPaymentHistoryQuery request,
+        CancellationToken cancellationToken)
+    {
+        // Combine payments from both orders and subscription invoices
+        var orderPayments = _context.Orders
+            .AsNoTracking()
+            .Where(o => o.UserId == _currentUser.UserId
+                     && o.PaymentStatus == PaymentStatus.Paid)
+            .Select(o => new PaymentHistoryDto
+            {
+                PaymentId = "ORD-" + o.Id,
+                Type = "Order",
+                ReferenceNumber = o.OrderNumber,
+                Amount = o.Total,
+                PaymentMethod = o.PaymentMethod.ToString(),
+                TransactionId = o.PaymentTransactionId,
+                Status = "Paid",
+                PaidAt = o.PaidAt!.Value,
+                Description = $"Order payment - {o.Items.Count} items"
+            });
+
+        var invoicePayments = _context.SubscriptionInvoices
+            .AsNoTracking()
+            .Where(i => i.UserId == _currentUser.UserId
+                     && i.Status == InvoiceStatus.Paid)
+            .Select(i => new PaymentHistoryDto
+            {
+                PaymentId = "INV-" + i.Id,
+                Type = "Invoice",
+                ReferenceNumber = i.InvoiceNumber,
+                Amount = i.Total,
+                PaymentMethod = i.PaymentMethod,
+                TransactionId = i.PaymentTransactionId,
+                Status = "Paid",
+                PaidAt = i.PaidAt!.Value,
+                Description = $"Subscription invoice - {i.TotalDeliveries} deliveries"
+            });
+
+        var combinedQuery = orderPayments.Union(invoicePayments);
+
+        var totalCount = await combinedQuery.CountAsync(cancellationToken);
+
+        var items = await combinedQuery
+            .OrderByDescending(p => p.PaidAt)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PaginatedList<PaymentHistoryDto>(
+            items,
+            totalCount,
+            request.Page,
+            request.PageSize);
     }
 }

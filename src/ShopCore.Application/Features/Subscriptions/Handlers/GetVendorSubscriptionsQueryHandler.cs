@@ -5,20 +5,59 @@ namespace ShopCore.Application.Subscriptions.Queries.GetVendorSubscriptions;
 public class GetVendorSubscriptionsQueryHandler
     : IRequestHandler<GetVendorSubscriptionsQuery, List<SubscriptionDto>>
 {
-    public Task<List<SubscriptionDto>> Handle(
-        GetVendorSubscriptionsQuery request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetVendorSubscriptionsQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic
-        // 1. Get current vendor from context
-        // 2. Fetch all subscriptions containing vendor's products
-        // 3. Filter by status if provided (active, paused, cancelled)
-        // 4. Filter by date range if provided
-        // 5. Extract vendor's items from each subscription
-        // 6. Include subscription schedule and next delivery
-        // 7. Sort by creation date (newest first)
-        // 8. Map to SubscriptionDto list and return
-        return Task.FromResult(new List<SubscriptionDto>());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<PaginatedList<VendorSubscriptionDto>> Handle(
+        GetVendorSubscriptionsQuery request,
+        CancellationToken cancellationToken)
+    {
+        var query = _context.Subscriptions
+            .AsNoTracking()
+            .Include(s => s.User)
+            .Include(s => s.Items)
+            .Where(s => s.VendorId == _currentUser.VendorId);
+
+        // Filter by status
+        if (!string.IsNullOrEmpty(request.Status)
+            && Enum.TryParse<SubscriptionStatus>(request.Status, out var status))
+        {
+            query = query.Where(s => s.Status == status);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(s => s.CreatedAt)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .Select(s => new VendorSubscriptionDto
+            {
+                Id = s.Id,
+                SubscriptionNumber = s.SubscriptionNumber,
+                CustomerName = s.User.FirstName + " " + s.User.LastName,
+                CustomerPhone = s.User.PhoneNumber,
+                Frequency = s.Frequency.ToString(),
+                Status = s.Status.ToString(),
+                NextDeliveryDate = s.NextDeliveryDate,
+                UnpaidAmount = s.UnpaidAmount,
+                ItemCount = s.Items.Count,
+                CreatedAt = s.CreatedAt
+            })
+            .ToListAsync(cancellationToken);
+
+        return new PaginatedList<VendorSubscriptionDto>(
+            items,
+            totalCount,
+            request.Page,
+            request.PageSize);
     }
 }

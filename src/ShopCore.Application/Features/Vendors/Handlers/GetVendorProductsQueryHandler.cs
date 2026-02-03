@@ -5,19 +5,61 @@ namespace ShopCore.Application.Vendors.Queries.GetVendorProducts;
 
 public class GetVendorProductsQueryHandler : IRequestHandler<GetVendorProductsQuery, PaginatedList<ProductDto>>
 {
-    public Task<PaginatedList<ProductDto>> Handle(
+    private readonly IApplicationDbContext _context;
+
+    public GetVendorProductsQueryHandler(IApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<PaginatedList<ProductDto>> Handle(
         GetVendorProductsQuery request,
         CancellationToken cancellationToken)
     {
-        // TODO: Implement query logic
-        // 1. Get vendor id from request (or current user if own products)
-        // 2. Fetch vendor's products from database
-        // 3. Filter by status (only public if request.publicOnly)
-        // 4. Apply pagination (request.Page, request.PageSize)
-        // 5. Sort by creation date or rating
-        // 6. Include product images and basic info
-        // 7. Map to ProductDto list
-        // 8. Return PaginatedList<ProductDto>
-        return Task.FromResult(new PaginatedList<ProductDto>([], 0, request.Page, request.PageSize));
+        if (!request.VendorId.HasValue)
+            throw new ValidationException("VendorId is required");
+
+        var query = _context.Products
+            .AsNoTracking()
+            .Include(p => p.Category)
+            .Include(p => p.Images)
+            .Where(p => p.VendorId == request.VendorId.Value);
+
+        // Public view - only active products
+        if (request.publicOnly)
+            query = query.Where(p => p.Status == ProductStatus.Active);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Slug = p.Slug,
+                ShortDescription = p.ShortDescription,
+                Price = p.Price,
+                CompareAtPrice = p.CompareAtPrice,
+                DiscountPercentage = p.DiscountPercentage,
+                IsOnSale = p.IsOnSale,
+                StockQuantity = p.StockQuantity,
+                IsInStock = p.IsInStock,
+                Status = p.Status.ToString(),
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category.Name,
+                AverageRating = p.AverageRating,
+                ReviewCount = p.ReviewCount,
+                PrimaryImage = p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
+            })
+            .ToListAsync(cancellationToken);
+
+        return new PaginatedList<ProductDto>(
+            items,
+            totalCount,
+            request.Page,
+            request.PageSize);
     }
 }

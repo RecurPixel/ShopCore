@@ -5,17 +5,66 @@ namespace ShopCore.Application.Vendors.Queries.GetAllVendors;
 
 public class GetAllVendorsQueryHandler : IRequestHandler<GetAllVendorsQuery, PaginatedList<VendorProfileDto>>
 {
-    public Task<PaginatedList<VendorProfileDto>> Handle(GetAllVendorsQuery request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+
+    public GetAllVendorsQueryHandler(IApplicationDbContext context)
     {
-        // TODO: Implement query logic
-        // 1. Fetch all approved vendors from database
-        // 2. Filter by status if provided (active, suspended)
-        // 3. Filter by category/services if provided
-        // 4. Apply pagination (request.Page, request.PageSize)
-        // 5. Sort by rating or name
-        // 6. Include vendor logo and basic stats
-        // 7. Map to VendorProfileDto list
-        // 8. Return PaginatedList<VendorProfileDto>
-        return Task.FromResult(new PaginatedList<VendorProfileDto>([], 0, request.Page, request.PageSize));
+        _context = context;
+    }
+
+    public async Task<PaginatedList<VendorProfileDto>> Handle(
+        GetAllVendorsQuery request,
+        CancellationToken cancellationToken)
+    {
+        var query = _context.VendorProfiles
+            .AsNoTracking()
+            .Include(v => v.User)
+            .AsQueryable();
+
+        // Search filter
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+            var searchTerm = request.Search.ToLower();
+            query = query.Where(v =>
+                v.BusinessName.ToLower().Contains(searchTerm) ||
+                v.User.Email.ToLower().Contains(searchTerm) ||
+                v.User.PhoneNumber.Contains(searchTerm));
+        }
+
+        // Status filter
+        if (!string.IsNullOrEmpty(request.Status)
+            && Enum.TryParse<VendorStatus>(request.Status, out var status))
+        {
+            query = query.Where(v => v.Status == status);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(v => v.CreatedAt)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .Select(v => new VendorProfileDto
+            {
+                Id = v.Id,
+                UserId = v.UserId,
+                BusinessName = v.BusinessName,
+                BusinessLogo = v.BusinessLogo,
+                Email = v.User.Email,
+                PhoneNumber = v.User.PhoneNumber,
+                Status = v.Status.ToString(),
+                AverageRating = v.AverageRating,
+                TotalReviews = v.TotalReviews,
+                TotalProducts = v.TotalProducts,
+                TotalOrders = v.TotalOrders,
+                CreatedAt = v.CreatedAt
+            })
+            .ToListAsync(cancellationToken);
+
+        return new PaginatedList<VendorProfileDto>(
+            items,
+            totalCount,
+            request.Page,
+            request.PageSize);
     }
 }

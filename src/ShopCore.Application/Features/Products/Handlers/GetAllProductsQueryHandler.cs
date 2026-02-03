@@ -5,17 +5,51 @@ namespace ShopCore.Application.Products.Queries.GetAllProducts;
 
 public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, PaginatedList<ProductDto>>
 {
-    public Task<PaginatedList<ProductDto>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetAllProductsQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic
-        // 1. Fetch all products from database
-        // 2. Filter by vendor if provided
-        // 3. Filter by status (only published/approved)
-        // 4. Apply pagination (request.Page, request.PageSize)
-        // 5. Sort by creation date or rating
-        // 6. Include product images and vendor info
-        // 7. Map to ProductDto list
-        // 8. Return PaginatedList<ProductDto>
-        return Task.FromResult(new PaginatedList<ProductDto>([], 0, request.Page, request.PageSize));
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<PaginatedList<ProductDto>> Handle(GetAllProductsQuery request, CancellationToken ct)
+    {
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can view all products");
+
+        var query = _context.Products.Where(p => !p.IsDeleted);
+
+        var totalCount = await query.CountAsync(ct);
+
+        var items = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Slug = p.Slug,
+                ShortDescription = p.ShortDescription,
+                Price = p.Price,
+                CompareAtPrice = p.CompareAtPrice,
+                DiscountPercentage = p.DiscountPercentage,
+                IsInStock = p.IsInStock,
+                IsOnSale = p.IsOnSale,
+                PrimaryImageUrl = p.Images.FirstOrDefault(i => i.IsPrimary) != null
+                    ? p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
+                    : p.Images.FirstOrDefault() != null ? p.Images.FirstOrDefault()!.ImageUrl : null,
+                AverageRating = p.AverageRating,
+                ReviewCount = p.ReviewCount,
+                CategoryName = p.Category.Name,
+                VendorName = p.Vendor.BusinessName
+            })
+            .ToListAsync(ct);
+
+        return new PaginatedList<ProductDto>(items, totalCount, request.Page, request.PageSize);
     }
 }

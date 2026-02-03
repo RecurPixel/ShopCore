@@ -4,21 +4,63 @@ namespace ShopCore.Application.Vendors.Commands.UpdateMyVendor;
 
 public class UpdateMyVendorCommandHandler : IRequestHandler<UpdateMyVendorCommand, VendorProfileDto>
 {
-    public Task<VendorProfileDto> Handle(
-        UpdateMyVendorCommand request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public UpdateMyVendorCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Get current vendor from context
-        // 2. Validate update request fields (business name, phone, description)
-        // 3. Update vendor details in database
-        // 4. Update service areas if provided
-        // 5. Update commission settings if admin can modify
-        // 6. Create audit log of changes
-        // 7. Invalidate any caches
-        // 8. Update search index if applicable
-        // 9. Map and return updated VendorProfileDto
-        return Task.FromResult(new VendorProfileDto());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<VendorProfileDto> Handle(
+        UpdateMyVendorCommand request,
+        CancellationToken ct)
+    {
+        var vendor = await _context.VendorProfiles
+            .FirstOrDefaultAsync(v => v.UserId == _currentUser.UserId, ct);
+
+        if (vendor == null)
+            throw new NotFoundException("Vendor profile not found");
+
+        vendor.BusinessName = request.BusinessName;
+        vendor.BusinessDescription = request.BusinessDescription;
+        vendor.BusinessLogo = request.BusinessLogo;
+        vendor.BusinessAddress = request.BusinessAddress;
+        vendor.BankName = request.BankName;
+        vendor.BankAccountNumber = request.BankAccountNumber;
+        vendor.BankIfscCode = request.BankIfscCode;
+        vendor.BankAccountHolderName = request.BankAccountHolderName;
+        vendor.RequiresDeposit = request.RequiresDeposit;
+        vendor.DefaultDepositAmount = request.DefaultDepositAmount;
+        vendor.DefaultBillingCycleDays = request.DefaultBillingCycleDays;
+
+        await _context.SaveChangesAsync(ct);
+
+        return new VendorProfileDto(
+            vendor.Id,
+            vendor.UserId,
+            vendor.BusinessName,
+            vendor.BusinessDescription,
+            vendor.BusinessLogo,
+            vendor.BusinessAddress,
+            vendor.GstNumber,
+            vendor.PanNumber,
+            vendor.BankName,
+            vendor.BankAccountNumber,
+            vendor.BankIfscCode,
+            vendor.BankAccountHolderName,
+            vendor.RequiresDeposit,
+            vendor.DefaultDepositAmount,
+            vendor.DefaultBillingCycleDays,
+            vendor.Status,
+            vendor.AverageRating,
+            vendor.TotalReviews,
+            vendor.TotalProducts,
+            vendor.TotalOrders,
+            vendor.CreatedAt
+        );
     }
 }

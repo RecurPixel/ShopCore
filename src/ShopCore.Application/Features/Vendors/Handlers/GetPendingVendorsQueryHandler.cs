@@ -5,20 +5,39 @@ namespace ShopCore.Application.Vendors.Queries.GetPendingVendors;
 public class GetPendingVendorsQueryHandler
     : IRequestHandler<GetPendingVendorsQuery, List<VendorProfileDto>>
 {
-    public Task<List<VendorProfileDto>> Handle(
-        GetPendingVendorsQuery request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+
+    public GetPendingVendorsQueryHandler(IApplicationDbContext context)
     {
-        // TODO: Implement query logic
-        // 1. Fetch all vendors with status 'pending approval'
-        // 2. Include vendor documents and submission details
-        // 3. Include registration date and last updated date
-        // 4. Sort by submission date (oldest first for review)
-        // 5. Include basic vendor info (name, email, location)
-        // 6. Include application completeness score
-        // 7. Optionally apply pagination if large dataset
-        // 8. Map to VendorProfileDto list and return
-        return Task.FromResult(new List<VendorProfileDto>());
+        _context = context;
+    }
+
+    public async Task<List<VendorProfileDto>> Handle(
+        GetPendingVendorsQuery request,
+        CancellationToken cancellationToken)
+    {
+        return await _context.VendorProfiles
+            .AsNoTracking()
+            .Include(v => v.User)
+            .Where(v => v.Status == VendorStatus.PendingApproval)
+            .OrderBy(v => v.CreatedAt) // Oldest first for review queue
+            .Select(v => new VendorProfileDto
+            {
+                Id = v.Id,
+                UserId = v.UserId,
+                BusinessName = v.BusinessName,
+                BusinessDescription = v.BusinessDescription,
+                BusinessLogo = v.BusinessLogo,
+                BusinessAddress = v.BusinessAddress,
+                GstNumber = v.GstNumber,
+                PanNumber = v.PanNumber,
+                Email = v.User.Email,
+                PhoneNumber = v.User.PhoneNumber,
+                Status = v.Status.ToString(),
+                CreatedAt = v.CreatedAt,
+                DaysSinceSubmission = (int)(DateTime.UtcNow - v.CreatedAt).TotalDays
+            })
+            .ToListAsync(cancellationToken);
     }
 }
+

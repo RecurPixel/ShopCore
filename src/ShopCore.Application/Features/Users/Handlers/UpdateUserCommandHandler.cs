@@ -4,13 +4,57 @@ namespace ShopCore.Application.Users.Commands.UpdateUser;
 
 public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserDto>
 {
-    public Task<UserDto> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public UpdateUserCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Get user by id from database
-        // 2. Update user properties (email, name, etc.)
-        // 3. Save changes to database
-        // 4. Map and return updated UserDto
-        return Task.FromResult(default(UserDto));
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<UserDto> Handle(UpdateUserCommand request, CancellationToken ct)
+    {
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can update users");
+
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == request.Id, ct);
+
+        if (user == null)
+            throw new NotFoundException("User", request.Id);
+
+        if (!string.IsNullOrEmpty(request.FirstName))
+            user.FirstName = request.FirstName;
+
+        if (!string.IsNullOrEmpty(request.LastName))
+            user.LastName = request.LastName;
+
+        if (!string.IsNullOrEmpty(request.Email) && request.Email != user.Email)
+        {
+            var emailExists = await _context.Users
+                .AnyAsync(u => u.Email == request.Email && u.Id != request.Id, ct);
+            if (emailExists)
+                throw new ValidationException("Email already in use");
+            user.Email = request.Email;
+        }
+
+        if (!string.IsNullOrEmpty(request.PhoneNumber))
+            user.PhoneNumber = request.PhoneNumber;
+
+        await _context.SaveChangesAsync(ct);
+
+        return new UserDto(
+            user.Id,
+            user.Email,
+            user.FirstName,
+            user.LastName,
+            user.PhoneNumber,
+            user.Role.ToString(),
+            user.IsActive ? "Active" : "Inactive",
+            user.CreatedAt
+        );
     }
 }

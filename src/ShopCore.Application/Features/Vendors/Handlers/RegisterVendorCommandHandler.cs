@@ -4,21 +4,79 @@ namespace ShopCore.Application.Vendors.Commands.RegisterVendor;
 
 public class RegisterVendorCommandHandler : IRequestHandler<RegisterVendorCommand, VendorProfileDto>
 {
-    public Task<VendorProfileDto> Handle(
-        RegisterVendorCommand request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public RegisterVendorCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Validate vendor registration data (business name, email, phone, etc.)
-        // 2. Create user account for vendor (if not exists)
-        // 3. Create Vendor entity with status 'pending approval'
-        // 4. Validate and store vendor documents (GST, business proof, etc.)
-        // 5. Define initial service areas/zones
-        // 6. Setup default commission settings
-        // 7. Save to database and create audit log
-        // 8. Send verification email and notify admin
-        // 9. Map and return VendorProfileDto
-        return Task.FromResult(new VendorProfileDto());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<VendorProfileDto> Handle(
+        RegisterVendorCommand request,
+        CancellationToken ct)
+    {
+        // Check if user already has a vendor profile
+        var existingVendor = await _context.VendorProfiles
+            .FirstOrDefaultAsync(v => v.UserId == _currentUser.UserId, ct);
+
+        if (existingVendor != null)
+            throw new BadRequestException("You already have a vendor profile");
+
+        // Check if GST number is already registered
+        var gstExists = await _context.VendorProfiles
+            .AnyAsync(v => v.GstNumber == request.GstNumber, ct);
+
+        if (gstExists)
+            throw new BadRequestException("GST number is already registered");
+
+        var vendor = new VendorProfile
+        {
+            UserId = _currentUser.UserId,
+            BusinessName = request.BusinessName,
+            BusinessDescription = request.BusinessDescription,
+            BusinessLogo = request.BusinessLogo,
+            BusinessAddress = request.BusinessAddress,
+            GstNumber = request.GstNumber,
+            PanNumber = request.PanNumber,
+            BankName = request.BankName,
+            BankAccountNumber = request.BankAccountNumber,
+            BankIfscCode = request.BankIfscCode,
+            BankAccountHolderName = request.BankAccountHolderName,
+            RequiresDeposit = request.RequiresDeposit,
+            DefaultDepositAmount = request.DefaultDepositAmount,
+            DefaultBillingCycleDays = request.DefaultBillingCycleDays,
+            Status = VendorStatus.PendingApproval
+        };
+
+        _context.VendorProfiles.Add(vendor);
+        await _context.SaveChangesAsync(ct);
+
+        return new VendorProfileDto(
+            vendor.Id,
+            vendor.UserId,
+            vendor.BusinessName,
+            vendor.BusinessDescription,
+            vendor.BusinessLogo,
+            vendor.BusinessAddress,
+            vendor.GstNumber,
+            vendor.PanNumber,
+            vendor.BankName,
+            vendor.BankAccountNumber,
+            vendor.BankIfscCode,
+            vendor.BankAccountHolderName,
+            vendor.RequiresDeposit,
+            vendor.DefaultDepositAmount,
+            vendor.DefaultBillingCycleDays,
+            vendor.Status,
+            vendor.AverageRating,
+            vendor.TotalReviews,
+            vendor.TotalProducts,
+            vendor.TotalOrders,
+            vendor.CreatedAt
+        );
     }
 }

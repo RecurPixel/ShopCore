@@ -4,17 +4,42 @@ namespace ShopCore.Application.Vendors.Queries.GetVendorOrderItems;
 
 public class GetVendorOrderItemsQueryHandler : IRequestHandler<GetVendorOrderItemsQuery, List<VendorOrderItemDto>>
 {
-    public Task<List<VendorOrderItemDto>> Handle(
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetVendorOrderItemsQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
+    {
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<List<VendorOrderItemDto>> Handle(
         GetVendorOrderItemsQuery request,
         CancellationToken cancellationToken)
     {
-        // TODO: Implement query logic
-        // 1. Get current vendor from context
-        // 2. Find order by id
-        // 3. Get only order items from this vendor
-        // 4. Include product info, quantity, price
-        // 5. Include item status (pending, shipped, delivered, etc.)
-        // 6. Map to VendorOrderItemDto list and return
-        return Task.FromResult(new List<VendorOrderItemDto>());
+        return await _context.OrderItems
+            .AsNoTracking()
+            .Include(oi => oi.Product)
+                .ThenInclude(p => p.Images)
+            .Where(oi => oi.OrderId == request.OrderId
+                && oi.VendorId == _currentUser.VendorId)
+            .Select(oi => new VendorOrderItemDto
+            {
+                Id = oi.Id,
+                ProductId = oi.ProductId,
+                ProductName = oi.ProductName,
+                ProductSKU = oi.ProductSKU,
+                ProductImage = oi.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
+                Quantity = oi.Quantity,
+                UnitPrice = oi.UnitPrice,
+                Subtotal = oi.Subtotal,
+                CommissionRate = oi.CommissionRate,
+                CommissionAmount = oi.CommissionAmount,
+                VendorAmount = oi.VendorAmount,
+                Status = oi.Status.ToString()
+            })
+            .ToListAsync(cancellationToken);
     }
 }

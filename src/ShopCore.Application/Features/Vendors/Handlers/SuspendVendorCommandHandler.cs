@@ -2,16 +2,40 @@ namespace ShopCore.Application.Vendors.Commands.SuspendVendor;
 
 public class SuspendVendorCommandHandler : IRequestHandler<SuspendVendorCommand>
 {
-    public Task Handle(SuspendVendorCommand request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public SuspendVendorCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Find vendor by id
-        // 2. Mark vendor as suspended
-        // 3. Hide vendor's products from public
-        // 4. Pause vendor's subscriptions
-        // 5. Notify vendor of suspension
-        // 6. Log suspension reason
-        // 7. Save changes to database
-        return Task.CompletedTask;
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task Handle(SuspendVendorCommand request, CancellationToken ct)
+    {
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can suspend vendors");
+
+        var vendor = await _context.VendorProfiles
+            .Include(v => v.Products)
+            .FirstOrDefaultAsync(v => v.Id == request.VendorId, ct);
+
+        if (vendor == null)
+            throw new NotFoundException("Vendor", request.VendorId);
+
+        if (vendor.Status == VendorStatus.Suspended)
+            throw new BadRequestException("Vendor is already suspended");
+
+        vendor.Status = VendorStatus.Suspended;
+
+        // Deactivate all vendor products
+        foreach (var product in vendor.Products)
+        {
+            product.IsActive = false;
+        }
+
+        await _context.SaveChangesAsync(ct);
     }
 }

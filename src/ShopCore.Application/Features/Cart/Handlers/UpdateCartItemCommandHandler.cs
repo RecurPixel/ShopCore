@@ -72,4 +72,3 @@ public class UpdateCartItemCommandHandler : IRequestHandler<UpdateCartItemComman
         };
     }
 }
-}

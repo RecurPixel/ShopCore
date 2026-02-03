@@ -4,13 +4,55 @@ namespace ShopCore.Application.Wishlist.Queries.GetWishlist;
 
 public class GetWishlistQueryHandler : IRequestHandler<GetWishlistQuery, WishlistDto>
 {
-    public Task<WishlistDto> Handle(GetWishlistQuery request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetWishlistQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic
-        // 1. Get current user from context
-        // 2. Fetch user's wishlist from database
-        // 3. Map wishlist items to WishlistDto
-        // 4. Return wishlist data
-        return Task.FromResult(new WishlistDto());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<WishlistDto> Handle(
+        GetWishlistQuery request,
+        CancellationToken cancellationToken)
+    {
+        var items = await _context.Wishlists
+            .AsNoTracking()
+            .Include(w => w.Product)
+                .ThenInclude(p => p.Category)
+            .Include(w => w.Product)
+                .ThenInclude(p => p.Vendor)
+            .Include(w => w.Product)
+                .ThenInclude(p => p.Images)
+            .Where(w => w.UserId == _currentUser.UserId)
+            .OrderByDescending(w => w.CreatedAt)
+            .Select(w => new WishlistItemDto
+            {
+                Id = w.Id,
+                ProductId = w.ProductId,
+                ProductName = w.Product.Name,
+                ProductSlug = w.Product.Slug,
+                ProductImage = w.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
+                Price = w.Product.Price,
+                CompareAtPrice = w.Product.CompareAtPrice,
+                DiscountPercentage = w.Product.DiscountPercentage,
+                IsOnSale = w.Product.IsOnSale,
+                IsInStock = w.Product.IsInStock,
+                CategoryName = w.Product.Category.Name,
+                VendorName = w.Product.Vendor.BusinessName,
+                AverageRating = w.Product.AverageRating,
+                ReviewCount = w.Product.ReviewCount,
+                AddedAt = w.CreatedAt
+            })
+            .ToListAsync(cancellationToken);
+
+        return new WishlistDto
+        {
+            Items = items,
+            TotalItems = items.Count
+        };
     }
 }

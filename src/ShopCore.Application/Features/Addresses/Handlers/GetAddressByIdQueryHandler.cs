@@ -4,12 +4,48 @@ namespace ShopCore.Application.Addresses.Queries.GetAddressById;
 
 public class GetAddressByIdQueryHandler : IRequestHandler<GetAddressByIdQuery, AddressDto>
 {
-    public Task<AddressDto> Handle(
-        GetAddressByIdQuery request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetAddressByIdQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic
-        return Task.FromResult(new AddressDto());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<AddressDto> Handle(
+        GetAddressByIdQuery request,
+        CancellationToken cancellationToken)
+    {
+        var address = await _context.Addresses
+            .AsNoTracking()
+            .Where(a => a.Id == request.Id && a.UserId == _currentUser.UserId)
+            .Select(a => new AddressDto
+            {
+                Id = a.Id,
+                UserId = a.UserId,
+                FullName = a.FullName,
+                PhoneNumber = a.PhoneNumber,
+                AddressLine1 = a.AddressLine1,
+                AddressLine2 = a.AddressLine2,
+                City = a.City,
+                State = a.State,
+                Pincode = a.Pincode,
+                Latitude = a.Latitude,
+                Longitude = a.Longitude,
+                PlaceId = a.PlaceId,
+                Landmark = a.Landmark,
+                AddressType = a.AddressType,
+                IsDefault = a.IsDefault,
+                CreatedAt = a.CreatedAt
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (address == null)
+            throw new NotFoundException(nameof(Address), request.Id);
+
+        return address;
     }
 }

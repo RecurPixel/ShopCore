@@ -2,16 +2,42 @@ namespace ShopCore.Application.Users.Commands.UploadUserAvatar;
 
 public class UploadUserAvatarCommandHandler : IRequestHandler<UploadUserAvatarCommand, string>
 {
-    public Task<string> Handle(UploadUserAvatarCommand request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+    private readonly IFileStorageService _fileStorage;
+
+    public UploadUserAvatarCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser,
+        IFileStorageService fileStorage)
     {
-        // TODO: Implement command logic
-        // 1. Get current user from context
-        // 2. Validate image file (size, format, etc.)
-        // 3. Upload file to cloud storage (S3, Azure Blob, etc.)
-        // 4. Delete old avatar if exists
-        // 5. Update user avatar URL in database
-        // 6. Save changes
-        // 7. Return new avatar URL
-        return Task.FromResult(string.Empty);
+        _context = context;
+        _currentUser = currentUser;
+        _fileStorage = fileStorage;
+    }
+
+    public async Task<string> Handle(UploadUserAvatarCommand request, CancellationToken ct)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == _currentUser.UserId, ct);
+
+        if (user == null)
+            throw new NotFoundException("User", _currentUser.UserId);
+
+        // Delete old avatar if exists
+        if (!string.IsNullOrEmpty(user.AvatarUrl))
+        {
+            await _fileStorage.DeleteFileAsync(user.AvatarUrl);
+        }
+
+        // Upload new avatar
+        using var stream = request.AvatarFile.OpenReadStream();
+        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(request.AvatarFile.FileName)}";
+        var avatarUrl = await _fileStorage.SaveFileAsync(stream, fileName, $"users/{user.Id}/avatar");
+
+        user.AvatarUrl = avatarUrl;
+        await _context.SaveChangesAsync(ct);
+
+        return _fileStorage.GetFileUrl(avatarUrl);
     }
 }

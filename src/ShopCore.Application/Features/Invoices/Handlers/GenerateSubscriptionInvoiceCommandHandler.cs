@@ -5,21 +5,150 @@ namespace ShopCore.Application.Invoices.Commands.GenerateSubscriptionInvoice;
 public class GenerateSubscriptionInvoiceCommandHandler
     : IRequestHandler<GenerateSubscriptionInvoiceCommand, InvoiceDto>
 {
-    public Task<InvoiceDto> Handle(
-        GenerateSubscriptionInvoiceCommand request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GenerateSubscriptionInvoiceCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Get subscription by id
-        // 2. Verify subscription is active
-        // 3. Calculate invoice amount for subscription period
-        // 4. Validate payment terms and due date
-        // 5. Create Invoice entity with line items
-        // 6. Generate invoice number
-        // 7. Include taxes, shipping, and discounts
-        // 8. Save invoice to database
-        // 9. Map and return InvoiceDto
-        return Task.FromResult(new InvoiceDto());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<InvoiceDto> Handle(
+        GenerateSubscriptionInvoiceCommand request,
+        CancellationToken ct)
+    {
+        var subscription = await _context.Subscriptions
+            .Include(s => s.Items)
+                .ThenInclude(i => i.Product)
+            .Include(s => s.Deliveries.Where(d => d.Status == DeliveryStatus.Delivered && d.InvoiceId == null))
+                .ThenInclude(d => d.Items)
+                    .ThenInclude(i => i.Product)
+            .FirstOrDefaultAsync(s => s.Id == request.SubscriptionId, ct);
+
+        if (subscription == null)
+            throw new NotFoundException("Subscription", request.SubscriptionId);
+
+        // Verify vendor owns this subscription
+        if (subscription.VendorId != _currentUser.VendorId)
+            throw new ForbiddenException("You can only generate invoices for your own subscriptions");
+
+        // Get unbilled deliveries
+        var unbilledDeliveries = subscription.Deliveries
+            .Where(d => d.Status == DeliveryStatus.Delivered && d.InvoiceId == null)
+            .ToList();
+
+        if (!unbilledDeliveries.Any())
+            throw new BadRequestException("No unbilled deliveries found for this subscription");
+
+        // Calculate invoice period
+        var periodStart = unbilledDeliveries.Min(d => d.ScheduledDate);
+        var periodEnd = unbilledDeliveries.Max(d => d.ScheduledDate);
+
+        // Calculate totals
+        var subtotal = unbilledDeliveries.Sum(d => d.TotalAmount);
+        var taxRate = 0.18m; // 18% GST
+        var tax = Math.Round(subtotal * taxRate, 2);
+        var total = subtotal + tax;
+
+        // Generate invoice number
+        var invoiceNumber = await GenerateInvoiceNumberAsync(ct);
+
+        var invoice = new SubscriptionInvoice
+        {
+            SubscriptionId = subscription.Id,
+            UserId = subscription.UserId,
+            VendorId = subscription.VendorId,
+            InvoiceNumber = invoiceNumber,
+            GeneratedAt = DateTime.UtcNow,
+            DueDate = DateTime.UtcNow.AddDays(subscription.BillingCycleDays),
+            PeriodStart = periodStart,
+            PeriodEnd = periodEnd,
+            TotalDeliveries = unbilledDeliveries.Count,
+            Subtotal = subtotal,
+            Tax = tax,
+            Total = total,
+            PaidAmount = 0,
+            Status = InvoiceStatus.Generated,
+            IsManuallyGenerated = true
+        };
+
+        _context.SubscriptionInvoices.Add(invoice);
+        await _context.SaveChangesAsync(ct);
+
+        // Link deliveries to invoice
+        foreach (var delivery in unbilledDeliveries)
+        {
+            delivery.InvoiceId = invoice.Id;
+        }
+        await _context.SaveChangesAsync(ct);
+
+        return MapToDto(invoice, subscription.SubscriptionNumber, unbilledDeliveries);
+    }
+
+    private async Task<string> GenerateInvoiceNumberAsync(CancellationToken ct)
+    {
+        var today = DateTime.UtcNow;
+        var prefix = $"INV-{today:yyyy-MMdd}";
+
+        var lastInvoice = await _context.SubscriptionInvoices
+            .Where(i => i.InvoiceNumber.StartsWith(prefix))
+            .OrderByDescending(i => i.InvoiceNumber)
+            .FirstOrDefaultAsync(ct);
+
+        int sequence = 1;
+        if (lastInvoice != null)
+        {
+            var lastSequence = lastInvoice.InvoiceNumber.Split('-').LastOrDefault();
+            if (int.TryParse(lastSequence, out var parsed))
+            {
+                sequence = parsed + 1;
+            }
+        }
+
+        return $"{prefix}-{sequence:D4}";
+    }
+
+    private static InvoiceDto MapToDto(SubscriptionInvoice invoice, string subscriptionNumber, List<Delivery> deliveries)
+    {
+        PaymentMethod? paymentMethod = null;
+        if (!string.IsNullOrEmpty(invoice.PaymentMethod) &&
+            Enum.TryParse<PaymentMethod>(invoice.PaymentMethod, out var pm))
+        {
+            paymentMethod = pm;
+        }
+
+        var lineItems = deliveries
+            .SelectMany(d => d.Items.Select(i => new InvoiceLineItemDto(
+                i.Id,
+                i.ProductId,
+                i.Product.Name,
+                d.ScheduledDate,
+                i.Quantity,
+                i.UnitPrice,
+                i.Quantity * i.UnitPrice
+            )))
+            .ToList();
+
+        return new InvoiceDto(
+            invoice.Id,
+            invoice.InvoiceNumber,
+            invoice.SubscriptionId,
+            subscriptionNumber,
+            invoice.GeneratedAt,
+            invoice.DueDate,
+            invoice.Subtotal,
+            invoice.Tax,
+            invoice.Total,
+            invoice.PaidAmount,
+            invoice.BalanceDue,
+            invoice.Status,
+            invoice.PaidAt,
+            paymentMethod,
+            invoice.PaymentTransactionId,
+            lineItems
+        );
     }
 }

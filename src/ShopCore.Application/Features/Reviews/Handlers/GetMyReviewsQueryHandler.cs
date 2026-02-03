@@ -17,45 +17,33 @@ public class GetMyReviewsQueryHandler : IRequestHandler<GetMyReviewsQuery, Pagin
         _currentUser = currentUser;
     }
 
-    public async Task<PaginatedList<ReviewDto>> Handle(
+    public async Task<List<ReviewDto>> Handle(
         GetMyReviewsQuery request,
         CancellationToken cancellationToken)
     {
-        var query = _context.Reviews
-            .Where(r => r.UserId == _currentUser.UserId && !r.IsDeleted)
-            .OrderByDescending(r => r.CreatedAt);
-
-        var totalCount = await query.CountAsync(cancellationToken);
-
-        var items = await query
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .Select(r => new ReviewDto(
-                r.Id,
-                r.ProductId,
-                r.Product.Name,
-                r.UserId,
-                r.User.FirstName + " " + r.User.LastName,
-                r.Rating,
-                r.Title,
-                r.Comment,
-                r.ImageUrls,
-                r.VendorResponse,
-                r.VendorRespondedAt,
-                r.HelpfulCount,
-                r.CreatedAt
-            ))
+        return await _context.Reviews
+            .AsNoTracking()
+            .Include(r => r.Product)
+                .ThenInclude(p => p.Images)
+            .Where(r => r.UserId == _currentUser.UserId)
+            .OrderByDescending(r => r.CreatedAt)
+            .Select(r => new ReviewDto
+            {
+                Id = r.Id,
+                ProductId = r.ProductId,
+                ProductName = r.Product.Name,
+                ProductImage = r.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
+                Rating = r.Rating,
+                Title = r.Title,
+                Comment = r.Comment,
+                ImageUrls = r.ImageUrls,
+                IsVerifiedPurchase = r.IsVerifiedPurchase,
+                IsApproved = r.IsApproved,
+                HelpfulCount = r.HelpfulCount,
+                VendorResponse = r.VendorResponse,
+                VendorRespondedAt = r.VendorRespondedAt,
+                CreatedAt = r.CreatedAt
+            })
             .ToListAsync(cancellationToken);
-
-        var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
-
-        return new PaginatedList<ReviewDto>
-        {
-            Items = items,
-            Page = request.Page,
-            PageSize = request.PageSize,
-            TotalItems = totalCount,
-            TotalPages = totalPages
-        };
     }
 }

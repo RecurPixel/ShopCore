@@ -13,9 +13,13 @@ public class UpdateReviewCommandHandler : IRequestHandler<UpdateReviewCommand, R
         _currentUser = currentUser;
     }
 
-    public async Task Handle(UpdateReviewCommand request, CancellationToken ct)
+    public async Task<ReviewDto> Handle(UpdateReviewCommand request, CancellationToken ct)
     {
-        var review = await _context.Reviews.FindAsync(request.Id);
+        var review = await _context.Reviews
+            .Include(r => r.Product)
+            .Include(r => r.User)
+            .Include(r => r.Images)
+            .FirstOrDefaultAsync(r => r.Id == request.Id, ct);
 
         if (review == null || review.UserId != _currentUser.UserId)
             throw new NotFoundException("Review", request.Id);
@@ -27,16 +31,33 @@ public class UpdateReviewCommandHandler : IRequestHandler<UpdateReviewCommand, R
         await _context.SaveChangesAsync(ct);
 
         // Recalculate product rating
-        var product = await _context.Products.FindAsync(review.ProductId);
+        var product = review.Product;
         if (product != null)
         {
-            var reviews = await _context.Reviews
+            var avgRating = await _context.Reviews
                 .Where(r => r.ProductId == review.ProductId)
-                .ToListAsync(ct);
+                .AverageAsync(r => r.Rating, ct);
 
-            product.AverageRating = reviews.Average(r => r.Rating);
+            product.AverageRating = avgRating;
+            await _context.SaveChangesAsync(ct);
         }
 
-        await _context.SaveChangesAsync(ct);
+        return new ReviewDto(
+            Id: review.Id,
+            ProductId: review.ProductId,
+            ProductName: review.Product.Name,
+            UserId: review.UserId,
+            UserName: review.User.FullName,
+            UserAvatarUrl: review.User.AvatarUrl,
+            Rating: review.Rating,
+            Title: review.Title,
+            Comment: review.Comment,
+            ImageUrls: review.Images.Select(i => i.ImageUrl).ToList(),
+            IsVerifiedPurchase: review.IsVerifiedPurchase,
+            HelpfulCount: review.HelpfulCount,
+            VendorResponse: review.VendorResponse,
+            VendorRespondedAt: review.VendorRespondedAt,
+            CreatedAt: review.CreatedAt
+        );
     }
 }

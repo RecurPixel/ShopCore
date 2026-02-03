@@ -17,61 +17,57 @@ public class SearchVendorsByLocationQueryHandler
         SearchVendorsByLocationQuery request,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(request.Pincode) && !request.Latitude.HasValue)
-        {
-            throw new InvalidOperationException("Either Pincode or Latitude/Longitude must be provided");
-        }
+        var query = _context.VendorProfiles
+            .AsNoTracking()
+            .Include(v => v.ServiceAreas)
+            .Include(v => v.Products)
+            .Where(v => v.Status == VendorStatus.Active);
 
-        IQueryable<VendorProfile> vendorsQuery;
-
+        // Filter by pincode if provided
         if (!string.IsNullOrEmpty(request.Pincode))
         {
-            // Search by pincode - find vendors whose service areas include this pincode
-            var vendorIds = await _context.VendorServiceAreas
-                .Where(sa => sa.IsActive && sa.Pincodes.Contains(request.Pincode))
-                .Select(sa => sa.VendorId)
-                .Distinct()
-                .ToListAsync(cancellationToken);
+            query = query.Where(v => v.ServiceAreas
+                .Any(sa => sa.IsActive && sa.Pincodes.Contains(request.Pincode)));
+        }
 
-            vendorsQuery = _context.VendorProfiles
-                .Where(v => vendorIds.Contains(v.Id) && v.Status == VendorStatus.Active);
+        // Filter by category if provided
+        if (request.CategoryId.HasValue)
+        {
+            query = query.Where(v => v.Products
+                .Any(p => p.CategoryId == request.CategoryId.Value && p.Status == ProductStatus.Active));
+        }
+
+        var vendors = await query
+            .Select(v => new VendorSearchResultDto
+            {
+                Id = v.Id,
+                BusinessName = v.BusinessName,
+                BusinessDescription = v.BusinessDescription,
+                BusinessLogo = v.BusinessLogo,
+                AverageRating = v.AverageRating,
+                TotalReviews = v.TotalReviews,
+                TotalProducts = v.Products.Count(p => p.Status == ProductStatus.Active),
+                RequiresDeposit = v.RequiresDeposit,
+                DefaultDepositAmount = v.DefaultDepositAmount,
+                ServiceAreas = v.ServiceAreas
+                    .Where(sa => sa.IsActive)
+                    .Select(sa => sa.AreaName)
+                    .ToList()
+            })
+            .ToListAsync(cancellationToken);
+
+        // If latitude/longitude provided, calculate distance
+        // (This is a simplified version - in production, use spatial queries)
+        if (request.Latitude.HasValue && request.Longitude.HasValue)
+        {
+            // Sort by rating for now
+            vendors = vendors.OrderByDescending(v => v.AverageRating).ToList();
         }
         else
         {
-            // For now, fall back to all active vendors
-            // TODO: Implement geofencing when GeoJsonPolygon is populated
-            vendorsQuery = _context.VendorProfiles
-                .Where(v => v.Status == VendorStatus.Active);
+            vendors = vendors.OrderByDescending(v => v.AverageRating).ToList();
         }
 
-        // Filter by category if specified
-        if (request.CategoryId.HasValue)
-        {
-            var vendorIdsWithCategory = await _context.Products
-                .Where(p => p.CategoryId == request.CategoryId.Value)
-                .Select(p => p.VendorId)
-                .Distinct()
-                .ToListAsync(cancellationToken);
-
-            vendorsQuery = vendorsQuery.Where(v => vendorIdsWithCategory.Contains(v.Id));
-        }
-
-        var vendors = await vendorsQuery
-            .Include(v => v.ServiceAreas.Where(sa => sa.IsActive))
-            .OrderByDescending(v => v.AverageRating)
-            .ThenByDescending(v => v.TotalReviews)
-            .Take(50)
-            .ToListAsync(cancellationToken);
-
-        return vendors.Select(v => new VendorSearchResultDto(
-            v.Id,
-            v.BusinessName,
-            v.BusinessDescription,
-            v.BusinessLogo,
-            v.AverageRating,
-            v.TotalReviews,
-            v.TotalProducts,
-            v.ServiceAreas.Select(sa => sa.AreaName).ToList()
-        )).ToList();
+        return vendors;
     }
 }

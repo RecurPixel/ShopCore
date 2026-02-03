@@ -5,21 +5,45 @@ namespace ShopCore.Application.Vendors.Queries.GetMyVendorOrders;
 public class GetMyVendorOrdersQueryHandler
     : IRequestHandler<GetMyVendorOrdersQuery, List<VendorOrderDto>>
 {
-    public Task<List<VendorOrderDto>> Handle(
-        GetMyVendorOrdersQuery request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetMyVendorOrdersQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic
-        // 1. Get current vendor from context
-        // 2. Fetch all orders containing vendor's items
-        // 3. Filter by status if provided (pending, confirmed, shipped, delivered, cancelled)
-        // 4. Filter by date range if provided
-        // 5. Extract vendor's items from each order
-        // 6. Include customer info, delivery details, payment status
-        // 7. Sort by order date (newest first)
-        // 8. Apply pagination if needed
-        // 9. Map to VendorOrderDto list and return
-        return Task.FromResult(new List<VendorOrderDto>());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<List<VendorOrderDto>> Handle(
+        GetMyVendorOrdersQuery request,
+        CancellationToken cancellationToken)
+    {
+        // Get orders that contain items from this vendor
+        var orders = await _context.Orders
+            .AsNoTracking()
+            .Include(o => o.User)
+            .Include(o => o.Items
+                .Where(oi => oi.VendorId == _currentUser.VendorId))
+            .Where(o => o.Items.Any(oi => oi.VendorId == _currentUser.VendorId))
+            .OrderByDescending(o => o.CreatedAt)
+            .Select(o => new VendorOrderDto
+            {
+                OrderId = o.Id,
+                OrderNumber = o.OrderNumber,
+                CustomerName = o.User.FirstName + " " + o.User.LastName,
+                CustomerPhone = o.User.PhoneNumber,
+                OrderDate = o.CreatedAt,
+                Status = o.Items.First().Status.ToString(), // Vendor's item status
+                PaymentStatus = o.PaymentStatus.ToString(),
+                VendorTotal = o.Items.Sum(oi => oi.Subtotal),
+                VendorCommission = o.Items.Sum(oi => oi.CommissionAmount),
+                VendorPayout = o.Items.Sum(oi => oi.VendorAmount),
+                ItemCount = o.Items.Count
+            })
+            .ToListAsync(cancellationToken);
+
+        return orders;
     }
 }

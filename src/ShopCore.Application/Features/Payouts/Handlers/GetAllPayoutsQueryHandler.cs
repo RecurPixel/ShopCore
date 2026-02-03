@@ -5,17 +5,59 @@ namespace ShopCore.Application.Payouts.Queries.GetAllPayouts;
 
 public class GetAllPayoutsQueryHandler : IRequestHandler<GetAllPayoutsQuery, PaginatedList<PayoutDto>>
 {
-    public Task<PaginatedList<PayoutDto>> Handle(GetAllPayoutsQuery request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetAllPayoutsQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic
-        // 1. Fetch all payouts from database (admin view)
-        // 2. Filter by vendor if provided
-        // 3. Filter by status if provided (pending, processed, failed)
-        // 4. Filter by date range if provided
-        // 5. Apply pagination (request.Page, request.PageSize)
-        // 6. Sort by date (newest first)
-        // 7. Include vendor details and transaction info
-        // 8. Map to PayoutDto list and return PaginatedList
-        return Task.FromResult(new PaginatedList<PayoutDto>([], 0, request.Page, request.PageSize));
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<PaginatedList<PayoutDto>> Handle(GetAllPayoutsQuery request, CancellationToken ct)
+    {
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can view all payouts");
+
+        var query = _context.VendorPayouts
+            .AsNoTracking()
+            .Include(p => p.Vendor)
+            .AsQueryable();
+
+        // Filter by status
+        if (!string.IsNullOrEmpty(request.Status) && Enum.TryParse<PayoutStatus>(request.Status, true, out var status))
+        {
+            query = query.Where(p => p.Status == status);
+        }
+
+        // Filter by vendor
+        if (request.VendorId.HasValue)
+        {
+            query = query.Where(p => p.VendorId == request.VendorId.Value);
+        }
+
+        var totalCount = await query.CountAsync(ct);
+
+        var payouts = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync(ct);
+
+        var items = payouts.Select(p => new PayoutDto(
+            p.Id,
+            p.VendorId,
+            p.Vendor.BusinessName,
+            p.NetPayout,
+            p.Status.ToString(),
+            p.TransactionReference,
+            null,
+            p.CreatedAt,
+            p.PaidAt
+        )).ToList();
+
+        return new PaginatedList<PayoutDto>(items, totalCount, request.Page, request.PageSize);
     }
 }

@@ -4,14 +4,42 @@ namespace ShopCore.Application.Users.Queries.GetUserById;
 
 public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDetailDto?>
 {
-    public Task<UserDetailDto?> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetUserByIdQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic
-        // 1. Find user by id in database
-        // 2. Get user's addresses, preferences
-        // 3. Get user's order/subscription history count
-        // 4. Include user status and role
-        // 5. Map to UserDetailDto and return
-        return Task.FromResult((UserDetailDto?)null);
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<UserDetailDto?> Handle(GetUserByIdQuery request, CancellationToken ct)
+    {
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can view user details");
+
+        var user = await _context.Users
+            .Where(u => u.Id == request.Id)
+            .Select(u => new UserDetailDto(
+                u.Id,
+                u.Email,
+                u.FirstName,
+                u.LastName,
+                u.PhoneNumber,
+                u.AvatarUrl,
+                u.Role.ToString(),
+                u.IsActive ? "Active" : "Inactive",
+                u.IsEmailVerified,
+                u.Addresses.Count,
+                u.Orders.Count,
+                u.Subscriptions.Count,
+                u.CreatedAt,
+                u.LastLoginAt
+            ))
+            .FirstOrDefaultAsync(ct);
+
+        return user;
     }
 }

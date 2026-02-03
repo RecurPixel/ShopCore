@@ -4,17 +4,46 @@ namespace ShopCore.Application.Subscriptions.Queries.GetSubscriptionCustomerInfo
 
 public class GetSubscriptionCustomerInfoQueryHandler : IRequestHandler<GetSubscriptionCustomerInfoQuery, SubscriptionCustomerInfoDto?>
 {
-    public Task<SubscriptionCustomerInfoDto?> Handle(
-        GetSubscriptionCustomerInfoQuery request,
-        CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetSubscriptionCustomerInfoQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic
-        // 1. Get current vendor from context
-        // 2. Find subscription by id
-        // 3. Verify vendor's products are in this subscription
-        // 4. Fetch customer information (name, contact, address, etc.)
-        // 5. Include subscription items from vendor
-        // 6. Map to SubscriptionCustomerInfoDto and return
-        return Task.FromResult((SubscriptionCustomerInfoDto?)null);
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<SubscriptionCustomerInfoDto?> Handle(
+        GetSubscriptionCustomerInfoQuery request,
+        CancellationToken ct)
+    {
+        var subscription = await _context.Subscriptions
+            .AsNoTracking()
+            .Include(s => s.User)
+            .Include(s => s.DeliveryAddress)
+            .FirstOrDefaultAsync(s => s.Id == request.SubscriptionId, ct);
+
+        if (subscription == null)
+            return null;
+
+        // Verify vendor owns this subscription
+        if (subscription.VendorId != _currentUser.VendorId)
+            throw new ForbiddenException("You can only view customer info for your own subscriptions");
+
+        var address = subscription.DeliveryAddress;
+        var fullAddress = $"{address.AddressLine1}, {address.AddressLine2}, {address.City}, {address.State} - {address.Pincode}";
+
+        return new SubscriptionCustomerInfoDto(
+            subscription.UserId,
+            subscription.User.FullName,
+            subscription.User.Email,
+            subscription.User.PhoneNumber,
+            fullAddress,
+            subscription.PreferredDeliveryTime,
+            address.Latitude,
+            address.Longitude
+        );
     }
 }

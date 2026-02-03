@@ -2,16 +2,54 @@ namespace ShopCore.Application.Users.Commands.DeleteUser;
 
 public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand>
 {
-    public Task Handle(DeleteUserCommand request, CancellationToken cancellationToken)
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public DeleteUserCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Find user by id
-        // 2. Check user has no active orders/subscriptions (or archive them)
-        // 3. Delete user addresses
-        // 4. Delete user wishlist
-        // 5. Delete/anonymize user reviews
-        // 6. Delete user account
-        // 7. Save changes to database
-        return Task.CompletedTask;
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task Handle(DeleteUserCommand request, CancellationToken ct)
+    {
+        if (_currentUser.Role != UserRole.Admin)
+            throw new ForbiddenException("Only admins can delete users");
+
+        var user = await _context.Users
+            .Include(u => u.Addresses)
+            .Include(u => u.Wishlists)
+            .FirstOrDefaultAsync(u => u.Id == request.Id, ct);
+
+        if (user == null)
+            throw new NotFoundException("User", request.Id);
+
+        // Check for active subscriptions
+        var hasActiveSubscriptions = await _context.Subscriptions
+            .AnyAsync(s => s.CustomerId == request.Id && s.Status == SubscriptionStatus.Active, ct);
+
+        if (hasActiveSubscriptions)
+            throw new BadRequestException("Cannot delete user with active subscriptions");
+
+        // Soft delete - mark as inactive and anonymize
+        user.IsActive = false;
+        user.Email = $"deleted_{user.Id}@deleted.com";
+        user.FirstName = "Deleted";
+        user.LastName = "User";
+        user.PhoneNumber = string.Empty;
+        user.RefreshToken = null;
+
+        // Remove addresses
+        foreach (var address in user.Addresses)
+        {
+            address.IsDeleted = true;
+        }
+
+        // Remove wishlists
+        _context.Wishlists.RemoveRange(user.Wishlists);
+
+        await _context.SaveChangesAsync(ct);
     }
 }

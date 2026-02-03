@@ -15,10 +15,14 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         _currentUser = currentUser;
     }
 
-    public async Task<Unit> Handle(UpdateProductCommand request, CancellationToken ct)
+    public async Task<ProductDto> Handle(UpdateProductCommand request, CancellationToken ct)
     {
-        // 1. Find product
+        // 1. Find product with related data
         var product = await _context.Products
+            .Include(p => p.Category)
+            .Include(p => p.Vendor)
+            .Include(p => p.Images)
+            .Include(p => p.Reviews)
             .FirstOrDefaultAsync(p => p.Id == request.Id && !p.IsDeleted, ct);
 
         if (product == null)
@@ -40,6 +44,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
 
         // 4. Update fields
         product.Name = request.Name;
+        product.Slug = request.Slug;
         product.Description = request.Description;
         product.ShortDescription = request.ShortDescription;
         product.Price = request.Price;
@@ -52,6 +57,8 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         product.Weight = request.Weight;
         product.WeightUnit = request.WeightUnit;
         product.Dimensions = request.Dimensions;
+        product.Status = request.Status;
+        product.IsFeatured = request.IsFeatured;
         product.IsSubscriptionAvailable = request.IsSubscriptionAvailable;
         product.SubscriptionDiscount = request.SubscriptionDiscount;
         product.MetaTitle = request.MetaTitle;
@@ -61,6 +68,32 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
 
         await _context.SaveChangesAsync(ct);
 
-        return Unit.Value;
+        // 5. Return updated ProductDto
+        var primaryImage = product.Images.FirstOrDefault(i => i.IsPrimary)?.ImageUrl
+                        ?? product.Images.FirstOrDefault()?.ImageUrl;
+
+        var avgRating = product.Reviews.Any()
+            ? product.Reviews.Average(r => r.Rating)
+            : 0;
+
+        return new ProductDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Slug = product.Slug,
+            ShortDescription = product.ShortDescription,
+            Price = product.Price,
+            CompareAtPrice = product.CompareAtPrice,
+            DiscountPercentage = product.CompareAtPrice.HasValue && product.CompareAtPrice > 0
+                ? Math.Round((product.CompareAtPrice.Value - product.Price) / product.CompareAtPrice.Value * 100, 0)
+                : 0,
+            IsInStock = !product.TrackInventory || product.StockQuantity > 0,
+            IsOnSale = product.CompareAtPrice.HasValue && product.CompareAtPrice > product.Price,
+            PrimaryImageUrl = primaryImage,
+            AverageRating = (decimal)avgRating,
+            ReviewCount = product.Reviews.Count,
+            CategoryName = product.Category?.Name ?? string.Empty,
+            VendorName = product.Vendor?.BusinessName ?? string.Empty
+        };
     }
 }

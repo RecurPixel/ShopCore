@@ -1,5 +1,6 @@
 using ShopCore.Application.CustomerInvitations.Commands.AcceptInvitation;
 using ShopCore.Application.CustomerInvitations.DTOs;
+using ShopCore.Application.Subscriptions.DTOs;
 
 namespace ShopCore.Application.CustomerInvitations.Handlers;
 

@@ -5,21 +5,43 @@ namespace ShopCore.Application.Users.Commands.UpdateCurrentUser;
 public class UpdateCurrentUserCommandHandler
     : IRequestHandler<UpdateCurrentUserCommand, UserProfileDto>
 {
-    public Task<UserProfileDto> Handle(
-        UpdateCurrentUserCommand request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public UpdateCurrentUserCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement command logic
-        // 1. Get current user from context
-        // 2. Validate input fields (name, phone, etc.)
-        // 3. Check email uniqueness if email is being updated
-        // 4. Update user properties
-        // 5. Verify and update phone number if provided
-        // 6. Update preferences and settings
-        // 7. Save changes to database
-        // 8. Create audit log of profile update
-        // 9. Map and return updated UserProfileDto
-        return Task.FromResult(new UserProfileDto());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<UserProfileDto> Handle(UpdateCurrentUserCommand request, CancellationToken ct)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == _currentUser.UserId, ct);
+
+        if (user == null)
+            throw new NotFoundException("User", _currentUser.UserId);
+
+        user.FirstName = request.FirstName;
+        user.LastName = request.LastName;
+        user.PhoneNumber = request.PhoneNumber;
+
+        await _context.SaveChangesAsync(ct);
+
+        return new UserProfileDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            FullName = user.FullName,
+            PhoneNumber = user.PhoneNumber,
+            AvatarUrl = user.AvatarUrl,
+            Role = user.Role.ToString(),
+            IsEmailVerified = user.IsEmailVerified,
+            LastLoginAt = user.LastLoginAt
+        };
     }
 }

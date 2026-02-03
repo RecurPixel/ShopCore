@@ -4,21 +4,59 @@ namespace ShopCore.Application.Vendors.Queries.GetMyVendor;
 
 public class GetMyVendorQueryHandler : IRequestHandler<GetMyVendorQuery, VendorProfileDto>
 {
-    public Task<VendorProfileDto> Handle(
-        GetMyVendorQuery request,
-        CancellationToken cancellationToken
-    )
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
+
+    public GetMyVendorQueryHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUser)
     {
-        // TODO: Implement query logic
-        // 1. Get current vendor from context
-        // 2. Fetch vendor details from database
-        // 3. Include business information and documents
-        // 4. Include service areas and zones
-        // 5. Include bank account and payment info
-        // 6. Include current status and approvals
-        // 7. Include contact information
-        // 8. Include creation and last updated timestamps
-        // 9. Map and return VendorProfileDto
-        return Task.FromResult(new VendorProfileDto());
+        _context = context;
+        _currentUser = currentUser;
+    }
+
+    public async Task<VendorProfileDto> Handle(
+        GetMyVendorQuery request,
+        CancellationToken cancellationToken)
+    {
+        var vendor = await _context.VendorProfiles
+            .AsNoTracking()
+            .Include(v => v.User)
+            .Where(v => v.UserId == _currentUser.UserId)
+            .Select(v => new VendorProfileDto
+            {
+                Id = v.Id,
+                UserId = v.UserId,
+                BusinessName = v.BusinessName,
+                BusinessDescription = v.BusinessDescription,
+                BusinessLogo = v.BusinessLogo,
+                BusinessAddress = v.BusinessAddress,
+                GstNumber = v.GstNumber,
+                PanNumber = v.PanNumber,
+                BankName = v.BankName,
+                BankAccountNumber = v.BankAccountNumber,
+                BankIfscCode = v.BankIfscCode,
+                BankAccountHolderName = v.BankAccountHolderName,
+                Email = v.User.Email,
+                PhoneNumber = v.User.PhoneNumber,
+                Status = v.Status.ToString(),
+                CommissionRate = v.CommissionRate,
+                RequiresDeposit = v.RequiresDeposit,
+                DefaultDepositAmount = v.DefaultDepositAmount,
+                DefaultBillingCycleDays = v.DefaultBillingCycleDays,
+                AverageRating = v.AverageRating,
+                TotalReviews = v.TotalReviews,
+                TotalProducts = v.TotalProducts,
+                TotalOrders = v.TotalOrders,
+                TotalRevenue = v.TotalRevenue,
+                ApprovedAt = v.ApprovedAt,
+                CreatedAt = v.CreatedAt
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (vendor == null)
+            throw new NotFoundException("Vendor profile not found");
+
+        return vendor;
     }
 }
