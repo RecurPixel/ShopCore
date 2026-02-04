@@ -17,16 +17,22 @@ public class GetMyReviewsQueryHandler : IRequestHandler<GetMyReviewsQuery, Pagin
         _currentUser = currentUser;
     }
 
-    public async Task<List<ReviewDto>> Handle(
+    public async Task<PaginatedList<ReviewDto>> Handle(
         GetMyReviewsQuery request,
         CancellationToken cancellationToken)
     {
-        return await _context.Reviews
+        var query = _context.Reviews
             .AsNoTracking()
             .Include(r => r.Product)
                 .ThenInclude(p => p.Images)
             .Where(r => r.UserId == _currentUser.UserId)
-            .OrderByDescending(r => r.CreatedAt)
+            .OrderByDescending(r => r.CreatedAt);
+
+        var totalItems = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
             .Select(r => new ReviewDto
             {
                 Id = r.Id,
@@ -45,5 +51,13 @@ public class GetMyReviewsQueryHandler : IRequestHandler<GetMyReviewsQuery, Pagin
                 CreatedAt = r.CreatedAt
             })
             .ToListAsync(cancellationToken);
+
+        return new PaginatedList<ReviewDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalItems
+        };
     }
 }

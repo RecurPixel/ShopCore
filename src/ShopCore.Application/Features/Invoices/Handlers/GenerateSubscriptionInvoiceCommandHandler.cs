@@ -7,13 +7,16 @@ public class GenerateSubscriptionInvoiceCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
+    private readonly ITaxService _taxService;
 
     public GenerateSubscriptionInvoiceCommandHandler(
         IApplicationDbContext context,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        ITaxService taxService)
     {
         _context = context;
         _currentUser = currentUser;
+        _taxService = taxService;
     }
 
     public async Task<InvoiceDto> Handle(
@@ -49,8 +52,7 @@ public class GenerateSubscriptionInvoiceCommandHandler
 
         // Calculate totals
         var subtotal = unbilledDeliveries.Sum(d => d.TotalAmount);
-        var taxRate = 0.18m; // 18% GST
-        var tax = Math.Round(subtotal * taxRate, 2);
+        var tax = _taxService.CalculateTax(subtotal, 0); // No discount for subscriptions
         var total = subtotal + tax;
 
         // Generate invoice number
@@ -113,13 +115,6 @@ public class GenerateSubscriptionInvoiceCommandHandler
 
     private static InvoiceDto MapToDto(SubscriptionInvoice invoice, string subscriptionNumber, List<Delivery> deliveries)
     {
-        PaymentMethod? paymentMethod = null;
-        if (!string.IsNullOrEmpty(invoice.PaymentMethod) &&
-            Enum.TryParse<PaymentMethod>(invoice.PaymentMethod, out var pm))
-        {
-            paymentMethod = pm;
-        }
-
         var lineItems = deliveries
             .SelectMany(d => d.Items.Select(i => new InvoiceLineItemDto(
                 i.Id,
@@ -132,23 +127,30 @@ public class GenerateSubscriptionInvoiceCommandHandler
             )))
             .ToList();
 
-        return new InvoiceDto(
-            invoice.Id,
-            invoice.InvoiceNumber,
-            invoice.SubscriptionId,
-            subscriptionNumber,
-            invoice.GeneratedAt,
-            invoice.DueDate,
-            invoice.Subtotal,
-            invoice.Tax,
-            invoice.Total,
-            invoice.PaidAmount,
-            invoice.BalanceDue,
-            invoice.Status,
-            invoice.PaidAt,
-            paymentMethod,
-            invoice.PaymentTransactionId,
-            lineItems
-        );
+        return new InvoiceDto
+        {
+            Id = invoice.Id,
+            InvoiceNumber = invoice.InvoiceNumber,
+            SubscriptionId = invoice.SubscriptionId,
+            SubscriptionNumber = subscriptionNumber,
+            GeneratedAt = invoice.GeneratedAt,
+            InvoiceDate = invoice.GeneratedAt,
+            DueDate = invoice.DueDate,
+            PeriodStart = invoice.PeriodStart,
+            PeriodEnd = invoice.PeriodEnd,
+            Subtotal = invoice.Subtotal,
+            Tax = invoice.Tax,
+            Total = invoice.Total,
+            PaidAmount = invoice.PaidAmount,
+            BalanceDue = invoice.BalanceDue,
+            Status = invoice.Status.ToString(),
+            InvoiceStatus = invoice.Status,
+            PaidAt = invoice.PaidAt,
+            PaymentMethodEnum = invoice.PaymentMethod,
+            PaymentMethod = invoice.PaymentMethod?.ToString(),
+            PaymentTransactionId = invoice.PaymentTransactionId,
+            TotalDeliveries = deliveries.Count,
+            LineItems = lineItems
+        };
     }
 }

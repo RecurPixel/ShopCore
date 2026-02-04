@@ -53,32 +53,34 @@ public class SkipDeliveryCommandHandler : IRequestHandler<SkipDeliveryCommand, D
     private static DeliveryDto MapToDto(Delivery delivery, string? skipReason)
     {
         PaymentMethod? paymentMethod = null;
-        if (!string.IsNullOrEmpty(delivery.PaymentMethod) &&
-            Enum.TryParse<PaymentMethod>(delivery.PaymentMethod, out var pm))
+        if (!string.IsNullOrEmpty(delivery.PaymentMethod.ToString()) &&
+            Enum.TryParse<PaymentMethod>(delivery.PaymentMethod.ToString(), out var pm))
         {
             paymentMethod = pm;
         }
 
-        return new DeliveryDto(
-            delivery.Id,
-            delivery.SubscriptionId,
-            delivery.Subscription.SubscriptionNumber,
-            delivery.ScheduledDate,
-            delivery.ActualDeliveryDate,
-            delivery.Status,
-            delivery.FailureReason,
-            skipReason,
-            delivery.TotalAmount,
-            paymentMethod,
-            delivery.PaymentTransactionId,
-            delivery.Items.Select(i => new DeliveryItemDto(
-                i.Id,
-                i.ProductId,
-                i.Product.Name,
-                i.Quantity,
-                i.UnitPrice,
-                i.Quantity * i.UnitPrice
-            )).ToList()
-        );
+        return new DeliveryDto
+        {
+            Id = delivery.Id,
+            SubscriptionId = delivery.SubscriptionId,
+            SubscriptionNumber = delivery.Subscription.SubscriptionNumber,
+            ScheduledDate = delivery.ScheduledDate,
+            ActualDeliveryDate = delivery.ActualDeliveryDate,
+            Status = delivery.Status.ToString(),
+            FailureReason = delivery.FailureReason,
+            SkipReason = skipReason,
+            Total = delivery.TotalAmount,
+            PaymentMethod = paymentMethod.ToString(),
+            // delivery.PaymentTransactionId,
+            Items = delivery.Items.Select(i => new DeliveryItemDto
+            {
+                Id = i.Id,
+                ProductId = i.ProductId,
+                ProductName = i.Product.Name,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+                Subtotal = i.Quantity * i.UnitPrice
+            }).ToList()
+        };
     }
 }

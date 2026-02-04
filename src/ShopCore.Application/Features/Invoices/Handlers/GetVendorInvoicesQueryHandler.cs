@@ -57,8 +57,8 @@ public class GetVendorInvoicesQueryHandler : IRequestHandler<GetVendorInvoicesQu
     private static InvoiceDto MapToDto(SubscriptionInvoice invoice)
     {
         PaymentMethod? paymentMethod = null;
-        if (!string.IsNullOrEmpty(invoice.PaymentMethod) &&
-            Enum.TryParse<PaymentMethod>(invoice.PaymentMethod, out var pm))
+        if (!string.IsNullOrEmpty(invoice.PaymentMethod.ToString()) &&
+            Enum.TryParse<PaymentMethod>(invoice.PaymentMethod.ToString(), out var pm))
         {
             paymentMethod = pm;
         }
@@ -75,23 +75,30 @@ public class GetVendorInvoicesQueryHandler : IRequestHandler<GetVendorInvoicesQu
             )))
             .ToList();
 
-        return new InvoiceDto(
-            invoice.Id,
-            invoice.InvoiceNumber,
-            invoice.SubscriptionId,
-            invoice.Subscription.SubscriptionNumber,
-            invoice.GeneratedAt,
-            invoice.DueDate,
-            invoice.Subtotal,
-            invoice.Tax,
-            invoice.Total,
-            invoice.PaidAmount,
-            invoice.BalanceDue,
-            invoice.Status,
-            invoice.PaidAt,
-            paymentMethod,
-            invoice.PaymentTransactionId,
-            lineItems
-        );
+        return new InvoiceDto
+        {
+            Id = invoice.Id,
+            InvoiceNumber = invoice.InvoiceNumber,
+            SubscriptionId = invoice.SubscriptionId,
+            SubscriptionNumber = invoice.Subscription.SubscriptionNumber,
+            GeneratedAt = invoice.GeneratedAt,
+            InvoiceDate = invoice.GeneratedAt,
+            DueDate = invoice.DueDate,
+            PeriodStart = invoice.PeriodStart,
+            PeriodEnd = invoice.PeriodEnd,
+            Subtotal = invoice.Subtotal,
+            Tax = invoice.Tax,
+            Total = invoice.Total,
+            PaidAmount = invoice.PaidAmount,
+            BalanceDue = invoice.BalanceDue,
+            Status = invoice.Status.ToString(),
+            InvoiceStatus = invoice.Status,
+            PaidAt = invoice.PaidAt,
+            PaymentMethodEnum = paymentMethod,
+            PaymentMethod = invoice.PaymentMethod.ToString(),
+            PaymentTransactionId = invoice.PaymentTransactionId,
+            TotalDeliveries = invoice.Deliveries.Count,
+            LineItems = lineItems
+        };
     }
 }

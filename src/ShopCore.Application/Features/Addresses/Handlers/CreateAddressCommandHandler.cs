@@ -42,7 +42,7 @@ public class CreateAddressCommandHandler : IRequestHandler<CreateAddressCommand,
 
         var address = new Address
         {
-            UserId = _currentUser.UserId,
+            UserId = _currentUser.RequiredUserId,
             User = user,
             FullName = request.FullName,
             PhoneNumber = request.PhoneNumber,

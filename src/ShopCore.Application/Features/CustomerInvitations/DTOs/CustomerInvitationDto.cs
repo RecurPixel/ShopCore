@@ -11,7 +11,7 @@ public record CustomerInvitationDto
     public string? Email { get; init; }
     public string DeliveryAddress { get; init; } = string.Empty;
     public string Pincode { get; init; } = string.Empty;
-    public InvitationStatus Status { get; init; }
+    public string Status { get; init; } = string.Empty;
     public DateTime SentAt { get; init; }
     public DateTime ExpiresAt { get; init; }
     public DateTime? AcceptedAt { get; init; }
@@ -24,7 +24,7 @@ public record InvitationDetailsDto
     public string VendorName { get; init; } = string.Empty;
     public string? VendorLogo { get; init; }
     public List<InvitationItemDto> Items { get; init; } = new();
-    public SubscriptionFrequency Frequency { get; init; }
+    public string Frequency { get; init; } = string.Empty;
     public string DeliveryTime { get; init; } = string.Empty;
     public decimal MonthlyEstimate { get; init; }
     public decimal? DepositAmount { get; init; }

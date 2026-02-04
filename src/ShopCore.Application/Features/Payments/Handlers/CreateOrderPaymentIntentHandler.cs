@@ -65,8 +65,9 @@ public class CreateOrderPaymentIntentHandler
             ClientSecret = paymentIntent.KeyId, // Razorpay Key ID for frontend
             Amount = amountToCharge,
             Currency = paymentIntent.Currency,
-            Status = PaymentStatus.Pending,
-            RazorpayOrderId = paymentIntent.RazorpayOrderId
+            Status = PaymentStatus.Pending.ToString(),
+            Gateway = PaymentGateway.Razorpay.ToString(),
+            GatewayOrderId = paymentIntent.RazorpayOrderId
         };
     }
 }

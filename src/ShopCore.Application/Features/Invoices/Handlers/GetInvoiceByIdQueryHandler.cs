@@ -57,7 +57,7 @@ public class GetInvoiceByIdQueryHandler : IRequestHandler<GetInvoiceByIdQuery, I
                 PaidAmount = i.PaidAmount,
                 BalanceDue = i.BalanceDue,
                 Status = i.Status.ToString(),
-                PaymentMethod = i.PaymentMethod,
+                PaymentMethod = i.PaymentMethod.ToString(),
                 PaymentTransactionId = i.PaymentTransactionId,
                 IsManuallyGenerated = i.IsManuallyGenerated,
                 IsOverdue = i.IsOverdue,

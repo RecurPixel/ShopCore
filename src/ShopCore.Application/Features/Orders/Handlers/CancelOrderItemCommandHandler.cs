@@ -76,7 +76,7 @@ public class CancelOrderItemCommandHandler
             OrderItemId = orderItem.Id,
             CancelledAt = DateTime.UtcNow,
             RefundAmount = refundAmount,
-            "Pending" // TODO: Integrate with payment gateway
+            RefundStatus = "Pending" // TODO: Integrate with payment gateway
         };
     }
 }

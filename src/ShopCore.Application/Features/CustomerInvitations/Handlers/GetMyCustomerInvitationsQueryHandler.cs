@@ -22,10 +22,8 @@ public class GetMyCustomerInvitationsQueryHandler
         GetMyCustomerInvitationsQuery request,
         CancellationToken cancellationToken)
     {
-        if (_currentUserService.UserId == 0)
-            throw new UnauthorizedAccessException("User not authenticated");
-
-        var userId = _currentUserService.UserId;
+        var userId = _currentUserService.UserId
+            ?? throw new UnauthorizedAccessException("User not authenticated");
 
         var vendor = await _context.VendorProfiles
             .FirstOrDefaultAsync(v => v.UserId == userId, cancellationToken)
@@ -46,20 +44,21 @@ public class GetMyCustomerInvitationsQueryHandler
             .OrderByDescending(ci => ci.SentAt)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
-            .Select(ci => new CustomerInvitationDto(
-                ci.Id,
-                ci.VendorId,
-                ci.Vendor.BusinessName,
-                ci.CustomerName,
-                ci.PhoneNumber,
-                ci.Email,
-                ci.DeliveryAddress,
-                ci.Pincode,
-                ci.Status,
-                ci.SentAt,
-                ci.ExpiresAt,
-                ci.AcceptedAt
-            ))
+            .Select(ci => new CustomerInvitationDto
+            {
+                Id = ci.Id,
+                VendorId = ci.VendorId,
+                VendorName = ci.Vendor.BusinessName,
+                CustomerName = ci.CustomerName,
+                PhoneNumber = ci.PhoneNumber,
+                Email = ci.Email,
+                DeliveryAddress = ci.DeliveryAddress,
+                Pincode = ci.Pincode,
+                Status = ci.Status.ToString(),
+                SentAt = ci.SentAt,
+                ExpiresAt = ci.ExpiresAt,
+                AcceptedAt = ci.AcceptedAt
+            })
             .ToListAsync(cancellationToken);
 
         var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);

@@ -6,11 +6,13 @@ public class RemoveCouponCommandHandler : IRequestHandler<RemoveCouponCommand, C
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
+    private readonly ITaxService _taxService;
 
-    public RemoveCouponCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
+    public RemoveCouponCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser, ITaxService taxService)
     {
         _context = context;
         _currentUser = currentUser;
+        _taxService = taxService;
     }
 
     public async Task<CartDto> Handle(RemoveCouponCommand request, CancellationToken ct)
@@ -32,7 +34,7 @@ public class RemoveCouponCommandHandler : IRequestHandler<RemoveCouponCommand, C
                 Subtotal = 0,
                 Discount = 0,
                 Tax = 0,
-                TotalAmount = 0,
+                Total = 0,
                 ItemCount = 0
             };
         }
@@ -59,7 +61,7 @@ public class RemoveCouponCommandHandler : IRequestHandler<RemoveCouponCommand, C
             .ToList();
 
         var subtotal = items.Sum(i => i.Subtotal);
-        var tax = subtotal * 0.18m;
+        var tax = _taxService.CalculateTax(subtotal, 0);
 
         return new CartDto
         {
@@ -68,7 +70,7 @@ public class RemoveCouponCommandHandler : IRequestHandler<RemoveCouponCommand, C
             Subtotal = subtotal,
             Discount = 0,
             Tax = tax,
-            TotalAmount = subtotal + tax,
+            Total = subtotal + tax,
             ItemCount = items.Sum(i => i.Quantity)
         };
     }

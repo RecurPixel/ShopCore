@@ -24,7 +24,7 @@ public record SubscriptionDto
     public decimal? DepositAmount { get; init; }
     public decimal? DepositPaid { get; init; }
     public decimal? DepositBalance { get; init; }
-    public SubscriptionStatus Status { get; init; } = SubscriptionStatus.Active;
+    public string Status { get; init; } = string.Empty;
     public int TotalDeliveries { get; init; }
     public int CompletedDeliveries { get; init; }
     public int FailedDeliveries { get; init; }

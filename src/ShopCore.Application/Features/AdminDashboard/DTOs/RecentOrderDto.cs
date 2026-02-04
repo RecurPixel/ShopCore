@@ -7,6 +7,6 @@ public record RecentOrderDto
     public string CustomerName { get; init; } = string.Empty;
     public string? CustomerEmail { get; init; }
     public decimal Total { get; init; }
-    public OrderStatus Status { get; init; }
+    public string Status { get; init; } = string.Empty;
     public DateTime OrderDate { get; init; }
 }

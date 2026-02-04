@@ -9,7 +9,6 @@ public record SubscriptionItemDto
     public int Quantity { get; init; }
     public decimal UnitPrice { get; init; }
     public decimal LineTotal { get; init; }
-    public decimal TotalPrice { get; init; }
     public bool IsRecurring { get; init; }
     public DateTime? OneTimeDeliveryDate { get; init; }
     public int VendorId { get; init; }

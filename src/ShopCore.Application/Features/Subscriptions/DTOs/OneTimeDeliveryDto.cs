@@ -5,8 +5,8 @@ public record OneTimeDeliveryDto
     public int SubscriptionId { get; init; }
     public int DeliveryId { get; init; }
     public DateTime DeliveryDate { get; init; }
-    public decimal TotalAmount { get; init; }
-    public PaymentStatus PaymentStatus { get; init; }
+    public decimal Total { get; init; }
+    public string PaymentStatus { get; init; } = string.Empty;
 }
 
 public record SubscriptionItemResultDto

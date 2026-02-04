@@ -43,13 +43,13 @@ public class ProcessRefundCommandHandler
         var refundAmount = itemsToRefund.Sum(i => i.Subtotal);
 
         // Process refund via payment gateway
-        var refundResult = await _paymentService.ProcessRefundAsync(
+        var refundResult = await _paymentService.CreateRefundAsync(
             order.PaymentTransactionId!,
             refundAmount,
             request.Reason);
 
-        if (!refundResult.IsSuccess)
-            throw new ValidationException($"Refund failed: {refundResult.ErrorMessage}");
+        if (refundResult.Status.Equals("failed", StringComparison.OrdinalIgnoreCase))
+            throw new ValidationException("Refund failed");
 
         // Update order
         order.RefundedAmount = (order.RefundedAmount ?? 0) + refundAmount;
@@ -60,14 +60,11 @@ public class ProcessRefundCommandHandler
         // Update items
         foreach (var item in itemsToRefund)
         {
-            item.Status = OrderStatus.Refunded;
+            item.Status = OrderItemStatus.Refunded;
         }
 
-        // Update order status
-        if (order.Items.All(i => i.Status == OrderStatus.Refunded))
-            order.Status = OrderStatus.Refunded;
-        else if (order.Items.Any(i => i.Status == OrderStatus.Refunded))
-            order.Status = OrderStatus.PartiallyRefunded;
+        // Update order status based on items (derived status)
+        order.UpdateStatusFromItems();
 
         await _context.SaveChangesAsync(ct);
 
@@ -75,7 +72,7 @@ public class ProcessRefundCommandHandler
         {
             OrderId = order.Id,
             RefundAmount = refundAmount,
-            RefundTransactionId = refundResult.TransactionId,
+            RefundTransactionId = refundResult.RefundId,
             RefundedAt = DateTime.UtcNow,
             Status = "Initiated"
         };

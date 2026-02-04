@@ -22,10 +22,8 @@ public class CreateCustomerInvitationCommandHandler
         CreateCustomerInvitationCommand request,
         CancellationToken cancellationToken)
     {
-        if (_currentUserService.UserId == 0)
-            throw new UnauthorizedAccessException("User not authenticated");
-
-        var userId = _currentUserService.UserId;
+        var userId = _currentUserService.UserId
+            ?? throw new UnauthorizedAccessException("User not authenticated");
 
         var vendor = await _context.VendorProfiles
             .FirstOrDefaultAsync(v => v.UserId == userId, cancellationToken)
@@ -49,10 +47,11 @@ public class CreateCustomerInvitationCommandHandler
             };
         }).ToList();
 
+        var invitationToken = GenerateToken();
         var invitation = new CustomerInvitation
         {
             VendorId = vendor.Id,
-            InvitationToken = GenerateToken(),
+            InvitationToken = invitationToken,
             CustomerName = request.CustomerName,
             PhoneNumber = request.PhoneNumber,
             Email = request.Email,
@@ -108,7 +107,7 @@ public class CreateCustomerInvitationCommandHandler
             Email = invitation.Email,
             DeliveryAddress = invitation.DeliveryAddress,
             Pincode = invitation.Pincode,
-            Status = invitation.Status,
+            Status = invitation.Status.ToString(),
             SentAt = invitation.SentAt,
             ExpiresAt = invitation.ExpiresAt,
             AcceptedAt = invitation.AcceptedAt

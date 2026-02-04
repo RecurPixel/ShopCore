@@ -36,8 +36,8 @@ public class DeliveriesController : ControllerBase
     public async Task<IActionResult> DownloadDeliveryReceipt(int id)
     {
         var receipt = await _mediator.Send(new GetDeliveryReceiptQuery(id));
-        if (receipt.FileContent is null || receipt.Length == 0)
+        if (receipt.Content is null || receipt.FileSize == 0)
             return NotFound();
-        return File(receipt.FileContent, "application/pdf", $"delivery-receipt-{id}.pdf");
+        return File(receipt.Content, "application/pdf", $"delivery-receipt-{id}.pdf");
     }
 }

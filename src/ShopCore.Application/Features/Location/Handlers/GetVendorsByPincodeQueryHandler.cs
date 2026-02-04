@@ -34,16 +34,17 @@ public class GetVendorsByPincodeQueryHandler : IRequestHandler<GetVendorsByPinco
             .ToListAsync(ct);
 
         return vendors
-            .Select(v => new NearbyVendorDto(
-                v.Id,
-                v.BusinessName,
-                v.BusinessLogo,
-                v.AverageRating,
-                v.TotalReviews,
-                0, // Distance not applicable for pincode search
-                v.Status == VendorStatus.Active,
-                v.ServiceAreas.Select(sa => sa.AreaName).ToList()
-            ))
+            .Select(v => new NearbyVendorDto
+            {
+                VendorId = v.Id,
+                BusinessName = v.BusinessName,
+                LogoUrl = v.BusinessLogo,
+                Rating = v.AverageRating,
+                ReviewCount = v.TotalReviews,
+                Distance = 0, // Distance not applicable for pincode search
+                IsOpen = v.Status == VendorStatus.Active,
+                ServiceAreas = v.ServiceAreas.Select(sa => sa.AreaName).ToList()
+            })
             .OrderByDescending(v => v.Rating)
             .ToList();
     }

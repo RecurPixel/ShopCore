@@ -1,9 +1,6 @@
-using ShopCore.Application.Common.Models;
-using ShopCore.Application.Invoices.DTOs;
-
 namespace ShopCore.Application.Orders.Queries.GetOrderInvoice;
 
-public class GetOrderInvoiceQueryHandler : IRequestHandler<GetOrderInvoiceQuery, InvoiceDownloadDto>
+public class GetOrderInvoiceQueryHandler : IRequestHandler<GetOrderInvoiceQuery, FileResponse>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;

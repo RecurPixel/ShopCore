@@ -83,7 +83,6 @@ public class GetSubscriptionByIdQueryHandler
                     Quantity = si.Quantity,
                     UnitPrice = si.UnitPrice,
                     LineTotal = si.Quantity * si.UnitPrice,
-                    TotalPrice = si.Quantity * si.UnitPrice,
                     IsRecurring = si.IsRecurring,
                     OneTimeDeliveryDate = si.OneTimeDeliveryDate,
                     VendorId = s.VendorId,

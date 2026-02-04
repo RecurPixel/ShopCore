@@ -117,7 +117,6 @@ public class GetAllSubscriptionsQueryHandler : IRequestHandler<GetAllSubscriptio
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
                 LineTotal = i.Quantity * i.UnitPrice,
-                TotalPrice = i.Quantity * i.UnitPrice,
                 VendorId = subscription.VendorId,
                 VendorName = subscription.Vendor.BusinessName
             }).ToList()

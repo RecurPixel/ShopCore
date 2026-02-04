@@ -87,20 +87,21 @@ public class AcceptInvitationCommandHandler
             City = "Unknown", // Extract from address if possible
             State = "Unknown",
             Country = "India",
-            PinCode = invitation.Pincode,
+            Pincode = invitation.Pincode,
             Landmark = "Unknown",
             Type = AddressType.Home,
-            IsDefault = true
+            IsDefault = true,
+            User = user
         };
 
         _context.Addresses.Add(address);
         await _context.SaveChangesAsync(ct);
 
         // Deserialize items
-        var items = System.Text.Json.JsonSerializer.Deserialize<List<InvitationItemInput>>(invitation.ItemsJson);
+        var items = System.Text.Json.JsonSerializer.Deserialize<List<InvitationItemInput>>(invitation.SubscriptionItemsJson);
 
         // Create subscription using existing CreateSubscriptionCommand
-        var subscriptionItems = items.Select(i => new SubscriptionItemDto { Id = i.ProductId, Quantity = i.Quantity }).ToList();
+        var subscriptionItems = items?.Select(i => new SubscriptionItemDto { Id = i.ProductId, Quantity = i.Quantity }).ToList();
 
         var createSubCommand = new CreateSubscriptionCommand(
             VendorId: invitation.VendorId,
@@ -127,7 +128,7 @@ public class AcceptInvitationCommandHandler
         // Update invitation
         invitation.Status = InvitationStatus.Accepted;
         invitation.AcceptedAt = _dateTime.UtcNow;
-        invitation.UserId = user.Id;
+        invitation.InvitedUserId = user.Id;
 
         await _context.SaveChangesAsync(ct);
 

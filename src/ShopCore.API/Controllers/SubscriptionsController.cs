@@ -46,7 +46,10 @@ public class SubscriptionsController : ControllerBase
         int id,
         [FromBody] UpdateSubscriptionCommand command)
     {
-        command.SubscriptionId = id;
+        if (id != command.Id)
+        {
+            return BadRequest("ID in the URL does not match the ID in the request body.");
+        }
         var subscription = await _mediator.Send(command);
         return Ok(subscription);
     }

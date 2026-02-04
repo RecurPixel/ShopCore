@@ -35,16 +35,17 @@ public class GetNearbyVendorsQueryHandler : IRequestHandler<GetNearbyVendorsQuer
 
             if (hasServiceArea || distance <= request.RadiusKm)
             {
-                nearbyVendors.Add(new NearbyVendorDto(
-                    vendor.Id,
-                    vendor.BusinessName,
-                    vendor.BusinessLogo,
-                    vendor.AverageRating,
-                    vendor.TotalReviews,
-                    distance,
-                    IsVendorOpen(vendor),
-                    vendor.ServiceAreas.Select(sa => sa.AreaName).ToList()
-                ));
+                nearbyVendors.Add(new NearbyVendorDto
+                {
+                    VendorId = vendor.Id,
+                    BusinessName = vendor.BusinessName,
+                    LogoUrl = vendor.BusinessLogo,
+                    Rating = vendor.AverageRating,
+                    ReviewCount = vendor.TotalReviews,
+                    Distance = distance,
+                    IsOpen = IsVendorOpen(vendor),
+                    ServiceAreas = vendor.ServiceAreas.Select(sa => sa.AreaName).ToList()
+                });
             }
         }
 

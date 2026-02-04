@@ -8,6 +8,6 @@ public record ReverseGeocodeResultDto
     public string? City { get; init; }
     public string? State { get; init; }
     public string? Country { get; init; }
-    public string? PinCode { get; init; }
+    public string? Pincode { get; init; }
     public string? PlaceId { get; init; }
 }

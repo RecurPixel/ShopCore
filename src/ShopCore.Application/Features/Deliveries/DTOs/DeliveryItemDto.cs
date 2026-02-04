@@ -8,7 +8,7 @@ public record DeliveryItemDto
     public string? ProductImageUrl { get; init; }
     public int Quantity { get; init; }
     public decimal UnitPrice { get; init; }
-    public decimal Amount { get; init; }
+    public decimal Subtotal { get; init; }
     public string Status { get; init; } = string.Empty;
     public string? Notes { get; init; }
 }

@@ -17,7 +17,7 @@ public class ValidateCouponCommandHandler
     public async Task<CouponValidationResultDto> Handle(ValidateCouponCommand request, CancellationToken ct)
     {
         var coupon = await _context.Coupons
-            .FirstOrDefaultAsync(c => c.Code == request.CouponCode.ToUpperInvariant(), ct);
+            .FirstOrDefaultAsync(c => c.Code == request.Code.ToUpperInvariant(), ct);
 
         if (coupon == null || !coupon.IsActive)
             return new CouponValidationResultDto { IsValid = false, ErrorMessage = "Invalid coupon code" };
@@ -31,7 +31,7 @@ public class ValidateCouponCommandHandler
         if (coupon.UsageLimit.HasValue && coupon.UsageCount >= coupon.UsageLimit)
             return new CouponValidationResultDto { IsValid = false, ErrorMessage = "Coupon usage limit reached" };
 
-        if (coupon.MinOrderValue.HasValue && request.OrderTotal < coupon.MinOrderValue)
+        if (coupon.MinOrderValue.HasValue && request.CartTotal < coupon.MinOrderValue)
             return new CouponValidationResultDto
             {
                 IsValid = false,
@@ -42,7 +42,7 @@ public class ValidateCouponCommandHandler
         decimal discount = 0;
         if (coupon.Type == CouponType.Percentage)
         {
-            discount = request.OrderTotal * (coupon.DiscountPercentage!.Value / 100);
+            discount = request.CartTotal * (coupon.DiscountPercentage!.Value / 100);
             if (coupon.MaxDiscount.HasValue && discount > coupon.MaxDiscount)
                 discount = coupon.MaxDiscount.Value;
         }

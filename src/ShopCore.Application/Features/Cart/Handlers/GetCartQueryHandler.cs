@@ -6,13 +6,16 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery, CartDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
+    private readonly ITaxService _taxService;
 
     public GetCartQueryHandler(
         IApplicationDbContext context,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        ITaxService taxService)
     {
         _context = context;
         _currentUser = currentUser;
+        _taxService = taxService;
     }
 
     public async Task<CartDto> Handle(
@@ -37,7 +40,7 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery, CartDto>
                 Subtotal = 0,
                 Discount = 0,
                 Tax = 0,
-                TotalAmount = 0,
+                Total = 0,
                 ItemCount = 0
             };
         }
@@ -61,7 +64,7 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery, CartDto>
 
         var subtotal = items.Sum(i => i.Subtotal);
         var discount = cart.Discount ?? 0;
-        var tax = (subtotal - discount) * 0.18m; // 18% GST
+        var tax = _taxService.CalculateTax(subtotal, discount);
 
         return new CartDto
         {
@@ -70,7 +73,7 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery, CartDto>
             Subtotal = subtotal,
             Discount = discount,
             Tax = tax,
-            TotalAmount = subtotal + tax - discount,
+            Total = subtotal + tax - discount,
             ItemCount = items.Sum(i => i.Quantity),
             AppliedCouponCode = cart.AppliedCouponCode
         };

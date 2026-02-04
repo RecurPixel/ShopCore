@@ -21,6 +21,9 @@ public class CompleteDeliveryCommandHandler : IRequestHandler<CompleteDeliveryCo
     {
         var delivery = await _context.Deliveries
             .Include(d => d.Subscription)
+                .ThenInclude(s => s.User)
+            .Include(d => d.Subscription)
+                .ThenInclude(s => s.DeliveryAddress)
             .Include(d => d.Items)
                 .ThenInclude(i => i.Product)
             .FirstOrDefaultAsync(d => d.Id == request.Id, ct);
@@ -77,33 +80,60 @@ public class CompleteDeliveryCommandHandler : IRequestHandler<CompleteDeliveryCo
 
     private static DeliveryDto MapToDto(Delivery delivery)
     {
-        PaymentMethod? paymentMethod = null;
-        if (!string.IsNullOrEmpty(delivery.PaymentMethod) &&
-            Enum.TryParse<PaymentMethod>(delivery.PaymentMethod, out var pm))
+        return new DeliveryDto
         {
-            paymentMethod = pm;
-        }
+            Id = delivery.Id,
+            DeliveryNumber = delivery.DeliveryNumber,
+            SubscriptionId = delivery.SubscriptionId,
+            SubscriptionNumber = delivery.Subscription.SubscriptionNumber,
 
-        return new DeliveryDto(
-            delivery.Id,
-            delivery.SubscriptionId,
-            delivery.Subscription.SubscriptionNumber,
-            delivery.ScheduledDate,
-            delivery.ActualDeliveryDate,
-            delivery.Status,
-            delivery.FailureReason,
-            null,
-            delivery.TotalAmount,
-            paymentMethod,
-            delivery.PaymentTransactionId,
-            delivery.Items.Select(i => new DeliveryItemDto(
-                i.Id,
-                i.ProductId,
-                i.Product.Name,
-                i.Quantity,
-                i.UnitPrice,
-                i.Quantity * i.UnitPrice
-            )).ToList()
-        );
+            // Customer Information
+            CustomerName = $"{delivery.Subscription.User.FirstName} {delivery.Subscription.User.LastName}".Trim(),
+            CustomerPhone = delivery.Subscription.DeliveryAddress.PhoneNumber,
+
+            // Delivery Address
+            DeliveryAddress = delivery.Subscription.DeliveryAddress.AddressLine1,
+            DeliveryCity = delivery.Subscription.DeliveryAddress.City,
+            DeliveryState = delivery.Subscription.DeliveryAddress.State,
+            Pincode = delivery.Subscription.DeliveryAddress.Pincode,
+            Landmark = delivery.Subscription.DeliveryAddress.Landmark,
+
+            // Delivery Details
+            ScheduledDate = delivery.ScheduledDate,
+            ActualDeliveryDate = delivery.ActualDeliveryDate,
+            Status = delivery.Status.ToString(),
+            DeliveryPersonName = delivery.DeliveryPersonName,
+            DeliveryNotes = delivery.DeliveryNotes,
+            FailureReason = delivery.FailureReason,
+
+            // Proof of Delivery
+            DeliveryPhotoUrl = delivery.DeliveryPhotoUrl,
+            CustomerSignatureUrl = delivery.CustomerSignatureUrl,
+
+            // Payment Information
+            PaymentStatus = delivery.PaymentStatus.ToString(),
+            Total = delivery.TotalAmount,
+            PaymentMethod = delivery.PaymentMethod?.ToString(),
+            PaymentGateway = delivery.PaymentGateway.ToString(),
+            PaymentTransactionId = delivery.PaymentTransactionId,
+            PaidAt = delivery.PaidAt,
+
+            // Items
+            ItemCount = delivery.Items.Count,
+            Items = delivery.Items.Select(i => new DeliveryItemDto
+            {
+                Id = i.Id,
+                ProductId = i.ProductId,
+                ProductName = i.Product.Name,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+                Subtotal = i.Quantity * i.UnitPrice,
+                Status = i.Status.ToString(),
+                Notes = i.Notes
+            }).ToList(),
+
+            // Metadata
+            CreatedAt = delivery.CreatedAt
+        };
     }
 }

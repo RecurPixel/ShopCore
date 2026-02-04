@@ -59,7 +59,7 @@ public class GetSubscriptionInvoicesQueryHandler
                 Status = i.Status.ToString(),
                 IsOverdue = i.IsOverdue,
                 IsFullyPaid = i.IsFullyPaid,
-                PaymentMethod = i.PaymentMethod
+                PaymentMethod = i.PaymentMethod.ToString()
             })
             .ToListAsync(cancellationToken);
 

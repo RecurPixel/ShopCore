@@ -84,7 +84,7 @@ public class CreateSubscriptionCommandHandler
         var subscription = new Subscription
         {
             SubscriptionNumber = subscriptionNumber,
-            UserId = _currentUser.UserId!.Value,
+            UserId = _currentUser.RequiredUserId,
             VendorId = vendorId,
             DeliveryAddressId = request.DeliveryAddressId,
             Frequency = request.Frequency,

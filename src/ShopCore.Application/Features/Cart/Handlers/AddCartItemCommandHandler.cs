@@ -36,7 +36,7 @@ public class AddCartItemCommandHandler : IRequestHandler<AddCartItemCommand, Car
 
         if (cart == null)
         {
-            cart = new CartEntity { UserId = _currentUser.UserId };
+            cart = new CartEntity { UserId = _currentUser.RequiredUserId };
             _context.Carts.Add(cart);
         }
 

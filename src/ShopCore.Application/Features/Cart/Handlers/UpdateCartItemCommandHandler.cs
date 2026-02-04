@@ -6,11 +6,13 @@ public class UpdateCartItemCommandHandler : IRequestHandler<UpdateCartItemComman
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
+    private readonly ITaxService _taxService;
 
-    public UpdateCartItemCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
+    public UpdateCartItemCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser, ITaxService taxService)
     {
         _context = context;
         _currentUser = currentUser;
+        _taxService = taxService;
     }
 
     public async Task<CartDto> Handle(UpdateCartItemCommand request, CancellationToken ct)
@@ -27,9 +29,12 @@ public class UpdateCartItemCommandHandler : IRequestHandler<UpdateCartItemComman
         if (cart == null)
             throw new NotFoundException("Cart not found");
 
-        var cartItem = _context.CartItems.FirstOrDefaultAsync(i => i.ProductId == request.ProductId && !i.IsDeleted);
+        var cartItem = await _context.CartItems
+            .Include(i => i.Product)
+            .FirstOrDefaultAsync(i => i.Id == request.CartItemId && i.CartId == cart.Id && !i.IsDeleted, ct);
+
         if (cartItem == null)
-            throw new NotFoundException("Product not in cart");
+            throw new NotFoundException("Cart item not found");
 
         var product = cartItem.Product;
 
@@ -63,7 +68,7 @@ public class UpdateCartItemCommandHandler : IRequestHandler<UpdateCartItemComman
 
         var subtotal = items.Sum(i => i.Subtotal);
         var discount = cart.Discount ?? 0;
-        var tax = (subtotal - discount) * 0.18m;
+        var tax = _taxService.CalculateTax(subtotal, discount);
 
         return new CartDto
         {
@@ -72,7 +77,7 @@ public class UpdateCartItemCommandHandler : IRequestHandler<UpdateCartItemComman
             Subtotal = subtotal,
             Discount = discount,
             Tax = tax,
-            TotalAmount = subtotal + tax - discount,
+            Total = subtotal + tax - discount,
             ItemCount = items.Sum(i => i.Quantity),
             AppliedCouponCode = cart.AppliedCouponCode
         };

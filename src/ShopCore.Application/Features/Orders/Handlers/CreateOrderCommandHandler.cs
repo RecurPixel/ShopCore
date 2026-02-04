@@ -7,15 +7,18 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
     private readonly IDateTime _dateTime;
+    private readonly ITaxService _taxService;
 
     public CreateOrderCommandHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUser,
-        IDateTime dateTime)
+        IDateTime dateTime,
+        ITaxService taxService)
     {
         _context = context;
         _currentUser = currentUser;
         _dateTime = dateTime;
+        _taxService = taxService;
     }
 
     public async Task<OrderDto> Handle(CreateOrderCommand request, CancellationToken ct)
@@ -44,9 +47,8 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
                 throw new ValidationException($"{item.Product.Name}: Insufficient stock");
         }
 
-        // 4. Calculate totals
+        // 4. Calculate subtotal
         var subtotal = cart.Items.Sum(i => i.Quantity * i.Price);
-        var tax = subtotal * 0.18m; // 18% GST
         decimal discount = 0;
 
         // 5. Apply coupon if provided
@@ -77,6 +79,8 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             coupon.UsageCount++;
         }
 
+        // 6. Calculate tax using TaxService
+        var tax = _taxService.CalculateTax(subtotal, discount);
         var shippingCharge = 0m; // Free shipping for now
         var total = subtotal + tax - discount + shippingCharge;
 
@@ -87,9 +91,8 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
         var order = new Order
         {
             OrderNumber = orderNumber,
-            UserId = _currentUser.UserId!.Value,
+            UserId = _currentUser.RequiredUserId,
             ShippingAddressId = request.AddressId,
-            Status = OrderStatus.Pending,
             Subtotal = subtotal,
             Tax = tax,
             Discount = discount,
@@ -129,7 +132,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
                 Quantity = cartItem.Quantity,
                 UnitPrice = cartItem.Price,
                 CommissionRate = vendor.CommissionRate,
-                Status = OrderStatus.Pending
+                Status = OrderItemStatus.Pending
             };
 
             orderItems.Add(orderItem);
@@ -146,7 +149,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             Notes = "Order created"
         };
 
-        _context.OrderStatusHistory.Add(statusHistory);
+        _context.OrderStatusHistories.Add(statusHistory);
 
         // 10. Clear cart
         _context.CartItems.RemoveRange(cart.Items);
@@ -173,10 +176,6 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
     {
         var order = await _context.Orders
             .Include(o => o.Items)
-                .ThenInclude(i => i.Product)
-            .Include(o => o.Items)
-                .ThenInclude(i => i.Vendor)
-            .Include(o => o.ShippingAddress)
             .FirstAsync(o => o.Id == orderId, ct);
 
         return new OrderDto
@@ -190,19 +189,8 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
             Discount = order.Discount,
             ShippingCharge = order.ShippingCharge,
             Total = order.Total,
-            CreatedAt = order.CreatedAt,
-            Items = order.Items.Select(i => new OrderItemDto
-            {
-                Id = i.Id,
-                ProductId = i.ProductId,
-                ProductName = i.ProductName,
-                Quantity = i.Quantity,
-                UnitPrice = i.UnitPrice,
-                Subtotal = i.Subtotal,
-                Status = i.Status.ToString(),
-                VendorId = i.VendorId,
-                VendorName = i.Vendor.BusinessName
-            }).ToList()
+            ItemCount = order.Items.Count,
+            CreatedAt = order.CreatedAt
         };
     }
 }

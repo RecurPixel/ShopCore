@@ -34,7 +34,7 @@ public class CreateReviewCommandHandler : IRequestHandler<CreateReviewCommand, R
         var review = new Review
         {
             ProductId = request.ProductId,
-            UserId = _currentUser.UserId!.Value,
+            UserId = _currentUser.RequiredUserId,
             Rating = request.Rating,
             Title = request.Title,
             Comment = request.Comment,

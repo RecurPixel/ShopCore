@@ -27,10 +27,10 @@ public class PauseSubscriptionCommandHandler
             .Include(s => s.Items)
                 .ThenInclude(i => i.Product)
             .Include(s => s.Deliveries)
-            .FirstOrDefaultAsync(s => s.Id == request.Id, ct);
+            .FirstOrDefaultAsync(s => s.Id == request.SubscriptionId, ct);
 
         if (subscription == null)
-            throw new NotFoundException("Subscription", request.Id);
+            throw new NotFoundException("Subscription", request.SubscriptionId);
 
         if (subscription.UserId != _currentUser.UserId)
             throw new ForbiddenException("You can only pause your own subscriptions");
@@ -104,7 +104,7 @@ public class PauseSubscriptionCommandHandler
                 ProductImageUrl = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
-                TotalPrice = i.Quantity * i.UnitPrice
+                LineTotal = i.Quantity * i.UnitPrice
             }).ToList()
         };
     }

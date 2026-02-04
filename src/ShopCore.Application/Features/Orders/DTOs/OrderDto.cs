@@ -6,7 +6,11 @@ public record OrderDto
     public string OrderNumber { get; init; } = string.Empty;
     public string Status { get; init; } = string.Empty;
     public string PaymentStatus { get; init; } = string.Empty;
-    public decimal TotalAmount { get; init; }
+    public decimal Subtotal { get; init; }
+    public decimal Tax { get; init; }
+    public decimal Discount { get; init; }
+    public decimal ShippingCharge { get; init; }
+    public decimal Total { get; init; }
     public int ItemCount { get; init; }
     public DateTime CreatedAt { get; init; }
 }

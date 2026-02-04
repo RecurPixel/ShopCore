@@ -209,9 +209,9 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> GetOrderInvoice(int id)
     {
         var invoiceBytes = await _mediator.Send(new GetOrderInvoiceQuery(id));
-        if (invoiceBytes.FileContent is null || invoiceBytes.Length == 0)
+        if (invoiceBytes.Content is null || invoiceBytes.FileSize == 0)
             return NotFound();
-        return File(invoiceBytes.FileContent, "application/pdf", $"invoice-order-{id}.pdf");
+        return File(invoiceBytes.Content, "application/pdf", $"invoice-order-{id}.pdf");
     }
 
     // ==================

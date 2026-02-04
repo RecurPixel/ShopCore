@@ -30,7 +30,7 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
             .Include(o => o.Items)
                 .ThenInclude(oi => oi.Vendor)
             .Include(o => o.StatusHistory)
-            .Where(o => o.Id == request.OrderId && o.UserId == _currentUser.UserId)
+            .Where(o => o.Id == request.Id && o.UserId == _currentUser.UserId)
             .Select(o => new OrderDetailDto
             {
                 Id = o.Id,
@@ -59,7 +59,7 @@ public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Order
                 Tax = o.Tax,
                 Discount = o.Discount,
                 ShippingCharge = o.ShippingCharge,
-                TotalAmount = o.Total,
+                Total = o.Total,
                 CouponCode = o.Coupon != null ? o.Coupon.Code : null,
                 CustomerNotes = o.CustomerNotes,
                 AdminNotes = o.AdminNotes,

@@ -50,7 +50,11 @@ public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Pagin
                 OrderNumber = o.OrderNumber,
                 Status = o.Status.ToString(),
                 PaymentStatus = o.PaymentStatus.ToString(),
-                TotalAmount = o.Total,
+                Subtotal = o.Subtotal,
+                Tax = o.Tax,
+                Discount = o.Discount,
+                ShippingCharge = o.ShippingCharge,
+                Total = o.Total,
                 ItemCount = o.Items.Count,
                 CreatedAt = o.CreatedAt
             })

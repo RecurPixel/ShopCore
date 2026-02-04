@@ -1,4 +1,5 @@
 using ShopCore.Api.Files;
+using ShopCore.Api.Models;
 using ShopCore.Application.Common.Interfaces;
 using ShopCore.Application.CustomerInvitations.Commands.CancelInvitation;
 using ShopCore.Application.CustomerInvitations.Commands.CreateCustomerInvitation;
@@ -454,13 +455,55 @@ public class VendorsController : ControllerBase
     // PATCH /api/v1/vendors/me/deliveries/{id}/complete
     [Authorize(Roles = "Vendor")]
     [HttpPatch("me/deliveries/{id:int}/complete")]
-    public async Task<IActionResult> CompleteDelivery(
+    public async Task<ActionResult<DeliveryDto>> CompleteDelivery(
         int id,
-        [FromForm] IFormFile? deliveryPhoto)
+        [FromForm] CompleteDeliveryRequest? request)
     {
-        IFile? photo = deliveryPhoto is not null ? new FormFileAdapter(deliveryPhoto) : null;
-        await _mediator.Send(new CompleteDeliveryCommand(id, photo));
-        return NoContent();
+        // Upload delivery photo if provided
+        string? deliveryPhotoUrl = null;
+        if (request?.DeliveryPhoto != null)
+        {
+            var photoCommand = new UploadDeliveryPhotoCommand(
+                id,
+                new FormFileAdapter(request.DeliveryPhoto));
+            deliveryPhotoUrl = await _mediator.Send(photoCommand);
+        }
+
+        // Upload customer signature if provided
+        string? signatureUrl = null;
+        if (request?.CustomerSignature != null)
+        {
+            var signatureCommand = new UploadDeliveryPhotoCommand(
+                id,
+                new FormFileAdapter(request.CustomerSignature));
+            signatureUrl = await _mediator.Send(signatureCommand);
+        }
+
+        // Parse item statuses
+        List<DeliveryItemStatusInput>? itemStatuses = null;
+        if (request?.ItemStatuses != null && request.ItemStatuses.Any())
+        {
+            itemStatuses = request.ItemStatuses
+                .Select(i => new DeliveryItemStatusInput(
+                    i.DeliveryItemId,
+                    i.Status,
+                    i.Notes))
+                .ToList();
+        }
+
+        // Complete the delivery
+        var command = new CompleteDeliveryCommand(
+            id,
+            itemStatuses,
+            request?.PaymentMethod,
+            request?.PaymentTransactionId,
+            deliveryPhotoUrl ?? request?.DeliveryPhotoUrl,
+            signatureUrl ?? request?.CustomerSignatureUrl,
+            request?.DeliveryNotes
+        );
+
+        var result = await _mediator.Send(command);
+        return Ok(result);
     }
 
     // PATCH /api/v1/vendors/me/deliveries/{id}/failed

@@ -90,7 +90,7 @@ public class ConvertToSubscriptionCommandHandler
                 ProductImage = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
-                TotalPrice = i.Quantity * i.UnitPrice
+                LineTotal = i.Quantity * i.UnitPrice
             }).ToList()
         };
     }

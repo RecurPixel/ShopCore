@@ -28,7 +28,7 @@ public class AddToWishlistCommandHandler : IRequestHandler<AddToWishlistCommand>
         {
             var wishlistItem = new WishlistNew
             {
-                UserId = _currentUser.UserId!.Value,
+                UserId = _currentUser.RequiredUserId,
                 ProductId = request.ProductId,
                 User = null!,
                 Product = null!

@@ -1,6 +1,6 @@
-using System.Text.Json;
 using ShopCore.Application.CustomerInvitations.DTOs;
 using ShopCore.Application.CustomerInvitations.Queries.GetInvitationDetails;
+using System.Text.Json;
 
 namespace ShopCore.Application.CustomerInvitations.Handlers;
 
@@ -34,28 +34,30 @@ public class GetInvitationDetailsQueryHandler
         var items = subscriptionItems.Select(si =>
         {
             var product = products.FirstOrDefault(p => p.Id == si.ProductId);
-            return new InvitationItemDto(
-                si.ProductId,
-                product?.Name ?? "Unknown Product",
-                product?.Images.FirstOrDefault()?.ImageUrl,
-                si.Quantity,
-                si.UnitPrice,
-                GetFrequencyDescription(invitation.Frequency)
-            );
+            return new InvitationItemDto
+            {
+                ProductId = si.ProductId,
+                ProductName = product?.Name ?? "Unknown Product",
+                ProductImageUrl = product?.Images.FirstOrDefault()?.ImageUrl,
+                Quantity = si.Quantity,
+                UnitPrice = si.UnitPrice,
+                Frequency = GetFrequencyDescription(invitation.Frequency)
+            };
         }).ToList();
 
         var dailyTotal = items.Sum(i => i.Quantity * i.UnitPrice);
         var monthlyEstimate = CalculateMonthlyEstimate(dailyTotal, invitation.Frequency);
 
-        return new InvitationDetailsDto(
-            invitation.Vendor.BusinessName,
-            invitation.Vendor.BusinessLogo,
-            items,
-            invitation.Frequency,
-            invitation.PreferredDeliveryTime,
-            monthlyEstimate,
-            invitation.DepositAmount
-        );
+        return new InvitationDetailsDto
+        {
+            VendorName = invitation.Vendor.BusinessName,
+            VendorLogo = invitation.Vendor.BusinessLogo,
+            Items = items,
+            Frequency = invitation.Frequency.ToString(),
+            DeliveryTime = invitation.PreferredDeliveryTime,
+            MonthlyEstimate = monthlyEstimate,
+            DepositAmount = invitation.DepositAmount
+        };
     }
 
     private static string GetFrequencyDescription(SubscriptionFrequency frequency)

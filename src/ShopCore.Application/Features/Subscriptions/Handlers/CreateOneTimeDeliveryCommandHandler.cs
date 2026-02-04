@@ -105,8 +105,8 @@ public class CreateOneTimeDeliveryCommandHandler
             SubscriptionId = subscription.Id,
             DeliveryId = delivery.Id,
             DeliveryDate = request.DeliveryDate,
-            TotalAmount = totalAmount,
-            PaymentStatus = delivery.PaymentStatus
+            Total = totalAmount,
+            PaymentStatus = delivery.PaymentStatus.ToString()
         };
     }
 

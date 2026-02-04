@@ -65,6 +65,20 @@ public class Order : AuditableEntity
 
         var statuses = Items.Select(i => i.Status).ToList();
 
+        // All refunded
+        if (statuses.All(s => s == OrderItemStatus.Refunded))
+        {
+            _status = OrderStatus.Refunded;
+            return;
+        }
+
+        // Some refunded
+        if (statuses.Any(s => s == OrderItemStatus.Refunded))
+        {
+            _status = OrderStatus.PartiallyRefunded;
+            return;
+        }
+
         // All cancelled
         if (statuses.All(s => s == OrderItemStatus.Cancelled))
         {

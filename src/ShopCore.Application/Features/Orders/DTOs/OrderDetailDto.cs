@@ -19,7 +19,7 @@ public record OrderDetailDto
     public decimal Tax { get; init; }
     public decimal Discount { get; init; }
     public decimal ShippingCharge { get; init; }
-    public decimal TotalAmount { get; init; }
+    public decimal Total { get; init; }
     public string? CouponCode { get; init; }
     public string? CustomerNotes { get; init; }
     public string? AdminNotes { get; init; }

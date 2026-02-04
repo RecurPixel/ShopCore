@@ -26,10 +26,10 @@ public class ResumeSubscriptionCommandHandler
             .Include(s => s.DeliveryAddress)
             .Include(s => s.Items)
                 .ThenInclude(i => i.Product)
-            .FirstOrDefaultAsync(s => s.Id == request.Id, ct);
+            .FirstOrDefaultAsync(s => s.Id == request.SubscriptionId, ct);
 
         if (subscription == null)
-            throw new NotFoundException("Subscription", request.Id);
+            throw new NotFoundException("Subscription", request.SubscriptionId);
 
         if (subscription.UserId != _currentUser.UserId)
             throw new ForbiddenException("You can only resume your own subscriptions");

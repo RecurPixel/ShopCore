@@ -39,9 +39,10 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Ord
         // Cancel all items
         foreach (var item in order.Items)
         {
-            if (item.Status != OrderStatus.Shipped && item.Status != OrderStatus.Delivered)
+            if (item.Status != OrderItemStatus.Shipped && item.Status != OrderItemStatus.Delivered)
             {
-                item.Status = OrderStatus.Cancelled;
+                item.Status = OrderItemStatus.Cancelled;
+                item.CancellationReason = request.Reason;
 
                 // Restore stock
                 if (item.Product.TrackInventory)
@@ -51,12 +52,13 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Ord
             }
         }
 
-        order.Status = OrderStatus.Cancelled;
+        // Update order status based on items (derived status)
+        order.UpdateStatusFromItems();
         order.CancelledAt = _dateTime.UtcNow;
         order.CancellationReason = request.Reason;
 
         // Add status history
-        _context.OrderStatusHistory.Add(new OrderStatusHistory
+        _context.OrderStatusHistories.Add(new OrderStatusHistory
         {
             OrderId = order.Id,
             Status = OrderStatus.Cancelled,

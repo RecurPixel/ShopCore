@@ -23,6 +23,8 @@ public class GetVendorDeliveriesQueryHandler : IRequestHandler<GetVendorDeliveri
             .AsNoTracking()
             .Include(d => d.Subscription)
                 .ThenInclude(s => s.User)
+            .Include(d => d.Subscription)
+                .ThenInclude(s => s.DeliveryAddress)
             .Include(d => d.Items)
             .Where(d => d.Subscription.VendorId == _currentUser.VendorId);
 
@@ -52,20 +54,44 @@ public class GetVendorDeliveriesQueryHandler : IRequestHandler<GetVendorDeliveri
                 Id = d.Id,
                 DeliveryNumber = d.DeliveryNumber,
                 SubscriptionId = d.SubscriptionId,
-                CustomerName = d.Subscription.User.FirstName + " " + d.Subscription.User.LastName,
-                CustomerPhone = d.Subscription.User.PhoneNumber,
+                SubscriptionNumber = d.Subscription.SubscriptionNumber,
+
+                // Customer Information
+                CustomerName = (d.Subscription.User.FirstName + " " + d.Subscription.User.LastName).Trim(),
+                CustomerPhone = d.Subscription.DeliveryAddress.PhoneNumber,
+
+                // Delivery Address
                 DeliveryAddress = d.Subscription.DeliveryAddress.AddressLine1,
+                DeliveryCity = d.Subscription.DeliveryAddress.City,
+                DeliveryState = d.Subscription.DeliveryAddress.State,
                 Pincode = d.Subscription.DeliveryAddress.Pincode,
+                Landmark = d.Subscription.DeliveryAddress.Landmark,
+
+                // Delivery Details
                 ScheduledDate = d.ScheduledDate,
                 ActualDeliveryDate = d.ActualDeliveryDate,
                 Status = d.Status.ToString(),
-                PaymentStatus = d.PaymentStatus.ToString(),
-                TotalAmount = d.TotalAmount,
-                PaymentMethod = d.PaymentMethod.HasValue ? d.PaymentMethod.Value.ToString() : null,
-                PaidAt = d.PaidAt,
                 DeliveryPersonName = d.DeliveryPersonName,
+                DeliveryNotes = d.DeliveryNotes,
                 FailureReason = d.FailureReason,
-                ItemCount = d.Items.Count
+
+                // Proof of Delivery
+                DeliveryPhotoUrl = d.DeliveryPhotoUrl,
+                CustomerSignatureUrl = d.CustomerSignatureUrl,
+
+                // Payment Information
+                PaymentStatus = d.PaymentStatus.ToString(),
+                Total = d.TotalAmount,
+                PaymentMethod = d.PaymentMethod.HasValue ? d.PaymentMethod.Value.ToString() : null,
+                PaymentGateway = d.PaymentGateway.ToString(),
+                PaymentTransactionId = d.PaymentTransactionId,
+                PaidAt = d.PaidAt,
+
+                // Items
+                ItemCount = d.Items.Count,
+
+                // Metadata
+                CreatedAt = d.CreatedAt
             })
             .ToListAsync(cancellationToken);
 

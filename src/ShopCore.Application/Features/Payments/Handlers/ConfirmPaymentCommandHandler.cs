@@ -79,7 +79,7 @@ public class ConfirmPaymentCommandHandler
             }
 
             // Add status history
-            _context.OrderStatusHistory.Add(new OrderStatusHistory
+            _context.OrderStatusHistories.Add(new OrderStatusHistory
             {
                 OrderId = order.Id,
                 Status = OrderStatus.Confirmed,
@@ -96,7 +96,7 @@ public class ConfirmPaymentCommandHandler
             ReferenceType = "Order",
             ReferenceNumber = order.OrderNumber,
             PaymentId = razorpayPaymentId,
-            Status = PaymentStatus.Paid,
+            Status = PaymentStatus.Paid.ToString(),
             Amount = order.Total,
             ConfirmedAt = order.PaidAt
         };
@@ -145,7 +145,7 @@ public class ConfirmPaymentCommandHandler
             ReferenceType = "Invoice",
             ReferenceNumber = invoice.InvoiceNumber,
             PaymentId = razorpayPaymentId,
-            Status = PaymentStatus.Paid,
+            Status = PaymentStatus.Paid.ToString(),
             Amount = invoice.Total,
             ConfirmedAt = invoice.PaidAt
         };

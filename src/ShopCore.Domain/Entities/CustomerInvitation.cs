@@ -23,11 +23,12 @@ public class CustomerInvitation : AuditableEntity
     public DateTime SentAt { get; set; }
     public DateTime ExpiresAt { get; set; }
     public DateTime? AcceptedAt { get; set; }
-    public int? UserId { get; set; }
+    public DateTime? RejectedAt { get; set; }
+    public int? InvitedUserId { get; set; }
 
     // Navigation
     public VendorProfile Vendor { get; set; } = null!;
-    public User? User { get; set; }
+    public User? InvitedUser { get; set; }
 }
 
 /// <summary>

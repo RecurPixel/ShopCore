@@ -6,7 +6,7 @@ public record PaymentIntentDto
     public string ClientSecret { get; init; } = string.Empty;
     public decimal Amount { get; init; }
     public string Currency { get; init; } = "INR";
-    public PaymentStatus Status { get; init; }
+    public string Status { get; init; } = string.Empty;
     public string Gateway { get; init; } = string.Empty;
     public string? GatewayOrderId { get; init; }
 }

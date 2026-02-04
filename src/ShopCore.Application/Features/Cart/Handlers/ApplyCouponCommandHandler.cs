@@ -7,15 +7,18 @@ public class ApplyCouponCommandHandler : IRequestHandler<ApplyCouponCommand, Car
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
     private readonly IDateTime _dateTime;
+    private readonly ITaxService _taxService;
 
     public ApplyCouponCommandHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUser,
-        IDateTime dateTime)
+        IDateTime dateTime,
+        ITaxService taxService)
     {
         _context = context;
         _currentUser = currentUser;
         _dateTime = dateTime;
+        _taxService = taxService;
     }
 
     public async Task<CartDto> Handle(ApplyCouponCommand request, CancellationToken ct)
@@ -92,7 +95,7 @@ public class ApplyCouponCommandHandler : IRequestHandler<ApplyCouponCommand, Car
 
         var subtotal = items.Sum(i => i.Subtotal);
         var discount = cart.Discount ?? 0;
-        var tax = (subtotal - discount) * 0.18m;
+        var tax = _taxService.CalculateTax(subtotal, discount);
 
         return Task.FromResult(new CartDto
         {
@@ -101,7 +104,7 @@ public class ApplyCouponCommandHandler : IRequestHandler<ApplyCouponCommand, Car
             Subtotal = subtotal,
             Discount = discount,
             Tax = tax,
-            TotalAmount = subtotal + tax - discount,
+            Total = subtotal + tax - discount,
             ItemCount = items.Sum(i => i.Quantity),
             AppliedCouponCode = cart.AppliedCouponCode
         });

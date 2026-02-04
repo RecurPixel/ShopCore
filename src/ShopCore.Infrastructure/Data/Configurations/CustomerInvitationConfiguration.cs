@@ -61,9 +61,9 @@ public class CustomerInvitationConfiguration : IEntityTypeConfiguration<Customer
             .HasForeignKey(ci => ci.VendorId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(ci => ci.User)
+        builder.HasOne(ci => ci.InvitedUser)
             .WithMany(u => u.ReceivedInvitations)
-            .HasForeignKey(ci => ci.UserId)
+            .HasForeignKey(ci => ci.InvitedUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Indexes
