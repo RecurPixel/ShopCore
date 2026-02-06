@@ -190,7 +190,7 @@ public class CreateSubscriptionCommandHandler
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
                 DiscountPercentage = i.DiscountPercentage,
-                ItemTotal = i.ItemTotal
+                LineTotal = i.ItemTotal
             }).ToList()
         };
     }

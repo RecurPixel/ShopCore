@@ -69,7 +69,7 @@ public class InitiateRefundCommandHandler : IRequestHandler<InitiateRefundComman
             order.PaymentStatus = PaymentStatus.PartiallyRefunded;
 
         // Add status history
-        _context.OrderStatusHistory.Add(new OrderStatusHistory
+        _context.OrderStatusHistories.Add(new OrderStatusHistory
         {
             OrderId = order.Id,
             Status = order.Status,

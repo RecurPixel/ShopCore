@@ -31,8 +31,8 @@ public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand>
         // 3. Check if product is in active orders
         var hasActiveOrders = await _context.OrderItems
             .AnyAsync(oi => oi.ProductId == request.Id &&
-                oi.Status != OrderStatus.Delivered &&
-                oi.Status != OrderStatus.Cancelled, ct);
+                oi.Status != OrderItemStatus.Delivered &&
+                oi.Status != OrderItemStatus.Cancelled, ct);
 
         if (hasActiveOrders)
             throw new ValidationException("Cannot delete product with active orders");

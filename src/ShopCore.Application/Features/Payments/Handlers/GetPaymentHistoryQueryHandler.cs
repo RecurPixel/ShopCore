@@ -48,7 +48,7 @@ public class GetPaymentHistoryQueryHandler
                 Type = "Invoice",
                 ReferenceNumber = i.InvoiceNumber,
                 Amount = i.Total,
-                PaymentMethod = i.PaymentMethod,
+                PaymentMethod = i.PaymentMethod.ToString(),
                 TransactionId = i.PaymentTransactionId,
                 Status = "Paid",
                 PaidAt = i.PaidAt!.Value,

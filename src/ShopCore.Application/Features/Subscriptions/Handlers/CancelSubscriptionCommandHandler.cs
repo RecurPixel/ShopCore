@@ -36,7 +36,7 @@ public class CancelSubscriptionCommandHandler : IRequestHandler<CancelSubscripti
 
         // Cancel pending deliveries
         var pendingDeliveries = subscription.Deliveries
-            .Where(d => d.Status == DeliveryStatus.Scheduled || d.Status == DeliveryStatus.Pending);
+            .Where(d => d.Status == DeliveryStatus.Scheduled || d.Status == DeliveryStatus.OutForDelivery);
 
         foreach (var delivery in pendingDeliveries)
         {

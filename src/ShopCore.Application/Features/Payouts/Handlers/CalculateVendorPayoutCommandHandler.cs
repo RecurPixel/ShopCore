@@ -21,7 +21,7 @@ public class CalculateVendorPayoutCommandHandler
         // Calculate from delivered orders in period
         var deliveredOrders = await _context.OrderItems
             .Where(oi => oi.VendorId == request.VendorId &&
-                       oi.Status == OrderStatus.Delivered &&
+                       oi.Status == OrderItemStatus.Delivered &&
                        oi.Order.DeliveredAt >= request.FromDate &&
                        oi.Order.DeliveredAt <= request.ToDate)
             .ToListAsync(ct);
@@ -34,12 +34,12 @@ public class CalculateVendorPayoutCommandHandler
         {
             VendorId = request.VendorId,
             VendorName = vendor.BusinessName,
-            PeriodStart = request.FromDate,
-            PeriodEnd = request.ToDate,
-            TotalSales = totalSales,
-            CommissionAmount = commission,
-            NetPayout = netPayout,
-            OrderCount = deliveredOrders.Count
+            PeriodFrom = request.FromDate,
+            PeriodTo = request.ToDate,
+            GrossAmount = totalSales,
+            PlatformFee = commission,
+            NetAmount = netPayout,
+            Status = "Calculated"
         };
     }
 }

@@ -23,7 +23,7 @@ public class GetPendingPayoutAmountQueryHandler : IRequestHandler<GetPendingPayo
 
         // Get the last payout date
         var lastPayout = await _context.VendorPayouts
-            .Where(p => p.VendorId == vendorId && p.Status == PayoutStatus.Completed)
+            .Where(p => p.VendorId == vendorId && p.Status == PayoutStatus.Paid)
             .OrderByDescending(p => p.PeriodEnd)
             .FirstOrDefaultAsync(ct);
 

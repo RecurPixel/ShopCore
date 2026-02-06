@@ -71,7 +71,7 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
                 foreach (var item in order.Items.Where(i => i.Status == OrderItemStatus.Pending))
                     item.Status = OrderItemStatus.Confirmed;
 
-                _context.OrderStatusHistory.Add(new OrderStatusHistory
+                _context.OrderStatusHistories.Add(new OrderStatusHistory
                 {
                     OrderId = order.Id,
                     Status = OrderStatus.Confirmed,
@@ -134,7 +134,7 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
         {
             order.PaymentStatus = PaymentStatus.Failed;
 
-            _context.OrderStatusHistory.Add(new OrderStatusHistory
+            _context.OrderStatusHistories.Add(new OrderStatusHistory
             {
                 OrderId = order.Id,
                 Status = order.Status,
@@ -172,7 +172,7 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
         else
             order.PaymentStatus = PaymentStatus.PartiallyRefunded;
 
-        _context.OrderStatusHistory.Add(new OrderStatusHistory
+        _context.OrderStatusHistories.Add(new OrderStatusHistory
         {
             OrderId = order.Id,
             Status = order.Status,

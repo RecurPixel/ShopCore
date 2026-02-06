@@ -18,29 +18,26 @@ public class CalculatePendingPayoutsCommandHandler : IRequestHandler<CalculatePe
         var thirtyDaysAgo = _dateTime.UtcNow.AddDays(-30);
 
         var deliveredOrders = await _context.OrderItems
-            .Where(oi => oi.Status == OrderStatus.Delivered &&
+            .Include(oi => oi.Vendor)
+            .Where(oi => oi.Status == OrderItemStatus.Delivered &&
                        oi.Order.DeliveredAt >= thirtyDaysAgo)
-            .GroupBy(oi => oi.VendorId)
-            .Select(g => new
+            .GroupBy(oi => new { oi.VendorId, oi.Vendor.BusinessName })
+            .Select(g => new VendorPendingPayoutDto
             {
-                VendorId = g.Key,
-                TotalSales = g.Sum(oi => oi.Subtotal),
-                Commission = g.Sum(oi => oi.CommissionAmount)
+                VendorId = g.Key.VendorId,
+                VendorName = g.Key.BusinessName,
+                PendingAmount = g.Sum(oi => oi.Subtotal) - g.Sum(oi => oi.CommissionAmount),
+                OrderCount = g.Select(oi => oi.OrderId).Distinct().Count(),
+                OldestOrderDate = g.Min(oi => oi.Order.DeliveredAt)
             })
             .ToListAsync(ct);
 
-        var vendorPayouts = deliveredOrders.Select(x => new VendorPayoutSummaryDto
-        {
-            VendorId = x.VendorId,
-            TotalSales = x.TotalSales,
-            Commission = x.Commission,
-            NetPayout = x.TotalSales - x.Commission
-        }).ToList();
+        var vendorPayouts = deliveredOrders;
 
         return new PendingPayoutSummaryDto
         {
             VendorPayouts = vendorPayouts,
-            TotalPayoutAmount = vendorPayouts.Sum(v => v.NetPayout),
+            TotalPayoutAmount = vendorPayouts.Sum(v => v.PendingAmount),
             VendorCount = vendorPayouts.Count
         };
     }

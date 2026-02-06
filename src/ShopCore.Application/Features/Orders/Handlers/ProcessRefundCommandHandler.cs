@@ -52,7 +52,7 @@ public class ProcessRefundCommandHandler
             throw new ValidationException("Refund failed");
 
         // Update order
-        order.RefundedAmount = (order.RefundedAmount ?? 0) + refundAmount;
+        order.RefundedAmount += refundAmount;
         order.PaymentStatus = order.RefundedAmount >= order.Total
             ? PaymentStatus.Refunded
             : PaymentStatus.PartiallyRefunded;

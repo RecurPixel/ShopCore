@@ -34,6 +34,9 @@ public class CreatePayoutCommandHandler : IRequestHandler<CreatePayoutCommand, P
         {
             VendorId = request.VendorId,
             PayoutNumber = payoutNumber,
+            TotalSales = request.Amount,
+            CommissionAmount = 0,
+            DeductionsAmount = 0,
             NetPayout = request.Amount,
             Status = PayoutStatus.Pending,
             PeriodStart = today.AddDays(-30),
@@ -47,9 +50,13 @@ public class CreatePayoutCommandHandler : IRequestHandler<CreatePayoutCommand, P
         return new PayoutDto
         {
             Id = payout.Id,
-            PayoutNumber = payout.PayoutNumber,
+            VendorId = payout.VendorId,
+            VendorName = vendor.BusinessName,
             Amount = payout.NetPayout,
-            Status = payout.Status.ToString()
+            Status = payout.Status.ToString(),
+            TransactionReference = payout.TransactionReference,
+            CreatedAt = payout.CreatedAt,
+            ProcessedAt = payout.PaidAt
         };
     }
 

@@ -16,6 +16,7 @@ public record ProductDto
     public int ReviewCount { get; init; }
     public int CategoryId { get; init; }
     public string CategoryName { get; init; } = string.Empty;
+    public string? Status = string.Empty;
     public int VendorId { get; init; }
     public string VendorName { get; init; } = string.Empty;
 }

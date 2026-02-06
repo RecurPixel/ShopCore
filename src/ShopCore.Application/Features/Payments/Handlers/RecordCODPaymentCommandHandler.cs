@@ -52,7 +52,7 @@ public class RecordCODPaymentCommandHandler : IRequestHandler<RecordCODPaymentCo
         order.PaymentTransactionId = $"COD-{order.OrderNumber}-{_dateTime.UtcNow:yyyyMMddHHmmss}";
 
         // Add status history
-        _context.OrderStatusHistory.Add(new OrderStatusHistory
+        _context.OrderStatusHistories.Add(new OrderStatusHistory
         {
             OrderId = order.Id,
             Status = order.Status,

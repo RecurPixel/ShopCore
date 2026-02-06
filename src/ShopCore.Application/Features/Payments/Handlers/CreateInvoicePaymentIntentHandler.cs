@@ -65,8 +65,8 @@ public class CreateInvoicePaymentIntentHandler
             ClientSecret = paymentIntent.KeyId,
             Amount = amountToCharge,
             Currency = paymentIntent.Currency,
-            Status = PaymentStatus.Pending,
-            RazorpayOrderId = paymentIntent.RazorpayOrderId
+            Status = PaymentStatus.Pending.ToString(),
+            GatewayOrderId = paymentIntent.RazorpayOrderId
         };
     }
 }

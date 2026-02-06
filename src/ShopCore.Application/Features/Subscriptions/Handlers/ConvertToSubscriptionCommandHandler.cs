@@ -78,7 +78,7 @@ public class ConvertToSubscriptionCommandHandler
             DepositAmount = subscription.DepositAmount,
             DepositPaid = subscription.DepositPaid,
             DepositBalance = subscription.DepositBalance,
-            Status = subscription.Status,
+            Status = subscription.Status.ToString(),
             TotalDeliveries = subscription.TotalDeliveries,
             CompletedDeliveries = subscription.CompletedDeliveries,
             FailedDeliveries = subscription.FailedDeliveries,
@@ -87,7 +87,7 @@ public class ConvertToSubscriptionCommandHandler
                 Id = i.Id,
                 ProductId = i.ProductId,
                 ProductName = i.Product.Name,
-                ProductImage = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
+                ProductImageUrl = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
                 LineTotal = i.Quantity * i.UnitPrice
