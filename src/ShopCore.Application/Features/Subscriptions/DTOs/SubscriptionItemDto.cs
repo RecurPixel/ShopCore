@@ -8,6 +8,7 @@ public record SubscriptionItemDto
     public string? ProductImageUrl { get; init; }
     public int Quantity { get; init; }
     public decimal UnitPrice { get; init; }
+    public decimal? DiscountPercentage { get; init; }
     public decimal LineTotal { get; init; }
     public bool IsRecurring { get; init; }
     public DateTime? OneTimeDeliveryDate { get; init; }

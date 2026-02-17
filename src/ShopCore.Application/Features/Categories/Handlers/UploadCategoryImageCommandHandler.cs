@@ -35,9 +35,8 @@ public class UploadCategoryImageCommandHandler : IRequestHandler<UploadCategoryI
         }
 
         // Upload new image
-        using var stream = request.AvatarFile.OpenReadStream();
-        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(request.AvatarFile.FileName)}";
-        var imageUrl = await _fileStorage.SaveFileAsync(stream, fileName, $"categories/{request.CategoryId}");
+        var fileName = $"categories/{request.CategoryId}/{Guid.NewGuid()}{Path.GetExtension(request.AvatarFile.FileName)}";
+        var imageUrl = await _fileStorage.UploadFileAsync(request.AvatarFile, fileName, ct);
 
         // Update category
         category.ImageUrl = imageUrl;

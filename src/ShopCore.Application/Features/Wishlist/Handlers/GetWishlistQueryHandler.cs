@@ -19,22 +19,26 @@ public class GetWishlistQueryHandler : IRequestHandler<GetWishlistQuery, Wishlis
         GetWishlistQuery request,
         CancellationToken cancellationToken)
     {
-        var items = await _context.Wishlists
+        var query = _context.Wishlists
             .AsNoTracking()
             .Include(w => w.Product)
-                .ThenInclude(p => p.Category)
-            .Include(w => w.Product)
-                .ThenInclude(p => p.Vendor)
-            .Include(w => w.Product)
                 .ThenInclude(p => p.Images)
-            .Where(w => w.UserId == _currentUser.UserId)
+            .Where(w => w.UserId == _currentUser.UserId);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
             .OrderByDescending(w => w.CreatedAt)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
             .Select(w => new WishlistItemDto
             {
                 Id = w.Id,
                 ProductId = w.ProductId,
                 ProductName = w.Product.Name,
-                ProductImageUrl = w.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
+                ProductImageUrl = w.Product.Images.FirstOrDefault(i => i.IsPrimary) != null
+                    ? w.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
+                    : null,
                 Price = w.Product.Price,
                 CompareAtPrice = w.Product.CompareAtPrice,
                 IsInStock = w.Product.IsInStock,
@@ -44,8 +48,9 @@ public class GetWishlistQueryHandler : IRequestHandler<GetWishlistQuery, Wishlis
 
         return new WishlistDto
         {
+            UserId = _currentUser.UserId!.Value,
             Items = items,
-            TotalItems = items.Count
+            TotalItems = totalCount
         };
     }
 }

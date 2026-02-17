@@ -40,17 +40,17 @@ public class GetMyPayoutsQueryHandler : IRequestHandler<GetMyPayoutsQuery, Pagin
             .Take(request.PageSize)
             .ToListAsync(ct);
 
-        var items = payouts.Select(p => new PayoutDto(
-            p.Id,
-            p.VendorId,
-            p.Vendor.BusinessName,
-            p.NetPayout,
-            p.Status.ToString(),
-            p.TransactionReference,
-            null,
-            p.CreatedAt,
-            p.PaidAt
-        )).ToList();
+        var items = payouts.Select(p => new PayoutDto
+        {
+            Id = p.Id,
+            VendorId = p.VendorId,
+            VendorName = p.Vendor.BusinessName,
+            Amount = p.NetPayout,
+            Status = p.Status.ToString(),
+            TransactionReference = p.TransactionReference,
+            CreatedAt = p.CreatedAt,
+            ProcessedAt = p.PaidAt
+        }).ToList();
 
         return new PaginatedList<PayoutDto>
         {

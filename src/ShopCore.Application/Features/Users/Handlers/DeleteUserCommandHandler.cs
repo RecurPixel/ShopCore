@@ -28,7 +28,7 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand>
 
         // Check for active subscriptions
         var hasActiveSubscriptions = await _context.Subscriptions
-            .AnyAsync(s => s.CustomerId == request.Id && s.Status == SubscriptionStatus.Active, ct);
+            .AnyAsync(s => s.Id == request.Id && s.Status == SubscriptionStatus.Active, ct);
 
         if (hasActiveSubscriptions)
             throw new BadRequestException("Cannot delete user with active subscriptions");

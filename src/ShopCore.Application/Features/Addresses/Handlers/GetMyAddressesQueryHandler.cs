@@ -2,7 +2,7 @@ using ShopCore.Application.Addresses.DTOs;
 
 namespace ShopCore.Application.Addresses.Queries.GetMyAddresses;
 
-public class GetMyAddressesQueryHandler : IRequestHandler<GetMyAddressesQuery, List<AddressDto>>
+public class GetMyAddressesQueryHandler : IRequestHandler<GetMyAddressesQuery, PaginatedList<AddressDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
@@ -15,15 +15,34 @@ public class GetMyAddressesQueryHandler : IRequestHandler<GetMyAddressesQuery, L
         _currentUser = currentUser;
     }
 
-    public async Task<List<AddressDto>> Handle(
+    public async Task<PaginatedList<AddressDto>> Handle(
         GetMyAddressesQuery request,
         CancellationToken cancellationToken)
     {
-        return await _context.Addresses
+        var query = _context.Addresses
             .AsNoTracking()
-            .Where(a => a.UserId == _currentUser.UserId)
+            .Where(a => a.UserId == _currentUser.UserId);
+
+        // Apply filters
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+            query = query.Where(a =>
+                a.FullName.Contains(request.Search) ||
+                a.AddressLine1.Contains(request.Search) ||
+                a.City.Contains(request.Search) ||
+                a.Pincode.Contains(request.Search));
+        }
+
+        if (request.IsDefault.HasValue)
+            query = query.Where(a => a.IsDefault == request.IsDefault.Value);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
             .OrderByDescending(a => a.IsDefault)
             .ThenByDescending(a => a.CreatedAt)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
             .Select(a => new AddressDto
             {
                 Id = a.Id,
@@ -40,5 +59,13 @@ public class GetMyAddressesQueryHandler : IRequestHandler<GetMyAddressesQuery, L
                 IsDefault = a.IsDefault,
             })
             .ToListAsync(cancellationToken);
+        return new PaginatedList<AddressDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
+
     }
 }

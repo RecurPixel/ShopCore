@@ -1,3 +1,4 @@
+using ShopCore.Application.Addresses.DTOs;
 using ShopCore.Application.Subscriptions.DTOs;
 
 namespace ShopCore.Application.Subscriptions.Queries.GetSubscriptionById;
@@ -28,20 +29,19 @@ public class GetSubscriptionByIdQueryHandler
             .Include(s => s.Items)
                 .ThenInclude(si => si.Product)
                     .ThenInclude(p => p.Images)
-            .Where(s => s.Id == request.SubscriptionId
+            .Where(s => s.Id == request.Id
                 && (s.UserId == _currentUser.UserId || s.VendorId == _currentUser.VendorId))
             .Select(s => new SubscriptionDto
             {
                 Id = s.Id,
                 SubscriptionNumber = s.SubscriptionNumber,
                 UserId = s.UserId,
-                CustomerName = s.User.FirstName + " " + s.User.LastName,
-                CustomerEmail = s.User.Email,
-                CustomerPhone = s.User.PhoneNumber,
                 VendorId = s.VendorId,
                 VendorName = s.Vendor.BusinessName,
-                DeliveryAddress = new SubscriptionAddressDto
+                DeliveryAddressId = s.DeliveryAddressId,
+                DeliveryAddress = s.DeliveryAddress != null ? new AddressDto
                 {
+                    Id = s.DeliveryAddress.Id,
                     FullName = s.DeliveryAddress.FullName,
                     PhoneNumber = s.DeliveryAddress.PhoneNumber,
                     AddressLine1 = s.DeliveryAddress.AddressLine1,
@@ -49,8 +49,11 @@ public class GetSubscriptionByIdQueryHandler
                     City = s.DeliveryAddress.City,
                     State = s.DeliveryAddress.State,
                     Pincode = s.DeliveryAddress.Pincode,
-                    Landmark = s.DeliveryAddress.Landmark
-                },
+                    Latitude = s.DeliveryAddress.Latitude,
+                    Longitude = s.DeliveryAddress.Longitude,
+                    PlaceId = s.DeliveryAddress.PlaceId,
+                    IsDefault = s.DeliveryAddress.IsDefault
+                } : null,
                 Frequency = s.Frequency.ToString(),
                 CustomFrequencyDays = s.CustomFrequencyDays,
                 StartDate = s.StartDate,
@@ -64,14 +67,11 @@ public class GetSubscriptionByIdQueryHandler
                 DepositAmount = s.DepositAmount,
                 DepositPaid = s.DepositPaid,
                 DepositBalance = s.DepositBalance,
-                DepositPaidAt = s.DepositPaidAt,
                 Status = s.Status.ToString(),
-                PausedAt = s.PausedAt,
-                CancelledAt = s.CancelledAt,
-                CancellationReason = s.CancellationReason,
                 TotalDeliveries = s.TotalDeliveries,
                 CompletedDeliveries = s.CompletedDeliveries,
                 FailedDeliveries = s.FailedDeliveries,
+                ItemCount = s.Items.Count,
                 Items = s.Items.Select(si => new SubscriptionItemDto
                 {
                     Id = si.Id,
@@ -82,6 +82,7 @@ public class GetSubscriptionByIdQueryHandler
                         : null,
                     Quantity = si.Quantity,
                     UnitPrice = si.UnitPrice,
+                    DiscountPercentage = si.DiscountPercentage,
                     LineTotal = si.Quantity * si.UnitPrice,
                     IsRecurring = si.IsRecurring,
                     OneTimeDeliveryDate = si.OneTimeDeliveryDate,

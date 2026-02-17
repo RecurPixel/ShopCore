@@ -11,6 +11,7 @@ public record CreateSubscriptionCommand(
     DateTime StartDate,
     string? PreferredDeliveryTime,
     int BillingCycleDays,
-    decimal? DepositAmount
+    decimal? DepositAmount,
+    decimal? CreditLimit
 ) : IRequest<SubscriptionDto>;
 

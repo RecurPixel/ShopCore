@@ -58,13 +58,11 @@ public class SettleSubscriptionCommandHandler
         {
             // Customer owes vendor
             // Create payment intent for remaining amount
-            var paymentIntent = await _paymentService.CreatePaymentIntentAsync(new CreatePaymentIntentRequest
-            {
-                Amount = netBalance,
-                Currency = "INR",
-                OrderId = subscription.SubscriptionNumber,
-                Description = $"Settlement for subscription {subscription.SubscriptionNumber}"
-            });
+            var paymentIntent = await _paymentService.CreatePaymentIntentAsync(
+                netBalance,
+                subscription.Id,
+                PaymentReferenceType.Invoice,
+                "INR");
 
             settlement = new SubscriptionSettlementDto
             {
@@ -75,7 +73,7 @@ public class SettleSubscriptionCommandHandler
                 NetBalance = netBalance,
                 SettlementType = "CustomerOwes",
                 PaymentRequired = true,
-                PaymentIntentId = paymentIntent.Id,
+                PaymentIntentId = paymentIntent.RazorpayOrderId,
                 PaymentAmount = netBalance
             };
         }

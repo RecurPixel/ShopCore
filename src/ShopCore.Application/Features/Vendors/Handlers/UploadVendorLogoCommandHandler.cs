@@ -33,7 +33,7 @@ public class UploadVendorLogoCommandHandler : IRequestHandler<UploadVendorLogoCo
         // Upload new logo
         using var stream = request.AvatarFile.OpenReadStream();
         var fileName = $"{Guid.NewGuid()}{Path.GetExtension(request.AvatarFile.FileName)}";
-        var logoUrl = await _fileStorage.SaveFileAsync(stream, fileName, $"vendors/{vendorProfile.Id}/logo");
+        var logoUrl = await _fileStorage.UploadFileAsync(stream, fileName, $"vendors/{vendorProfile.Id}/logo");
 
         // Update vendor profile
         vendorProfile.BusinessLogo = logoUrl;

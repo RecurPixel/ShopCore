@@ -3,7 +3,7 @@ using ShopCore.Application.Payouts.DTOs;
 namespace ShopCore.Application.Payouts.Queries.GetVendorPayouts;
 
 public class GetVendorPayoutsQueryHandler
-    : IRequestHandler<GetVendorPayoutsQuery, List<VendorPayoutDto>>
+    : IRequestHandler<GetVendorPayoutsQuery, PaginatedList<VendorPayoutDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
@@ -16,31 +16,60 @@ public class GetVendorPayoutsQueryHandler
         _currentUser = currentUser;
     }
 
-    public async Task<List<VendorPayoutDto>> Handle(
+    public async Task<PaginatedList<VendorPayoutDto>> Handle(
         GetVendorPayoutsQuery request,
         CancellationToken ct)
     {
-        var payouts = await _context.VendorPayouts
+        var query = _context.VendorPayouts
             .AsNoTracking()
-            .Where(p => p.VendorId == _currentUser.VendorId)
             .Include(p => p.Vendor)
+            .Where(p => p.VendorId == _currentUser.VendorId);
+
+        // Apply filters
+        if (!string.IsNullOrEmpty(request.Status))
+        {
+            query = query.Where(p => p.Status.ToString() == request.Status);
+        }
+
+        if (request.FromDate.HasValue)
+        {
+            query = query.Where(p => p.CreatedAt >= request.FromDate.Value);
+        }
+
+        if (request.ToDate.HasValue)
+        {
+            query = query.Where(p => p.CreatedAt <= request.ToDate.Value);
+        }
+
+        var totalCount = await query.CountAsync(ct);
+
+        var items = await query
             .OrderByDescending(p => p.CreatedAt)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .Select(p => new VendorPayoutDto
+            {
+                Id = p.Id,
+                VendorId = p.VendorId,
+                VendorName = p.Vendor.BusinessName,
+                PeriodFrom = p.PeriodStart,
+                PeriodTo = p.PeriodEnd,
+                GrossAmount = p.TotalSales,
+                PlatformFee = p.CommissionAmount,
+                NetAmount = p.NetPayout,
+                Status = p.Status.ToString(),
+                PayoutMethod = p.PayoutMethod.ToString(),
+                PayoutTransactionId = p.PayoutTransactionId,
+                ProcessedAt = p.PaidAt
+            })
             .ToListAsync(ct);
 
-        return payouts.Select(p => new VendorPayoutDto
+        return new PaginatedList<VendorPayoutDto>
         {
-            Id = p.Id,
-            VendorId = p.VendorId,
-            VendorName = p.Vendor.BusinessName,
-            PeriodFrom = p.PeriodStart,
-            PeriodTo = p.PeriodEnd,
-            GrossAmount = p.TotalSales,
-            PlatformFee = p.CommissionAmount,
-            NetAmount = p.NetPayout,
-            Status = p.Status.ToString(),
-            PayoutMethod = p.PayoutMethod?.ToString(),
-            PayoutTransactionId = p.PayoutTransactionId,
-            ProcessedAt = p.PaidAt
-        }).ToList();
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

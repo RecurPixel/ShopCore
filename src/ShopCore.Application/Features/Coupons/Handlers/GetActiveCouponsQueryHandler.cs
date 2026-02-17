@@ -2,7 +2,7 @@ using ShopCore.Application.Coupons.DTOs;
 
 namespace ShopCore.Application.Coupons.Queries.GetActiveCoupons;
 
-public class GetActiveCouponsQueryHandler : IRequestHandler<GetActiveCouponsQuery, List<CouponDto>>
+public class GetActiveCouponsQueryHandler : IRequestHandler<GetActiveCouponsQuery, PaginatedList<CouponDto>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -11,18 +11,32 @@ public class GetActiveCouponsQueryHandler : IRequestHandler<GetActiveCouponsQuer
         _context = context;
     }
 
-    public async Task<List<CouponDto>> Handle(
+    public async Task<PaginatedList<CouponDto>> Handle(
         GetActiveCouponsQuery request,
         CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
 
-        return await _context.Coupons
+
+        var query = _context.Coupons
             .AsNoTracking()
             .Where(c => c.IsActive
                      && c.ValidFrom <= now
                      && c.ValidUntil >= now
-                     && (!c.UsageLimit.HasValue || c.UsageCount < c.UsageLimit.Value))
+                     && (!c.UsageLimit.HasValue || c.UsageCount < c.UsageLimit.Value));
+
+        // Apply search filter
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+            query = query.Where(c => c.Code.Contains(request.Search) || c.Description.Contains(request.Search));
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderBy(c => c.ValidUntil)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
             .Select(c => new CouponDto
             {
                 Id = c.Id,
@@ -42,5 +56,14 @@ public class GetActiveCouponsQueryHandler : IRequestHandler<GetActiveCouponsQuer
                 IsValid = c.IsValid
             })
             .ToListAsync(cancellationToken);
+
+
+        return new PaginatedList<CouponDto>
+        {
+            Items = items,
+            TotalItems = totalCount,
+            Page = request.Page,
+            PageSize = request.PageSize
+        };
     }
 }

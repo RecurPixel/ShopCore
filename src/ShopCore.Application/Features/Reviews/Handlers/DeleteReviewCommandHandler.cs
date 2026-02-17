@@ -33,7 +33,7 @@ public class DeleteReviewCommandHandler : IRequestHandler<DeleteReviewCommand>
                 .Where(r => r.ProductId == review.ProductId && !r.IsDeleted)
                 .ToListAsync(ct);
 
-            product.AverageRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
+            product.AverageRating = (decimal)(reviews.Any() ? reviews.Average(r => r.Rating) : 0);
             product.ReviewCount = reviews.Count;
         }
 

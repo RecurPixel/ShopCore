@@ -62,26 +62,37 @@ public class GetCustomerAnalyticsQueryHandler : IRequestHandler<GetCustomerAnaly
             .Select(g => new { UserId = g.Key, TotalSpent = g.Sum(o => o.Total) })
             .ToListAsync(ct);
 
-        var segments = new List<CustomerSegmentDto>
-        {
-            new("High Value (>10K)",
-                customerSpending.Count(c => c.TotalSpent > 10000),
-                customerSpending.Where(c => c.TotalSpent > 10000).Sum(c => c.TotalSpent)),
-            new("Medium Value (5K-10K)",
-                customerSpending.Count(c => c.TotalSpent >= 5000 && c.TotalSpent <= 10000),
-                customerSpending.Where(c => c.TotalSpent >= 5000 && c.TotalSpent <= 10000).Sum(c => c.TotalSpent)),
-            new("Low Value (<5K)",
-                customerSpending.Count(c => c.TotalSpent < 5000),
-                customerSpending.Where(c => c.TotalSpent < 5000).Sum(c => c.TotalSpent))
-        };
+        var segments = new List<CustomerSegmentDto>();
 
-        return new CustomerAnalyticsReportDto(
-            totalCustomers,
-            newCustomersThisMonth,
-            activeCustomers,
-            Math.Round(averageOrderValue, 2),
-            Math.Round(retentionRate, 2),
-            segments
-        );
+        segments.Add(new CustomerSegmentDto
+        {
+            Segment = "High Value (>10K)",
+            CustomerCount = customerSpending.Count(c => c.TotalSpent > 10000),
+            TotalSpent = customerSpending.Where(c => c.TotalSpent > 10000).Sum(c => c.TotalSpent)
+        });
+
+        segments.Add(new CustomerSegmentDto
+        {
+            Segment = "Medium Value (5K-10K)",
+            CustomerCount = customerSpending.Count(c => c.TotalSpent >= 5000 && c.TotalSpent <= 10000),
+            TotalSpent = customerSpending.Where(c => c.TotalSpent >= 5000 && c.TotalSpent <= 10000).Sum(c => c.TotalSpent)
+
+        });
+        segments.Add(new CustomerSegmentDto
+        {
+            Segment = "Low Value (<5K)",
+            CustomerCount = customerSpending.Count(c => c.TotalSpent < 5000),
+            TotalSpent = customerSpending.Where(c => c.TotalSpent < 5000).Sum(c => c.TotalSpent)
+        });
+
+        return new CustomerAnalyticsReportDto
+        {
+            TotalCustomers = totalCustomers,
+            NewCustomersThisMonth = newCustomersThisMonth,
+            ActiveCustomers = activeCustomers,
+            AverageOrderValue = Math.Round(averageOrderValue, 2),
+            CustomerRetentionRate = Math.Round(retentionRate, 2),
+            CustomerSegments = segments
+        };
     }
 }

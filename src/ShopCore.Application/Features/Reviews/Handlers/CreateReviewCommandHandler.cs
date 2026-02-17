@@ -19,7 +19,7 @@ public class CreateReviewCommandHandler : IRequestHandler<CreateReviewCommand, R
         var hasPurchased = await _context.OrderItems
             .AnyAsync(oi => oi.ProductId == request.ProductId &&
                           oi.Order.UserId == _currentUser.UserId &&
-                          oi.Status == OrderStatus.Delivered, ct);
+                          oi.Status == OrderItemStatus.Delivered, ct);
 
         if (!hasPurchased)
             throw new ValidationException("You can only review products you have purchased");
@@ -38,7 +38,7 @@ public class CreateReviewCommandHandler : IRequestHandler<CreateReviewCommand, R
             Rating = request.Rating,
             Title = request.Title,
             Comment = request.Comment,
-            ImageUrls = request.ImageUrls != null ? string.Join(",", request.ImageUrls) : null,
+            ImageUrls = request.Images != null ? string.Join(",", request.Images.Select(s => s.FileName)) : null,
             IsVerifiedPurchase = true,
             HelpfulCount = 0
         };
@@ -53,7 +53,7 @@ public class CreateReviewCommandHandler : IRequestHandler<CreateReviewCommand, R
                 .Where(r => r.ProductId == request.ProductId)
                 .ToListAsync(ct);
 
-            product.AverageRating = reviews.Average(r => r.Rating);
+            product.AverageRating = (decimal)reviews.Average(r => r.Rating);
             product.ReviewCount = reviews.Count + 1;
         }
 

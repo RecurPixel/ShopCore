@@ -36,7 +36,7 @@ public class ActivateVendorCommandHandler : IRequestHandler<ActivateVendorComman
         // Reactivate vendor products
         foreach (var product in vendor.Products.Where(p => !p.IsDeleted))
         {
-            product.IsActive = true;
+            product.Status = ProductStatus.Active;
         }
 
         await _context.SaveChangesAsync(ct);

@@ -17,23 +17,18 @@ public class GetVendorByIdQueryHandler : IRequestHandler<GetVendorByIdQuery, Ven
     {
         return await _context.VendorProfiles
             .AsNoTracking()
-            .Include(v => v.User)
+            .Include(v => v.ServiceAreas)
             .Where(v => v.Id == request.Id && v.Status == VendorStatus.Active)
             .Select(v => new VendorPublicProfileDto
             {
                 Id = v.Id,
                 BusinessName = v.BusinessName,
-                BusinessDescription = v.BusinessDescription,
-                BusinessLogo = v.BusinessLogo,
-                BusinessAddress = v.BusinessAddress,
-                PhoneNumber = v.User.PhoneNumber,
-                AverageRating = v.AverageRating,
-                TotalReviews = v.TotalReviews,
-                TotalProducts = v.TotalProducts,
-                IsDeliveryAvailable = v.RequiresDeposit,
-                RequiresDeposit = v.RequiresDeposit,
-                DefaultDepositAmount = v.DefaultDepositAmount,
-                MemberSince = v.CreatedAt
+                Description = v.BusinessDescription,
+                LogoUrl = v.BusinessLogo,
+                Rating = v.AverageRating,
+                ReviewCount = v.TotalReviews,
+                ServiceAreas = v.ServiceAreas.Select(sa => sa.AreaName).ToList(),
+                IsOpen = v.Status == VendorStatus.Active
             })
             .FirstOrDefaultAsync(cancellationToken);
     }

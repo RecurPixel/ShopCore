@@ -42,7 +42,7 @@ public class GetVendorCustomerDeliveriesQueryHandler : IRequestHandler<GetVendor
                 ActualDeliveryDate = d.ActualDeliveryDate,
                 Status = d.Status.ToString(),
                 PaymentStatus = d.PaymentStatus.ToString(),
-                TotalAmount = d.TotalAmount,
+                Total = d.TotalAmount,
                 ItemCount = d.Items.Count
             })
             .ToListAsync(cancellationToken);

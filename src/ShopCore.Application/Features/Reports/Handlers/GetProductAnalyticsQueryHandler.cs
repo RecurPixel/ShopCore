@@ -24,7 +24,7 @@ public class GetProductAnalyticsQueryHandler : IRequestHandler<GetProductAnalyti
         var toDate = request.ToDate ?? DateTime.UtcNow;
 
         var totalProducts = await _context.Products.CountAsync(p => !p.IsDeleted, ct);
-        var activeProducts = await _context.Products.CountAsync(p => !p.IsDeleted && p.IsActive, ct);
+        var activeProducts = await _context.Products.CountAsync(p => !p.IsDeleted && p.Status == ProductStatus.Active, ct);
         var outOfStockProducts = await _context.Products
             .CountAsync(p => !p.IsDeleted && p.StockQuantity == 0, ct);
 
@@ -33,12 +33,13 @@ public class GetProductAnalyticsQueryHandler : IRequestHandler<GetProductAnalyti
             .Where(oi => oi.Order.Status == OrderStatus.Delivered)
             .Where(oi => oi.Order.CreatedAt >= fromDate && oi.Order.CreatedAt <= toDate)
             .GroupBy(oi => new { oi.ProductId, oi.Product.Name })
-            .Select(g => new TopProductDto(
-                g.Key.ProductId,
-                g.Key.Name,
-                g.Sum(oi => oi.Quantity),
-                g.Sum(oi => oi.Subtotal)
-            ))
+            .Select(g => new TopProductDto
+            {
+                ProductId = g.Key.ProductId,
+                ProductName = g.Key.Name,
+                SoldCount = g.Sum(oi => oi.Quantity),
+                Revenue = g.Sum(oi => oi.Subtotal)
+            })
             .OrderByDescending(p => p.Revenue)
             .Take(request.Top)
             .ToListAsync(ct);
@@ -48,21 +49,23 @@ public class GetProductAnalyticsQueryHandler : IRequestHandler<GetProductAnalyti
             .Where(oi => oi.Order.Status == OrderStatus.Delivered)
             .Where(oi => oi.Order.CreatedAt >= fromDate && oi.Order.CreatedAt <= toDate)
             .GroupBy(oi => new { oi.Product.CategoryId, oi.Product.Category.Name })
-            .Select(g => new CategorySalesDto(
-                g.Key.CategoryId,
-                g.Key.Name,
-                g.Select(oi => oi.ProductId).Distinct().Count(),
-                g.Sum(oi => oi.Subtotal)
-            ))
+            .Select(g => new CategorySalesDto
+            {
+                CategoryId = g.Key.CategoryId,
+                CategoryName = g.Key.Name,
+                ProductCount = g.Select(oi => oi.ProductId).Distinct().Count(),
+                Revenue = g.Sum(oi => oi.Subtotal)
+            })
             .OrderByDescending(c => c.Revenue)
             .ToListAsync(ct);
 
-        return new ProductAnalyticsReportDto(
-            totalProducts,
-            activeProducts,
-            outOfStockProducts,
-            topProducts,
-            salesByCategory
-        );
+        return new ProductAnalyticsReportDto
+        {
+            TotalProducts = totalProducts,
+            ActiveProducts = activeProducts,
+            OutOfStockProducts = outOfStockProducts,
+            TopSellingProducts = topProducts,
+            SalesByCategory = salesByCategory
+        };
     }
 }

@@ -35,15 +35,16 @@ public class GetSubscriptionCustomerInfoQueryHandler : IRequestHandler<GetSubscr
         var address = subscription.DeliveryAddress;
         var fullAddress = $"{address.AddressLine1}, {address.AddressLine2}, {address.City}, {address.State} - {address.Pincode}";
 
-        return new SubscriptionCustomerInfoDto(
-            subscription.UserId,
-            subscription.User.FullName,
-            subscription.User.Email,
-            subscription.User.PhoneNumber,
-            fullAddress,
-            subscription.PreferredDeliveryTime,
-            address.Latitude,
-            address.Longitude
-        );
+        return new SubscriptionCustomerInfoDto
+        {
+            UserId = subscription.UserId,
+            FullName = subscription.User.FullName,
+            Email = subscription.User.Email,
+            PhoneNumber = subscription.User.PhoneNumber,
+            DeliveryAddress = fullAddress,
+            PreferredDeliveryTime = subscription.PreferredDeliveryTime,
+            Latitude = address.Latitude,
+            Longitude = address.Longitude
+        };
     }
 }

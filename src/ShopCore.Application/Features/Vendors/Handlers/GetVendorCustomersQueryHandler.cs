@@ -20,12 +20,14 @@ public class GetVendorCustomersQueryHandler : IRequestHandler<GetVendorCustomers
         GetVendorCustomersQuery request,
         CancellationToken cancellationToken)
     {
+        var vendorId = _currentUser.VendorId;
+
         // Get distinct customers who have orders or subscriptions with this vendor
         var customerIds = await _context.OrderItems
-            .Where(oi => oi.VendorId == _currentUser.VendorId)
+            .Where(oi => oi.VendorId == vendorId)
             .Select(oi => oi.Order.UserId)
             .Union(_context.Subscriptions
-                .Where(s => s.VendorId == _currentUser.VendorId)
+                .Where(s => s.VendorId == vendorId)
                 .Select(s => s.UserId))
             .Distinct()
             .ToListAsync(cancellationToken);
@@ -44,41 +46,36 @@ public class GetVendorCustomersQueryHandler : IRequestHandler<GetVendorCustomers
             var user = await _context.Users
                 .AsNoTracking()
                 .Where(u => u.Id == customerId)
-                .Select(u => new VendorCustomerDto
-                {
-                    UserId = u.Id,
-                    FullName = u.FirstName + " " + u.LastName,
-                    Email = u.Email,
-                    Phone = u.PhoneNumber
-                })
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (user != null)
             {
-                // Get stats for this customer
-                user.TotalOrders = await _context.OrderItems
-                    .CountAsync(oi => oi.Order.UserId == customerId
-                        && oi.VendorId == _currentUser.VendorId, cancellationToken);
+                var vendorOrderItems = _context.OrderItems
+                    .Where(oi => oi.Order.UserId == customerId && oi.VendorId == vendorId);
 
-                user.TotalSpent = await _context.OrderItems
-                    .Where(oi => oi.Order.UserId == customerId
-                        && oi.VendorId == _currentUser.VendorId
-                        && oi.Order.PaymentStatus == PaymentStatus.Paid)
-                    .SumAsync(oi => oi.Subtotal, cancellationToken);
-
-                user.ActiveSubscriptions = await _context.Subscriptions
-                    .CountAsync(s => s.UserId == customerId
-                        && s.VendorId == _currentUser.VendorId
-                        && s.Status == SubscriptionStatus.Active, cancellationToken);
-
-                user.LastOrderDate = await _context.Orders
-                    .Where(o => o.UserId == customerId
-                        && o.Items.Any(oi => oi.VendorId == _currentUser.VendorId))
-                    .OrderByDescending(o => o.CreatedAt)
-                    .Select(o => (DateTime?)o.CreatedAt)
-                    .FirstOrDefaultAsync(cancellationToken);
-
-                items.Add(user);
+                items.Add(new VendorCustomerDto
+                {
+                    UserId = user.Id,
+                    FullName = user.FirstName + " " + user.LastName,
+                    Email = user.Email,
+                    Phone = user.PhoneNumber,
+                    TotalOrderCount = await vendorOrderItems.CountAsync(cancellationToken),
+                    ActiveSubscriptionCount = await _context.Subscriptions
+                        .CountAsync(s => s.UserId == customerId
+                            && s.VendorId == vendorId
+                            && s.Status == SubscriptionStatus.Active, cancellationToken),
+                    LastOrderDate = await _context.Orders
+                        .Where(o => o.UserId == customerId
+                            && o.Items.Any(oi => oi.VendorId == vendorId))
+                        .OrderByDescending(o => o.CreatedAt)
+                        .Select(o => (DateTime?)o.CreatedAt)
+                        .FirstOrDefaultAsync(cancellationToken),
+                    LastDeliveryDate = await vendorOrderItems
+                        .Where(oi => oi.Status == OrderItemStatus.Delivered)
+                        .OrderByDescending(oi => oi.DeliveredAt)
+                        .Select(oi => oi.DeliveredAt)
+                        .FirstOrDefaultAsync(cancellationToken)
+                });
             }
         }
 

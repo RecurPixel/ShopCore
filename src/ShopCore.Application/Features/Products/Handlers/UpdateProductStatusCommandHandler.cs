@@ -46,5 +46,21 @@ public class UpdateProductStatusCommandHandler
         }
 
         await _context.SaveChangesAsync(ct);
+
+        return MapToProductDto(product);
     }
+
+    private static ProductDto MapToProductDto(Product p) => new()
+    {
+        Id = p.Id,
+        Name = p.Name,
+        Slug = p.Slug,
+        ShortDescription = p.Description,
+        Price = p.Price,
+        CompareAtPrice = p.CompareAtPrice,
+        IsInStock = p.StockQuantity > 0,
+        Status = p.Status.ToString(),
+        VendorId = p.VendorId,
+        CategoryId = p.CategoryId
+    };
 }

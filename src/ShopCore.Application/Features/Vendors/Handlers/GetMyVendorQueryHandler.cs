@@ -44,7 +44,7 @@ public class GetMyVendorQueryHandler : IRequestHandler<GetMyVendorQuery, VendorP
                 RequiresDeposit = v.RequiresDeposit,
                 DefaultDepositAmount = v.DefaultDepositAmount,
                 DefaultBillingCycleDays = v.DefaultBillingCycleDays,
-                AverageRating = v.AverageRating,
+                Rating = v.AverageRating,
                 TotalReviews = v.TotalReviews,
                 TotalProducts = v.TotalProducts,
                 TotalOrders = v.TotalOrders,

@@ -11,9 +11,9 @@ public class MarkReviewHelpfulCommandHandler : IRequestHandler<MarkReviewHelpful
 
     public async Task Handle(MarkReviewHelpfulCommand request, CancellationToken ct)
     {
-        var review = await _context.Reviews.FindAsync(request.Id);
+        var review = await _context.Reviews.FindAsync(request.ReviewId);
         if (review == null)
-            throw new NotFoundException("Review", request.Id);
+            throw new NotFoundException("Review", request.ReviewId);
 
         review.HelpfulCount++;
         await _context.SaveChangesAsync(ct);

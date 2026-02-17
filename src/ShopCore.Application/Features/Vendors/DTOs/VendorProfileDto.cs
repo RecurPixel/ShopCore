@@ -26,4 +26,9 @@ public record VendorProfileDto
     public string? PhoneNumber { get; init; }
     public int DaysSinceSubmission { get; init; }
     public DateTime CreatedAt { get; init; }
+
+    public DateTime? ApprovedAt { get; set; }
+
+    public decimal CommissionRate { get; set; } = 5.00m; // percentage (5.00 = 5%)
+    public decimal TotalRevenue { get; set; } = 0;
 }

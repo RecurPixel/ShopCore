@@ -123,6 +123,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                     entry.Property("UpdatedAt").CurrentValue = DateTime.UtcNow;
                 }
             }
+
+            if (entry.State == EntityState.Deleted)
+            {
+                if (entry.Property("DeletedAt") != null)
+                {
+                    entry.Property("DeletedAt").CurrentValue = DateTime.UtcNow;
+                }
+            }
         }
     }
 }

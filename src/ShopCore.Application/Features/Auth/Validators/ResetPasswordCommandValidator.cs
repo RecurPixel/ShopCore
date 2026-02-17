@@ -6,7 +6,7 @@ public class ResetPasswordCommandValidator : AbstractValidator<ResetPasswordComm
 {
     public ResetPasswordCommandValidator()
     {
-        RuleFor(x => x.Token).NotEmpty().WithMessage("Reset token is required");
+        RuleFor(x => x.ResetToken).NotEmpty().WithMessage("Reset token is required");
 
         RuleFor(x => x.NewPassword)
             .NotEmpty()

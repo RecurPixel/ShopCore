@@ -20,15 +20,22 @@ public class GetAdminDashboardStatsQueryHandler
         var startOfMonth = new DateTime(today.Year, today.Month, 1);
         var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
 
+        // Use custom date range if provided
+        var fromDate = request.FromDate ?? startOfMonth;
+        var toDate = request.ToDate ?? DateTime.UtcNow;
+
         var stats = new AdminDashboardStatsDto
         {
             // Overall counts
             TotalUsers = await _context.Users.CountAsync(cancellationToken),
             TotalVendors = await _context.VendorProfiles.CountAsync(cancellationToken),
-            TotalProducts = await _context.Products.CountAsync(cancellationToken),
+            TotalProducts = await _context.Products.CountAsync(p => !p.IsDeleted, cancellationToken),
             TotalOrders = await _context.Orders.CountAsync(cancellationToken),
+            TotalSubscriptions = await _context.Subscriptions.CountAsync(cancellationToken),
 
-            // Vendor status breakdown
+            // Pending items
+            PendingOrders = await _context.Orders
+                .CountAsync(o => o.Status == OrderStatus.Pending, cancellationToken),
             PendingVendorApprovals = await _context.VendorProfiles
                 .CountAsync(v => v.Status == VendorStatus.PendingApproval, cancellationToken),
             ActiveVendors = await _context.VendorProfiles
@@ -48,11 +55,11 @@ public class GetAdminDashboardStatsQueryHandler
                 .Where(o => o.CreatedAt >= startOfWeek && o.PaymentStatus == PaymentStatus.Paid)
                 .SumAsync(o => o.Total, cancellationToken),
 
-            // This month
+            // This month (or custom date range)
             OrdersThisMonth = await _context.Orders
-                .CountAsync(o => o.CreatedAt >= startOfMonth, cancellationToken),
+                .CountAsync(o => o.CreatedAt >= fromDate && o.CreatedAt <= toDate, cancellationToken),
             RevenueThisMonth = await _context.Orders
-                .Where(o => o.CreatedAt >= startOfMonth && o.PaymentStatus == PaymentStatus.Paid)
+                .Where(o => o.CreatedAt >= fromDate && o.CreatedAt <= toDate && o.PaymentStatus == PaymentStatus.Paid)
                 .SumAsync(o => o.Total, cancellationToken),
 
             // Total revenue

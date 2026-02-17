@@ -33,7 +33,7 @@ public class UploadUserAvatarCommandHandler : IRequestHandler<UploadUserAvatarCo
         // Upload new avatar
         using var stream = request.AvatarFile.OpenReadStream();
         var fileName = $"{Guid.NewGuid()}{Path.GetExtension(request.AvatarFile.FileName)}";
-        var avatarUrl = await _fileStorage.SaveFileAsync(stream, fileName, $"users/{user.Id}/avatar");
+        var avatarUrl = await _fileStorage.UploadFileAsync(stream, fileName, $"users/{user.Id}/avatar");
 
         user.AvatarUrl = avatarUrl;
         await _context.SaveChangesAsync(ct);

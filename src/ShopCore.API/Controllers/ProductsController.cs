@@ -65,10 +65,11 @@ public class ProductsController : ControllerBase
     [HttpGet("{id:int}/reviews")]
     public async Task<ActionResult<PaginatedList<ReviewDto>>> GetProductReviews(
         int id,
+        [FromQuery] string? SortBy = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
-        var reviews = await _mediator.Send(new GetProductReviewsQuery(id, page, pageSize));
+        var reviews = await _mediator.Send(new GetProductReviewsQuery(id, SortBy, page, pageSize));
         return Ok(reviews);
     }
 }

@@ -33,7 +33,7 @@ public class SuspendVendorCommandHandler : IRequestHandler<SuspendVendorCommand>
         // Deactivate all vendor products
         foreach (var product in vendor.Products)
         {
-            product.IsActive = false;
+            product.Status = ProductStatus.Discontinued;
         }
 
         await _context.SaveChangesAsync(ct);

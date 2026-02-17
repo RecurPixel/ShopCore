@@ -2,7 +2,7 @@ using ShopCore.Application.Categories.DTOs;
 
 namespace ShopCore.Application.Categories.Queries.GetCategories;
 
-public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, List<CategoryDto>>
+public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, PaginatedList<CategoryDto>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -11,16 +11,34 @@ public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, Lis
         _context = context;
     }
 
-    public async Task<List<CategoryDto>> Handle(
+    public async Task<PaginatedList<CategoryDto>> Handle(
         GetCategoriesQuery request,
         CancellationToken cancellationToken)
     {
-        var categories = await _context.Categories
+        var query = _context.Categories
             .AsNoTracking()
             .Include(c => c.SubCategories)
-            .Where(c => c.ParentCategoryId == null)
+            .AsQueryable();
+
+        // Apply filters
+        if (request.ParentId.HasValue)
+            query = query.Where(c => c.ParentCategoryId == request.ParentId);
+        else
+            query = query.Where(c => c.ParentCategoryId == null);
+
+        if (!string.IsNullOrEmpty(request.Search))
+            query = query.Where(c => c.Name.Contains(request.Search));
+
+        if (request.IsActive.HasValue)
+            query = query.Where(c => c.IsActive == request.IsActive.Value);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
             .OrderBy(c => c.DisplayOrder)
             .ThenBy(c => c.Name)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
             .Select(c => new CategoryDto
             {
                 Id = c.Id,
@@ -48,6 +66,12 @@ public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, Lis
             })
             .ToListAsync(cancellationToken);
 
-        return categories;
+        return new PaginatedList<CategoryDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }

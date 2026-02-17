@@ -1,6 +1,5 @@
 using ShopCore.Application.CustomerInvitations.Commands.AcceptInvitation;
 using ShopCore.Application.CustomerInvitations.DTOs;
-using ShopCore.Application.Subscriptions.Commands.CreateSubscription;
 using ShopCore.Application.Subscriptions.DTOs;
 
 namespace ShopCore.Application.CustomerInvitations.Handlers;
@@ -12,20 +11,17 @@ public class AcceptInvitationCommandHandler
     private readonly IDateTime _dateTime;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenService _jwtTokenService;
-    private readonly IMediator _mediator;
 
     public AcceptInvitationCommandHandler(
         IApplicationDbContext context,
         IDateTime dateTime,
         IPasswordHasher passwordHasher,
-        IJwtTokenService jwtTokenService,
-        IMediator mediator)
+        IJwtTokenService jwtTokenService)
     {
         _context = context;
         _dateTime = dateTime;
         _passwordHasher = passwordHasher;
         _jwtTokenService = jwtTokenService;
-        _mediator = mediator;
     }
 
     public async Task<InvitationAcceptedDto> Handle(AcceptInvitationCommand request, CancellationToken ct)
@@ -100,23 +96,14 @@ public class AcceptInvitationCommandHandler
         // Deserialize items
         var items = System.Text.Json.JsonSerializer.Deserialize<List<InvitationItemInput>>(invitation.SubscriptionItemsJson);
 
-        // Create subscription using existing CreateSubscriptionCommand
-        var subscriptionItems = items?.Select(i => new SubscriptionItemDto { Id = i.ProductId, Quantity = i.Quantity }).ToList();
+        // Create subscription items from invitation
+        var subscriptionItems = items?.Select(i => new SubscriptionItemDto
+        {
+            ProductId = i.ProductId,
+            Quantity = i.Quantity
+        }).ToList() ?? new List<SubscriptionItemDto>();
 
-        var createSubCommand = new CreateSubscriptionCommand(
-            VendorId: invitation.VendorId,
-            DeliveryAddressId: address.Id,
-            Items: subscriptionItems,
-            Frequency: invitation.Frequency,
-            CustomFrequencyDays: null,
-            StartDate: _dateTime.UtcNow.AddDays(1),
-            PreferredDeliveryTime: invitation.PreferredDeliveryTime,
-            BillingCycleDays: 30, // Default
-            DepositAmount: invitation.DepositAmount
-        );
-
-        // Note: This would need ICurrentUserService to be set to the new user's context
-        // For simplicity, directly create subscription here
+        // Create subscription directly (bypassing command since we need to set UserId explicitly)
         var subscription = await CreateSubscriptionDirectly(
             user.Id,
             invitation.VendorId,

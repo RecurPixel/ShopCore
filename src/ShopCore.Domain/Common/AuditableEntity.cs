@@ -26,6 +26,11 @@ public abstract class AuditableEntity : BaseEntity
     public int? UpdatedBy { get; set; }
 
     /// <summary>
+    /// When the entity was last deleted (UTC)
+    /// </summary>
+    public DateTime? DeletedAt { get; set; }
+
+    /// <summary>
     /// Soft delete flag - if true, entity is considered deleted
     /// </summary>
     public bool IsDeleted { get; set; }

@@ -53,7 +53,7 @@ public class GetAllVendorsQueryHandler : IRequestHandler<GetAllVendorsQuery, Pag
                 Email = v.User.Email,
                 PhoneNumber = v.User.PhoneNumber,
                 Status = v.Status.ToString(),
-                AverageRating = v.AverageRating,
+                Rating = v.AverageRating,
                 TotalReviews = v.TotalReviews,
                 TotalProducts = v.TotalProducts,
                 TotalOrders = v.TotalOrders,

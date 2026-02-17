@@ -24,9 +24,9 @@ public class VendorPayoutConfiguration : IEntityTypeConfiguration<VendorPayout>
 
         builder.Property(vp => vp.Status).HasConversion<int>();
 
-        builder.Property(vp => vp.PaymentMethod).HasMaxLength(50);
+        builder.Property(vp => vp.PayoutMethod).HasConversion<string>().HasMaxLength(50);
 
-        builder.Property(vp => vp.TransactionId).HasMaxLength(100);
+        builder.Property(vp => vp.PayoutTransactionId).HasMaxLength(100);
 
         builder.Property(vp => vp.TransactionReference).HasMaxLength(100);
 

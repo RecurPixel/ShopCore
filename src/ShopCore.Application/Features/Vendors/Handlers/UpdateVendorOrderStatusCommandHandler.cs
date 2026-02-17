@@ -61,7 +61,7 @@ public class UpdateVendorOrderStatusCommandHandler
                 Id = i.Id,
                 ProductId = i.ProductId,
                 ProductName = i.Product.Name,
-                ProductImage = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
+                ProductImageUrl = i.Product.Images.FirstOrDefault()?.ImageUrl ?? string.Empty,
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
                 Subtotal = i.Subtotal

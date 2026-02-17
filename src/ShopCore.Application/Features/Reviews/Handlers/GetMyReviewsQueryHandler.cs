@@ -42,7 +42,7 @@ public class GetMyReviewsQueryHandler : IRequestHandler<GetMyReviewsQuery, Pagin
                 Rating = r.Rating,
                 Title = r.Title,
                 Comment = r.Comment,
-                ImageUrls = r.ImageUrls,
+                ImageUrls = string.IsNullOrEmpty(r.ImageUrls) ? new List<string>() : r.ImageUrls.Split(',').ToList(),
                 IsVerifiedPurchase = r.IsVerifiedPurchase,
                 IsApproved = r.IsApproved,
                 HelpfulCount = r.HelpfulCount,

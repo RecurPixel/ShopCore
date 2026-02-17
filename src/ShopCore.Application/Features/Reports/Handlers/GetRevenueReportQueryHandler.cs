@@ -60,13 +60,14 @@ public class GetRevenueReportQueryHandler : IRequestHandler<GetRevenueReportQuer
         // Revenue by period
         var revenueByPeriod = await GetRevenueByPeriod(fromDate, toDate, request.Period, ct);
 
-        return new RevenueReportDto(
-            totalRevenue,
-            orderRevenue,
-            subscriptionRevenue,
-            Math.Round(growthPercentage, 2),
-            revenueByPeriod
-        );
+        return new RevenueReportDto
+        {
+            TotalRevenue = totalRevenue,
+            OrderRevenue = orderRevenue,
+            SubscriptionRevenue = subscriptionRevenue,
+            GrowthPercentage = Math.Round(growthPercentage, 2),
+            RevenueByPeriod = revenueByPeriod
+        };
     }
 
     private async Task<List<RevenueByPeriodDto>> GetRevenueByPeriod(
@@ -107,7 +108,7 @@ public class GetRevenueReportQueryHandler : IRequestHandler<GetRevenueReportQuer
                 .Where(i => i.GeneratedAt >= current && i.GeneratedAt <= periodEnd)
                 .SumAsync(i => i.Total, ct);
 
-            result.Add(new RevenueByPeriodDto(periodLabel, orderRev + subRev));
+            result.Add(new RevenueByPeriodDto { Period = periodLabel, Revenue = orderRev + subRev });
 
             current = period.ToLower() switch
             {

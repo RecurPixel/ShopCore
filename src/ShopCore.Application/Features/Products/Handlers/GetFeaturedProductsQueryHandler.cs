@@ -3,7 +3,7 @@ using ShopCore.Application.Products.DTOs;
 namespace ShopCore.Application.Products.Queries.GetFeaturedProducts;
 
 public class GetFeaturedProductsQueryHandler
-    : IRequestHandler<GetFeaturedProductsQuery, List<ProductDto>>
+    : IRequestHandler<GetFeaturedProductsQuery, PaginatedList<ProductDto>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -12,19 +12,31 @@ public class GetFeaturedProductsQueryHandler
         _context = context;
     }
 
-    public async Task<List<ProductDto>> Handle(
+    public async Task<PaginatedList<ProductDto>> Handle(
         GetFeaturedProductsQuery request,
         CancellationToken cancellationToken)
     {
-        return await _context.Products
+        var query = _context.Products
             .AsNoTracking()
             .Include(p => p.Category)
             .Include(p => p.Vendor)
             .Include(p => p.Images)
-            .Where(p => p.Status == ProductStatus.Active && p.IsFeatured)
+            .Where(p => p.Status == ProductStatus.Active && p.IsFeatured && !p.IsDeleted);
+
+        // Apply filters
+        if (request.CategoryId.HasValue)
+            query = query.Where(p => p.CategoryId == request.CategoryId.Value);
+
+        if (request.VendorId.HasValue)
+            query = query.Where(p => p.VendorId == request.VendorId.Value);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
             .OrderByDescending(p => p.AverageRating)
             .ThenByDescending(p => p.OrderCount)
-            .Take(request.Limit)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
             .Select(p => new ProductDto
             {
                 Id = p.Id,
@@ -47,5 +59,13 @@ public class GetFeaturedProductsQueryHandler
                 VendorName = p.Vendor.BusinessName
             })
             .ToListAsync(cancellationToken);
+
+        return new PaginatedList<ProductDto>
+        {
+            Items = items,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalItems = totalCount
+        };
     }
 }
