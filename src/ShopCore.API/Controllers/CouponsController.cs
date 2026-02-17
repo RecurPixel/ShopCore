@@ -1,4 +1,4 @@
-using ShopCore.Application.Coupons.Commands.CreateCoupon;
+﻿using ShopCore.Application.Coupons.Commands.CreateCoupon;
 using ShopCore.Application.Coupons.Commands.DeactivateCoupon;
 using ShopCore.Application.Coupons.Commands.DeleteCoupon;
 using ShopCore.Application.Coupons.Commands.UpdateCoupon;
@@ -24,7 +24,12 @@ public class CouponsController : ControllerBase
     // Public endpoints
     // ----------------
 
-    // GET /api/v1/coupons/active
+    /// <summary>
+    /// Retrieves active coupons.
+    /// </summary>
+    /// <returns>List&lt;CouponDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("active")]
     public async Task<ActionResult<List<CouponDto>>> GetActiveCoupons()
     {
@@ -32,7 +37,14 @@ public class CouponsController : ControllerBase
         return Ok(coupons);
     }
 
-    // POST /api/v1/coupons/validate
+    /// <summary>
+    /// Validates coupon.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>CouponValidationResultDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize]
     [HttpPost("validate")]
     public async Task<ActionResult<CouponValidationResultDto>> ValidateCoupon(
@@ -46,7 +58,13 @@ public class CouponsController : ControllerBase
     // Admin actions
     // -------------
 
-    // GET /api/v1/coupons
+    /// <summary>
+    /// Retrieves all coupons.
+    /// </summary>
+    /// <returns>List&lt;CouponDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<ActionResult<List<CouponDto>>> GetAllCoupons()
@@ -55,7 +73,14 @@ public class CouponsController : ControllerBase
         return Ok(coupons);
     }
 
-    // POST /api/v1/coupons
+    /// <summary>
+    /// Creates a new coupon.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>CouponDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<CouponDto>> CreateCoupon(
@@ -65,7 +90,15 @@ public class CouponsController : ControllerBase
         return Ok(coupon);
     }
 
-    // PUT /api/v1/coupons/{id}
+    /// <summary>
+    /// Updates coupon.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="request">The request body</param>
+    /// <returns>CouponDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<CouponDto>> UpdateCoupon(int id, [FromBody] UpdateCouponRequest request)
@@ -85,7 +118,14 @@ public class CouponsController : ControllerBase
         return Ok(coupon);
     }
 
-    // PATCH /api/v1/coupons/{id}/deactivate
+    /// <summary>
+    /// Partially updates deactivate coupon.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Admin")]
     [HttpPatch("{id:int}/deactivate")]
     public async Task<IActionResult> DeactivateCoupon(int id)
@@ -94,7 +134,14 @@ public class CouponsController : ControllerBase
         return NoContent();
     }
 
-    // DELETE /api/v1/coupons/{id}
+    /// <summary>
+    /// Deletes coupon.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteCoupon(int id)

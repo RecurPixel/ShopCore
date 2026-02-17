@@ -1,4 +1,4 @@
-using ShopCore.Application.Deliveries.Commands.SkipDelivery;
+﻿using ShopCore.Application.Deliveries.Commands.SkipDelivery;
 using ShopCore.Application.Invoices.Commands.PayInvoice;
 using ShopCore.Application.Invoices.DTOs;
 using ShopCore.Application.Subscriptions.Commands.AddOneTimeItemToSubscription;
@@ -31,7 +31,14 @@ public class SubscriptionsController : ControllerBase
         _mediator = mediator;
     }
 
-    // POST /api/v1/subscriptions
+    /// <summary>
+    /// Creates a new subscription.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>SubscriptionDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost]
     public async Task<ActionResult<SubscriptionDto>> CreateSubscription(
         [FromBody] CreateSubscriptionCommand command)
@@ -40,7 +47,15 @@ public class SubscriptionsController : ControllerBase
         return CreatedAtRoute(null, new { id = subscription.Id }, subscription);
     }
 
-    // PATCH /api/v1/subscriptions/{id}
+    /// <summary>
+    /// Updates subscription.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>SubscriptionDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPatch("{id:int}")]
     public async Task<ActionResult<SubscriptionDto>> UpdateSubscription(
         int id,
@@ -54,7 +69,15 @@ public class SubscriptionsController : ControllerBase
         return Ok(subscription);
     }
 
-    // POST /api/v1/subscriptions/{id}/items
+    /// <summary>
+    /// Adds one time item.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>SubscriptionItemResultDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("{id:int}/items")]
     public async Task<ActionResult<SubscriptionItemResultDto>> AddOneTimeItem(
         int id,
@@ -65,7 +88,14 @@ public class SubscriptionsController : ControllerBase
         return Created("", item);
     }
 
-    // POST /api/v1/subscriptions/{id}/pause
+    /// <summary>
+    /// Pauses subscription.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("{id:int}/pause")]
     public async Task<IActionResult> PauseSubscription(int id)
     {
@@ -73,7 +103,14 @@ public class SubscriptionsController : ControllerBase
         return NoContent();
     }
 
-    // POST /api/v1/subscriptions/{id}/resume
+    /// <summary>
+    /// Resumes subscription.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("{id:int}/resume")]
     public async Task<IActionResult> ResumeSubscription(int id)
     {
@@ -81,7 +118,14 @@ public class SubscriptionsController : ControllerBase
         return NoContent();
     }
 
-    // POST /api/v1/subscriptions/{id}/settle
+    /// <summary>
+    /// Settles tle subscription.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>SubscriptionSettlementDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("{id:int}/settle")]
     public async Task<ActionResult<SubscriptionSettlementDto>> SettleSubscription(int id)
     {
@@ -89,7 +133,14 @@ public class SubscriptionsController : ControllerBase
         return Ok(settlement);
     }
 
-    // DELETE /api/v1/subscriptions/{id}
+    /// <summary>
+    /// Cancels subscription.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> CancelSubscription(int id)
     {
@@ -101,7 +152,15 @@ public class SubscriptionsController : ControllerBase
     // Delivery Actions
     // ==================
 
-    // POST /api/v1/subscriptions/deliveries/{deliveryId}/skip
+    /// <summary>
+    /// Skips delivery.
+    /// </summary>
+    /// <param name="deliveryId">The delivery identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("deliveries/{deliveryId:int}/skip")]
     public async Task<IActionResult> SkipDelivery(
         int deliveryId,
@@ -116,7 +175,15 @@ public class SubscriptionsController : ControllerBase
     // Invoice Actions
     // ==================
 
-    // POST /api/v1/subscriptions/invoices/{invoiceId}/pay
+    /// <summary>
+    /// Creates or processes pay invoice.
+    /// </summary>
+    /// <param name="invoiceId">The invoice identifier</param>
+    /// <param name="request">The request body</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("invoices/{invoiceId:int}/pay")]
     public async Task<IActionResult> PayInvoice(
         int invoiceId,
@@ -131,7 +198,14 @@ public class SubscriptionsController : ControllerBase
     // One-Time Delivery
     // ==================
 
-    // POST /api/v1/subscriptions/one-time-delivery
+    /// <summary>
+    /// Creates a new one time delivery.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>OneTimeDeliveryDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("one-time-delivery")]
     public async Task<ActionResult<OneTimeDeliveryDto>> CreateOneTimeDelivery(
         [FromBody] CreateOneTimeDeliveryCommand command)
@@ -140,7 +214,15 @@ public class SubscriptionsController : ControllerBase
         return Created("", delivery);
     }
 
-    // POST /api/v1/subscriptions/{id}/convert
+    /// <summary>
+    /// Converts to recurring.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>SubscriptionDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("{id:int}/convert")]
     public async Task<ActionResult<SubscriptionDto>> ConvertToRecurring(
         int id,

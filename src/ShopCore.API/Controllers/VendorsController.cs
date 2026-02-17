@@ -1,4 +1,4 @@
-using ShopCore.Api.Files;
+﻿using ShopCore.Api.Files;
 using ShopCore.Api.Models;
 using ShopCore.Application.Common.Interfaces;
 using ShopCore.Application.CustomerInvitations.Commands.CancelInvitation;
@@ -73,7 +73,13 @@ public class VendorsController : ControllerBase
     // Public Endpoints
     // ==================
 
-    // GET /api/v1/vendors/search
+    /// <summary>
+    /// Searches for vendors by location.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>List&lt;VendorSearchResultDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [AllowAnonymous]
     [HttpGet("search")]
     public async Task<ActionResult<List<VendorSearchResultDto>>> SearchVendorsByLocation(
@@ -83,7 +89,14 @@ public class VendorsController : ControllerBase
         return Ok(vendors);
     }
 
-    // GET /api/v1/vendors/{id}
+    /// <summary>
+    /// Retrieves vendor.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>VendorPublicProfileDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<VendorPublicProfileDto>> GetVendorById(int id)
@@ -94,7 +107,16 @@ public class VendorsController : ControllerBase
         return Ok(vendor);
     }
 
-    // GET /api/v1/vendors/{id}/products
+    /// <summary>
+    /// Retrieves vendor public products.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="page">Page number for pagination (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <returns>PaginatedList&lt;ProductDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [AllowAnonymous]
     [HttpGet("{id:int}/products")]
     public async Task<ActionResult<PaginatedList<ProductDto>>> GetVendorPublicProducts(
@@ -110,7 +132,14 @@ public class VendorsController : ControllerBase
     // Vendor Registration
     // ==================
 
-    // POST /api/v1/vendors/register
+    /// <summary>
+    /// Registers a new vendor.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>VendorProfileDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize]
     [HttpPost("register")]
     public async Task<ActionResult<VendorProfileDto>> RegisterVendor(
@@ -124,7 +153,13 @@ public class VendorsController : ControllerBase
     // Vendor Profile (/me)
     // ==================
 
-    // GET /api/v1/vendors/me
+    /// <summary>
+    /// Retrieves my vendor profile.
+    /// </summary>
+    /// <returns>VendorProfileDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me")]
     public async Task<ActionResult<VendorProfileDto>> GetMyVendorProfile()
@@ -133,7 +168,14 @@ public class VendorsController : ControllerBase
         return Ok(vendor);
     }
 
-    // PUT /api/v1/vendors/me
+    /// <summary>
+    /// Updates vendor profile.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>VendorProfileDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPut("me")]
     public async Task<ActionResult<VendorProfileDto>> UpdateVendorProfile(
@@ -143,7 +185,14 @@ public class VendorsController : ControllerBase
         return Ok(vendor);
     }
 
-    // POST /api/v1/vendors/me/logo
+    /// <summary>
+    /// Uploads vendor logo.
+    /// </summary>
+    /// <param name="file">The file to upload</param>
+    /// <returns>string</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPost("me/logo")]
     public async Task<ActionResult<string>> UploadVendorLogo(IFormFile file)
@@ -156,7 +205,14 @@ public class VendorsController : ControllerBase
         return Ok(logoUrl);
     }
 
-    // GET /api/v1/vendors/me/stats
+    /// <summary>
+    /// Retrieves vendor stats.
+    /// </summary>
+    /// <returns>VendorStatsDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/stats")]
     public async Task<ActionResult<VendorStatsDto>> GetVendorStats()
@@ -169,7 +225,13 @@ public class VendorsController : ControllerBase
     // Service Areas
     // ==================
 
-    // GET /api/v1/vendors/me/service-areas
+    /// <summary>
+    /// Retrieves my service areas.
+    /// </summary>
+    /// <returns>List&lt;VendorServiceAreaDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/service-areas")]
     public async Task<ActionResult<List<VendorServiceAreaDto>>> GetMyServiceAreas()
@@ -178,7 +240,14 @@ public class VendorsController : ControllerBase
         return Ok(areas);
     }
 
-    // POST /api/v1/vendors/me/service-areas
+    /// <summary>
+    /// Adds service area.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>VendorServiceAreaDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPost("me/service-areas")]
     public async Task<ActionResult<VendorServiceAreaDto>> AddServiceArea(
@@ -188,7 +257,15 @@ public class VendorsController : ControllerBase
         return CreatedAtAction(nameof(GetMyServiceAreas), area);
     }
 
-    // PUT /api/v1/vendors/me/service-areas/{id}
+    /// <summary>
+    /// Updates service area.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>VendorServiceAreaDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPut("me/service-areas/{id:int}")]
     public async Task<ActionResult<VendorServiceAreaDto>> UpdateServiceArea(
@@ -200,7 +277,14 @@ public class VendorsController : ControllerBase
         return Ok(area);
     }
 
-    // DELETE /api/v1/vendors/me/service-areas/{id}
+    /// <summary>
+    /// Removes service area.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpDelete("me/service-areas/{id:int}")]
     public async Task<IActionResult> RemoveServiceArea(int id)
@@ -213,7 +297,14 @@ public class VendorsController : ControllerBase
     // Customer Invitations
     // ==================
 
-    // GET /api/v1/vendors/me/invitations
+    /// <summary>
+    /// Retrieves my invitations.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;CustomerInvitationDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/invitations")]
     public async Task<ActionResult<PaginatedList<CustomerInvitationDto>>> GetMyInvitations(
@@ -223,7 +314,14 @@ public class VendorsController : ControllerBase
         return Ok(invitations);
     }
 
-    // POST /api/v1/vendors/me/invitations
+    /// <summary>
+    /// Creates a new invitation.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>CustomerInvitationDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPost("me/invitations")]
     public async Task<ActionResult<CustomerInvitationDto>> CreateInvitation(
@@ -233,7 +331,15 @@ public class VendorsController : ControllerBase
         return CreatedAtAction(nameof(GetInvitationById), new { id = invitation.Id }, invitation);
     }
 
-    // GET /api/v1/vendors/me/invitations/{id}
+    /// <summary>
+    /// Retrieves invitation.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>CustomerInvitationDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/invitations/{id:int}")]
     public async Task<ActionResult<CustomerInvitationDto>> GetInvitationById(int id)
@@ -244,7 +350,14 @@ public class VendorsController : ControllerBase
         return Ok(invitation);
     }
 
-    // POST /api/v1/vendors/me/invitations/{id}/resend
+    /// <summary>
+    /// Resends invitation.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPost("me/invitations/{id:int}/resend")]
     public async Task<IActionResult> ResendInvitation(int id)
@@ -253,7 +366,14 @@ public class VendorsController : ControllerBase
         return NoContent();
     }
 
-    // DELETE /api/v1/vendors/me/invitations/{id}
+    /// <summary>
+    /// Cancels invitation.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpDelete("me/invitations/{id:int}")]
     public async Task<IActionResult> CancelInvitation(int id)
@@ -266,7 +386,15 @@ public class VendorsController : ControllerBase
     // Products
     // ==================
 
-    // GET /api/v1/vendors/me/products
+    /// <summary>
+    /// Retrieves my products.
+    /// </summary>
+    /// <param name="page">Page number for pagination (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <returns>PaginatedList&lt;ProductDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/products")]
     public async Task<ActionResult<PaginatedList<ProductDto>>> GetMyProducts(
@@ -277,7 +405,14 @@ public class VendorsController : ControllerBase
         return Ok(products);
     }
 
-    // POST /api/v1/vendors/me/products
+    /// <summary>
+    /// Creates a new product.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>ProductDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPost("me/products")]
     public async Task<ActionResult<ProductDto>> CreateProduct(
@@ -287,7 +422,15 @@ public class VendorsController : ControllerBase
         return CreatedAtAction(nameof(GetMyProductById), new { id = product.Id }, product);
     }
 
-    // GET /api/v1/vendors/me/products/{id}
+    /// <summary>
+    /// Retrieves my product.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>ProductDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/products/{id:int}")]
     public async Task<ActionResult<ProductDto>> GetMyProductById(int id)
@@ -298,7 +441,15 @@ public class VendorsController : ControllerBase
         return Ok(product);
     }
 
-    // PUT /api/v1/vendors/me/products/{id}
+    /// <summary>
+    /// Updates product.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>ProductDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPut("me/products/{id:int}")]
     public async Task<ActionResult<ProductDto>> UpdateProduct(
@@ -310,7 +461,14 @@ public class VendorsController : ControllerBase
         return Ok(product);
     }
 
-    // DELETE /api/v1/vendors/me/products/{id}
+    /// <summary>
+    /// Deletes product.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpDelete("me/products/{id:int}")]
     public async Task<IActionResult> DeleteProduct(int id)
@@ -319,7 +477,15 @@ public class VendorsController : ControllerBase
         return NoContent();
     }
 
-    // PATCH /api/v1/vendors/me/products/{id}/status
+    /// <summary>
+    /// Updates product status.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPatch("me/products/{id:int}/status")]
     public async Task<IActionResult> UpdateProductStatus(
@@ -331,7 +497,15 @@ public class VendorsController : ControllerBase
         return NoContent();
     }
 
-    // POST /api/v1/vendors/me/products/{id}/images
+    /// <summary>
+    /// Uploads product images.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="files">The files</param>
+    /// <returns>List&lt;string&gt;</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPost("me/products/{id:int}/images")]
     public async Task<ActionResult<List<string>>> UploadProductImages(
@@ -347,7 +521,15 @@ public class VendorsController : ControllerBase
         return Ok(imageUrls);
     }
 
-    // DELETE /api/v1/vendors/me/products/{id}/images/{imageId}
+    /// <summary>
+    /// Deletes product image.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="imageId">The image identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpDelete("me/products/{id:int}/images/{imageId:int}")]
     public async Task<IActionResult> DeleteProductImage(int id, int imageId)
@@ -360,7 +542,15 @@ public class VendorsController : ControllerBase
     // Orders (with vendor's products)
     // ==================
 
-    // GET /api/v1/vendors/me/orders
+    /// <summary>
+    /// Retrieves vendor orders.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;VendorOrderDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/orders")]
     public async Task<ActionResult<PaginatedList<VendorOrderDto>>> GetVendorOrders(
@@ -370,7 +560,15 @@ public class VendorsController : ControllerBase
         return Ok(orders);
     }
 
-    // GET /api/v1/vendors/me/orders/{orderId}/items
+    /// <summary>
+    /// Retrieves vendor order items.
+    /// </summary>
+    /// <param name="orderId">The order identifier</param>
+    /// <returns>List&lt;VendorOrderItemDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/orders/{orderId:int}/items")]
     public async Task<ActionResult<List<VendorOrderItemDto>>> GetVendorOrderItems(int orderId)
@@ -379,7 +577,15 @@ public class VendorsController : ControllerBase
         return Ok(items);
     }
 
-    // PATCH /api/v1/vendors/me/orders/items/{itemId}/status
+    /// <summary>
+    /// Updates order item status.
+    /// </summary>
+    /// <param name="itemId">The item identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPatch("me/orders/items/{itemId:int}/status")]
     public async Task<IActionResult> UpdateOrderItemStatus(
@@ -395,7 +601,15 @@ public class VendorsController : ControllerBase
     // Subscriptions (for vendor's products)
     // ==================
 
-    // GET /api/v1/vendors/me/subscriptions
+    /// <summary>
+    /// Retrieves vendor subscriptions.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;VendorSubscriptionDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/subscriptions")]
     public async Task<ActionResult<PaginatedList<VendorSubscriptionDto>>> GetVendorSubscriptions(
@@ -405,7 +619,15 @@ public class VendorsController : ControllerBase
         return Ok(subscriptions);
     }
 
-    // GET /api/v1/vendors/me/subscriptions/{id}
+    /// <summary>
+    /// Retrieves vendor subscription.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>VendorSubscriptionDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/subscriptions/{id:int}")]
     public async Task<ActionResult<VendorSubscriptionDto>> GetVendorSubscriptionById(int id)
@@ -416,7 +638,15 @@ public class VendorsController : ControllerBase
         return Ok(subscription);
     }
 
-    // GET /api/v1/vendors/me/subscriptions/{id}/customer
+    /// <summary>
+    /// Retrieves subscription customer info.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>SubscriptionCustomerInfoDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/subscriptions/{id:int}/customer")]
     public async Task<ActionResult<SubscriptionCustomerInfoDto>> GetSubscriptionCustomerInfo(int id)
@@ -431,7 +661,15 @@ public class VendorsController : ControllerBase
     // Deliveries
     // ==================
 
-    // GET /api/v1/vendors/me/deliveries
+    /// <summary>
+    /// Retrieves vendor deliveries.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;DeliveryDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/deliveries")]
     public async Task<ActionResult<PaginatedList<DeliveryDto>>> GetVendorDeliveries(
@@ -441,7 +679,15 @@ public class VendorsController : ControllerBase
         return Ok(deliveries);
     }
 
-    // GET /api/v1/vendors/me/deliveries/{id}
+    /// <summary>
+    /// Retrieves delivery.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>DeliveryDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/deliveries/{id:int}")]
     public async Task<ActionResult<DeliveryDto>> GetDeliveryById(int id)
@@ -452,7 +698,15 @@ public class VendorsController : ControllerBase
         return Ok(delivery);
     }
 
-    // PATCH /api/v1/vendors/me/deliveries/{id}/complete
+    /// <summary>
+    /// Completes delivery.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="request">Form field for request</param>
+    /// <returns>DeliveryDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPatch("me/deliveries/{id:int}/complete")]
     public async Task<ActionResult<DeliveryDto>> CompleteDelivery(
@@ -506,7 +760,15 @@ public class VendorsController : ControllerBase
         return Ok(result);
     }
 
-    // PATCH /api/v1/vendors/me/deliveries/{id}/failed
+    /// <summary>
+    /// Marks delivery failed.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPatch("me/deliveries/{id:int}/failed")]
     public async Task<IActionResult> MarkDeliveryFailed(
@@ -518,7 +780,15 @@ public class VendorsController : ControllerBase
         return NoContent();
     }
 
-    // POST /api/v1/vendors/me/deliveries/{id}/photo
+    /// <summary>
+    /// Uploads delivery photo.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="file">The file to upload</param>
+    /// <returns>string</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPost("me/deliveries/{id:int}/photo")]
     public async Task<ActionResult<string>> UploadDeliveryPhoto(int id, IFormFile file)
@@ -535,7 +805,15 @@ public class VendorsController : ControllerBase
     // Invoices
     // ==================
 
-    // GET /api/v1/vendors/me/invoices
+    /// <summary>
+    /// Retrieves vendor invoices.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;InvoiceDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/invoices")]
     public async Task<ActionResult<PaginatedList<InvoiceDto>>> GetVendorInvoices(
@@ -545,7 +823,15 @@ public class VendorsController : ControllerBase
         return Ok(invoices);
     }
 
-    // GET /api/v1/vendors/me/invoices/{id}
+    /// <summary>
+    /// Retrieves invoice.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>InvoiceDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/invoices/{id:int}")]
     public async Task<ActionResult<InvoiceDto>> GetInvoiceById(int id)
@@ -556,7 +842,14 @@ public class VendorsController : ControllerBase
         return Ok(invoice);
     }
 
-    // POST /api/v1/vendors/me/subscriptions/{id}/invoices
+    /// <summary>
+    /// Creates or processes generate subscription invoice.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>InvoiceDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPost("me/subscriptions/{id:int}/invoices")]
     public async Task<ActionResult<InvoiceDto>> GenerateSubscriptionInvoice(int id)
@@ -569,7 +862,14 @@ public class VendorsController : ControllerBase
     // Payouts
     // ==================
 
-    // GET /api/v1/vendors/me/payouts
+    /// <summary>
+    /// Retrieves my payouts.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;PayoutDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/payouts")]
     public async Task<ActionResult<PaginatedList<PayoutDto>>> GetMyPayouts(
@@ -579,7 +879,13 @@ public class VendorsController : ControllerBase
         return Ok(payouts);
     }
 
-    // GET /api/v1/vendors/me/payouts/pending
+    /// <summary>
+    /// Retrieves pending payout amount.
+    /// </summary>
+    /// <returns>PendingPayoutDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/payouts/pending")]
     public async Task<ActionResult<PendingPayoutDto>> GetPendingPayoutAmount()
@@ -592,7 +898,15 @@ public class VendorsController : ControllerBase
     // Customers (Vendor's view)
     // ==================
 
-    // GET /api/v1/vendors/me/customers
+    /// <summary>
+    /// Retrieves vendor customers.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;VendorCustomerDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/customers")]
     public async Task<ActionResult<PaginatedList<VendorCustomerDto>>> GetVendorCustomers(
@@ -602,7 +916,15 @@ public class VendorsController : ControllerBase
         return Ok(customers);
     }
 
-    // GET /api/v1/vendors/me/customers/{userId}
+    /// <summary>
+    /// Retrieves vendor customer.
+    /// </summary>
+    /// <param name="userId">The user identifier</param>
+    /// <returns>VendorCustomerDetailDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/customers/{userId:int}")]
     public async Task<ActionResult<VendorCustomerDetailDto>> GetVendorCustomerById(int userId)
@@ -613,7 +935,17 @@ public class VendorsController : ControllerBase
         return Ok(customer);
     }
 
-    // GET /api/v1/vendors/me/customers/{userId}/subscriptions
+    /// <summary>
+    /// Retrieves vendor customer subscriptions.
+    /// </summary>
+    /// <param name="userId">The user identifier</param>
+    /// <param name="page">Page number for pagination (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <returns>PaginatedList&lt;VendorSubscriptionDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/customers/{userId:int}/subscriptions")]
     public async Task<ActionResult<PaginatedList<VendorSubscriptionDto>>> GetVendorCustomerSubscriptions(
@@ -625,7 +957,17 @@ public class VendorsController : ControllerBase
         return Ok(subscriptions);
     }
 
-    // GET /api/v1/vendors/me/customers/{userId}/orders
+    /// <summary>
+    /// Retrieves vendor customer orders.
+    /// </summary>
+    /// <param name="userId">The user identifier</param>
+    /// <param name="page">Page number for pagination (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <returns>PaginatedList&lt;VendorOrderDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/customers/{userId:int}/orders")]
     public async Task<ActionResult<PaginatedList<VendorOrderDto>>> GetVendorCustomerOrders(
@@ -637,7 +979,17 @@ public class VendorsController : ControllerBase
         return Ok(orders);
     }
 
-    // GET /api/v1/vendors/me/customers/{userId}/deliveries
+    /// <summary>
+    /// Retrieves vendor customer deliveries.
+    /// </summary>
+    /// <param name="userId">The user identifier</param>
+    /// <param name="page">Page number for pagination (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <returns>PaginatedList&lt;DeliveryDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/customers/{userId:int}/deliveries")]
     public async Task<ActionResult<PaginatedList<DeliveryDto>>> GetVendorCustomerDeliveries(

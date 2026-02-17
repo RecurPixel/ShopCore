@@ -1,4 +1,4 @@
-using ShopCore.Application.Common.Models;
+﻿using ShopCore.Application.Common.Models;
 using ShopCore.Application.Products.DTOs;
 using ShopCore.Application.Products.Queries.GetFeaturedProducts;
 using ShopCore.Application.Products.Queries.GetProductById;
@@ -24,7 +24,14 @@ public class ProductsController : ControllerBase
         _mediator = mediator;
     }
 
-    // GET /api/v1/products
+    /// <summary>
+    /// Retrieves products.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;ProductDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet]
     public async Task<ActionResult<PaginatedList<ProductDto>>> GetProducts(
         [FromQuery] GetProductsQuery query)
@@ -33,7 +40,13 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
-    // GET /api/v1/products/search
+    /// <summary>
+    /// Searches for products.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;ProductDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("search")]
     public async Task<ActionResult<PaginatedList<ProductDto>>> SearchProducts(
         [FromQuery] SearchProductsQuery query)
@@ -42,7 +55,13 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
-    // GET /api/v1/products/featured
+    /// <summary>
+    /// Retrieves featured products.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>List&lt;ProductDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("featured")]
     public async Task<ActionResult<List<ProductDto>>> GetFeaturedProducts(
         [FromQuery] GetFeaturedProductsQuery query)
@@ -51,7 +70,14 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
-    // GET /api/v1/products/{id}
+    /// <summary>
+    /// Retrieves product.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>ProductDetailDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ProductDetailDto>> GetProductById(int id)
     {
@@ -61,7 +87,6 @@ public class ProductsController : ControllerBase
         return Ok(product);
     }
 
-    // GET /api/v1/products/{id}/reviews
     [HttpGet("{id:int}/reviews")]
     public async Task<ActionResult<PaginatedList<ReviewDto>>> GetProductReviews(
         int id,

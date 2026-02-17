@@ -1,4 +1,4 @@
-using ShopCore.Application.Cart.Commands.AddCartItem;
+﻿using ShopCore.Application.Cart.Commands.AddCartItem;
 using ShopCore.Application.Cart.Commands.ApplyCoupon;
 using ShopCore.Application.Cart.Commands.ClearCart;
 using ShopCore.Application.Cart.Commands.RemoveCartItem;
@@ -22,7 +22,14 @@ public class CartController : ControllerBase
         _mediator = mediator;
     }
 
-    // GET /api/v1/cart
+    /// <summary>
+    /// Retrieves cart.
+    /// </summary>
+    /// <returns>CartDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet]
     public async Task<ActionResult<CartDto>> GetCart()
     {
@@ -30,7 +37,14 @@ public class CartController : ControllerBase
         return Ok(cart);
     }
 
-    // POST /api/v1/cart/items
+    /// <summary>
+    /// Adds to cart.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>CartDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("items")]
     public async Task<ActionResult<CartDto>> AddToCart(
         [FromBody] AddCartItemCommand command)
@@ -39,7 +53,15 @@ public class CartController : ControllerBase
         return Ok(cart);
     }
 
-    // PUT /api/v1/cart/items/{itemId}
+    /// <summary>
+    /// Updates cart item.
+    /// </summary>
+    /// <param name="itemId">The item identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>CartDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPut("items/{itemId:int}")]
     public async Task<ActionResult<CartDto>> UpdateCartItem(
         int itemId,
@@ -50,7 +72,14 @@ public class CartController : ControllerBase
         return Ok(cart);
     }
 
-    // DELETE /api/v1/cart/items/{itemId}
+    /// <summary>
+    /// Removes from cart.
+    /// </summary>
+    /// <param name="itemId">The item identifier</param>
+    /// <returns>CartDto</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpDelete("items/{itemId:int}")]
     public async Task<ActionResult<CartDto>> RemoveFromCart(int itemId)
     {
@@ -58,7 +87,13 @@ public class CartController : ControllerBase
         return Ok(cart);
     }
 
-    // DELETE /api/v1/cart/clear
+    /// <summary>
+    /// Clears cart.
+    /// </summary>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpDelete("clear")]
     public async Task<IActionResult> ClearCart()
     {
@@ -66,7 +101,13 @@ public class CartController : ControllerBase
         return NoContent();
     }
 
-    // POST /api/v1/cart/validate
+    /// <summary>
+    /// Validates cart.
+    /// </summary>
+    /// <returns>CartValidationResultDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("validate")]
     public async Task<ActionResult<CartValidationResultDto>> ValidateCart()
     {
@@ -74,7 +115,14 @@ public class CartController : ControllerBase
         return Ok(result);
     }
 
-    // POST /api/v1/cart/apply-coupon
+    /// <summary>
+    /// Applies coupon.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>CartDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("apply-coupon")]
     public async Task<ActionResult<CartDto>> ApplyCoupon(
         [FromBody] ApplyCouponCommand command)
@@ -83,7 +131,13 @@ public class CartController : ControllerBase
         return Ok(cart);
     }
 
-    // DELETE /api/v1/cart/remove-coupon
+    /// <summary>
+    /// Removes coupon.
+    /// </summary>
+    /// <returns>CartDto</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpDelete("remove-coupon")]
     public async Task<ActionResult<CartDto>> RemoveCoupon()
     {

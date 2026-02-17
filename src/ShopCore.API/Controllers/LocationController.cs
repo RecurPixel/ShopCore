@@ -1,4 +1,4 @@
-using ShopCore.Application.Location.Commands.Geocode;
+﻿using ShopCore.Application.Location.Commands.Geocode;
 using ShopCore.Application.Location.Commands.ReverseGeocode;
 using ShopCore.Application.Location.DTOs;
 using ShopCore.Application.Location.Queries.GetNearbyVendors;
@@ -20,7 +20,13 @@ public class LocationController : ControllerBase
         _mediator = mediator;
     }
 
-    // POST /api/v1/location/geocode
+    /// <summary>
+    /// Creates or processes geocode.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>GeocodeResultDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPost("geocode")]
     public async Task<ActionResult<GeocodeResultDto>> Geocode(
         [FromBody] GeocodeCommand command)
@@ -29,7 +35,13 @@ public class LocationController : ControllerBase
         return Ok(result);
     }
 
-    // POST /api/v1/location/reverse-geocode
+    /// <summary>
+    /// Creates or processes reverse geocode.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>ReverseGeocodeResultDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPost("reverse-geocode")]
     public async Task<ActionResult<ReverseGeocodeResultDto>> ReverseGeocode(
         [FromBody] ReverseGeocodeCommand command)
@@ -38,7 +50,13 @@ public class LocationController : ControllerBase
         return Ok(result);
     }
 
-    // GET /api/v1/location/vendors/nearby
+    /// <summary>
+    /// Retrieves nearby vendors.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>List&lt;NearbyVendorDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("vendors/nearby")]
     public async Task<ActionResult<List<NearbyVendorDto>>> GetNearbyVendors(
         [FromQuery] GetNearbyVendorsQuery query)
@@ -47,7 +65,14 @@ public class LocationController : ControllerBase
         return Ok(vendors);
     }
 
-    // GET /api/v1/location/pincodes/{pincode}/vendors
+    /// <summary>
+    /// Retrieves vendors by pincode.
+    /// </summary>
+    /// <param name="pincode">The pincode</param>
+    /// <returns>List&lt;NearbyVendorDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("pincodes/{pincode}/vendors")]
     public async Task<ActionResult<List<NearbyVendorDto>>> GetVendorsByPincode(string pincode)
     {

@@ -1,4 +1,4 @@
-using ShopCore.Application.Cart.DTOs;
+﻿using ShopCore.Application.Cart.DTOs;
 using ShopCore.Application.Wishlist.Commands.AddToWishlist;
 using ShopCore.Application.Wishlist.Commands.MoveToCart;
 using ShopCore.Application.Wishlist.Commands.RemoveFromWishlist;
@@ -18,7 +18,13 @@ public class WishlistController : ControllerBase
         _mediator = mediator;
     }
 
-    // GET /api/v1/wishlist
+    /// <summary>
+    /// Retrieves wishlist.
+    /// </summary>
+    /// <returns>WishlistDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet]
     public async Task<ActionResult<WishlistDto>> GetWishlist()
     {
@@ -26,7 +32,13 @@ public class WishlistController : ControllerBase
         return Ok(wishlist);
     }
 
-    // POST /api/v1/wishlist
+    /// <summary>
+    /// Adds to wishlist.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPost]
     public async Task<IActionResult> AddToWishlist(
         [FromBody] AddToWishlistCommand command)
@@ -35,7 +47,13 @@ public class WishlistController : ControllerBase
         return NoContent();
     }
 
-    // DELETE /api/v1/wishlist/{productId}
+    /// <summary>
+    /// Removes from wishlist.
+    /// </summary>
+    /// <param name="productId">The product identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpDelete("{productId:int}")]
     public async Task<IActionResult> RemoveFromWishlist(int productId)
     {
@@ -45,7 +63,13 @@ public class WishlistController : ControllerBase
         return NoContent();
     }
 
-    // POST /api/v1/wishlist/{productId}/move-to-cart
+    /// <summary>
+    /// Moves to cart.
+    /// </summary>
+    /// <param name="productId">The product identifier</param>
+    /// <returns>CartDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPost("{productId:int}/move-to-cart")]
     public async Task<ActionResult<CartDto>> MoveToCart(int productId)
     {

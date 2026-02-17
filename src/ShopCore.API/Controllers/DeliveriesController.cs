@@ -1,4 +1,4 @@
-using ShopCore.Application.Deliveries.DTOs;
+﻿using ShopCore.Application.Deliveries.DTOs;
 using ShopCore.Application.Deliveries.Queries.GetDeliveryById;
 using ShopCore.Application.Deliveries.Queries.GetDeliveryReceipt;
 
@@ -21,7 +21,15 @@ public class DeliveriesController : ControllerBase
         _mediator = mediator;
     }
 
-    // GET /api/v1/deliveries/{id}
+    /// <summary>
+    /// Retrieves delivery.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>DeliveryDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("{id:int}")]
     public async Task<ActionResult<DeliveryDto>> GetDeliveryById(int id)
     {
@@ -31,7 +39,14 @@ public class DeliveriesController : ControllerBase
         return Ok(delivery);
     }
 
-    // GET /api/v1/deliveries/{id}/download-receipt
+    /// <summary>
+    /// Downloads delivery receipt.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpGet("{id:int}/download-receipt")]
     public async Task<IActionResult> DownloadDeliveryReceipt(int id)
     {

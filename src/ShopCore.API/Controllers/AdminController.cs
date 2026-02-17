@@ -1,4 +1,4 @@
-using ShopCore.Application.AdminDashboard.DTOs;
+﻿using ShopCore.Application.AdminDashboard.DTOs;
 using ShopCore.Application.AdminDashboard.Queries.GetAdminDashboardStats;
 using ShopCore.Application.Orders.DTOs;
 using ShopCore.Application.Orders.Queries.GetAllOrders;
@@ -54,7 +54,12 @@ public class AdminController : ControllerBase
     // Dashboard
     // ==================
 
-    // GET /api/v1/admin/dashboard
+    /// <summary>
+    /// Retrieves dashboard.
+    /// </summary>
+    /// <returns>AdminDashboardStatsDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("dashboard")]
     public async Task<ActionResult<AdminDashboardStatsDto>> GetDashboard()
     {
@@ -66,7 +71,13 @@ public class AdminController : ControllerBase
     // Users
     // ==================
 
-    // GET /api/v1/admin/users
+    /// <summary>
+    /// Retrieves all users.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;UserDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("users")]
     public async Task<ActionResult<PaginatedList<UserDto>>> GetAllUsers(
         [FromQuery] GetAllUsersQuery query)
@@ -75,7 +86,14 @@ public class AdminController : ControllerBase
         return Ok(users);
     }
 
-    // GET /api/v1/admin/users/{id}
+    /// <summary>
+    /// Retrieves user.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>UserDetailDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("users/{id:int}")]
     public async Task<ActionResult<UserDetailDto>> GetUserById(int id)
     {
@@ -85,7 +103,14 @@ public class AdminController : ControllerBase
         return Ok(user);
     }
 
-    // PUT /api/v1/admin/users/{id}
+    /// <summary>
+    /// Updates user.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>UserDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPut("users/{id:int}")]
     public async Task<ActionResult<UserDto>> UpdateUser(
         int id,
@@ -96,7 +121,14 @@ public class AdminController : ControllerBase
         return Ok(user);
     }
 
-    // PATCH /api/v1/admin/users/{id}/status
+    /// <summary>
+    /// Updates user status.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPatch("users/{id:int}/status")]
     public async Task<IActionResult> UpdateUserStatus(
         int id,
@@ -107,7 +139,13 @@ public class AdminController : ControllerBase
         return NoContent();
     }
 
-    // DELETE /api/v1/admin/users/{id}
+    /// <summary>
+    /// Deletes user.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpDelete("users/{id:int}")]
     public async Task<IActionResult> DeleteUser(int id)
     {
@@ -119,7 +157,13 @@ public class AdminController : ControllerBase
     // Vendors
     // ==================
 
-    // GET /api/v1/admin/vendors
+    /// <summary>
+    /// Retrieves all vendors.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;VendorProfileDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("vendors")]
     public async Task<ActionResult<PaginatedList<VendorProfileDto>>> GetAllVendors(
         [FromQuery] GetAllVendorsQuery query)
@@ -128,7 +172,12 @@ public class AdminController : ControllerBase
         return Ok(vendors);
     }
 
-    // GET /api/v1/admin/vendors/pending
+    /// <summary>
+    /// Retrieves pending vendors.
+    /// </summary>
+    /// <returns>List&lt;VendorProfileDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("vendors/pending")]
     public async Task<ActionResult<List<VendorProfileDto>>> GetPendingVendors()
     {
@@ -136,7 +185,13 @@ public class AdminController : ControllerBase
         return Ok(vendors);
     }
 
-    // PATCH /api/v1/admin/vendors/{id}/approve
+    /// <summary>
+    /// Approves vendor.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPatch("vendors/{id:int}/approve")]
     public async Task<IActionResult> ApproveVendor(int id)
     {
@@ -144,7 +199,14 @@ public class AdminController : ControllerBase
         return NoContent();
     }
 
-    // PATCH /api/v1/admin/vendors/{id}/suspend
+    /// <summary>
+    /// Suspends vendor.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPatch("vendors/{id:int}/suspend")]
     public async Task<IActionResult> SuspendVendor(
         int id,
@@ -155,7 +217,13 @@ public class AdminController : ControllerBase
         return NoContent();
     }
 
-    // PATCH /api/v1/admin/vendors/{id}/activate
+    /// <summary>
+    /// Activates vendor.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPatch("vendors/{id:int}/activate")]
     public async Task<IActionResult> ActivateVendor(int id)
     {
@@ -167,7 +235,13 @@ public class AdminController : ControllerBase
     // Products
     // ==================
 
-    // GET /api/v1/admin/products
+    /// <summary>
+    /// Retrieves all products.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;ProductDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("products")]
     public async Task<ActionResult<PaginatedList<ProductDto>>> GetAllProducts(
         [FromQuery] GetAllProductsQuery query)
@@ -176,7 +250,14 @@ public class AdminController : ControllerBase
         return Ok(products);
     }
 
-    // PATCH /api/v1/admin/products/{id}/feature
+    /// <summary>
+    /// Partially updates feature product.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPatch("products/{id:int}/feature")]
     public async Task<IActionResult> FeatureProduct(
         int id,
@@ -191,7 +272,13 @@ public class AdminController : ControllerBase
     // Orders
     // ==================
 
-    // GET /api/v1/admin/orders
+    /// <summary>
+    /// Retrieves all orders.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;OrderDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("orders")]
     public async Task<ActionResult<PaginatedList<OrderDto>>> GetAllOrders(
         [FromQuery] GetAllOrdersQuery query)
@@ -200,7 +287,14 @@ public class AdminController : ControllerBase
         return Ok(orders);
     }
 
-    // GET /api/v1/admin/orders/{id}
+    /// <summary>
+    /// Retrieves order.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>OrderDetailDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("orders/{id:int}")]
     public async Task<ActionResult<OrderDetailDto>> GetOrderById(int id)
     {
@@ -214,7 +308,13 @@ public class AdminController : ControllerBase
     // Subscriptions
     // ==================
 
-    // GET /api/v1/admin/subscriptions
+    /// <summary>
+    /// Retrieves all subscriptions.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;SubscriptionDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("subscriptions")]
     public async Task<ActionResult<PaginatedList<SubscriptionDto>>> GetAllSubscriptions(
         [FromQuery] GetAllSubscriptionsQuery query)
@@ -223,7 +323,14 @@ public class AdminController : ControllerBase
         return Ok(subscriptions);
     }
 
-    // GET /api/v1/admin/subscriptions/{id}
+    /// <summary>
+    /// Retrieves subscription.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>SubscriptionDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("subscriptions/{id:int}")]
     public async Task<ActionResult<SubscriptionDto>> GetSubscriptionById(int id)
     {
@@ -235,7 +342,13 @@ public class AdminController : ControllerBase
     // Payouts
     // ==================
 
-    // GET /api/v1/admin/payouts
+    /// <summary>
+    /// Retrieves all payouts.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;PayoutDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("payouts")]
     public async Task<ActionResult<PaginatedList<PayoutDto>>> GetAllPayouts(
         [FromQuery] GetAllPayoutsQuery query)
@@ -244,7 +357,12 @@ public class AdminController : ControllerBase
         return Ok(payouts);
     }
 
-    // POST /api/v1/admin/payouts/calculate
+    /// <summary>
+    /// Creates or processes calculate pending payouts.
+    /// </summary>
+    /// <returns>PendingPayoutSummaryDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPost("payouts/calculate")]
     public async Task<ActionResult<PendingPayoutSummaryDto>> CalculatePendingPayouts()
     {
@@ -252,7 +370,13 @@ public class AdminController : ControllerBase
         return Ok(summary);
     }
 
-    // POST /api/v1/admin/payouts
+    /// <summary>
+    /// Creates a new payout.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>PayoutDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPost("payouts")]
     public async Task<ActionResult<PayoutDto>> CreatePayout(
         [FromBody] CreatePayoutCommand command)
@@ -261,7 +385,13 @@ public class AdminController : ControllerBase
         return Created("", payout);
     }
 
-    // PATCH /api/v1/admin/payouts/{id}/process
+    /// <summary>
+    /// Processes payout.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPatch("payouts/{id:int}/process")]
     public async Task<IActionResult> ProcessPayout(int id)
     {
@@ -269,7 +399,13 @@ public class AdminController : ControllerBase
         return NoContent();
     }
 
-    // PATCH /api/v1/admin/payouts/{id}/cancel
+    /// <summary>
+    /// Cancels payout.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpPatch("payouts/{id:int}/cancel")]
     public async Task<IActionResult> CancelPayout(int id)
     {
@@ -281,7 +417,13 @@ public class AdminController : ControllerBase
     // Reports
     // ==================
 
-    // GET /api/v1/admin/reports/revenue
+    /// <summary>
+    /// Retrieves revenue report.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>RevenueReportDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("reports/revenue")]
     public async Task<ActionResult<RevenueReportDto>> GetRevenueReport(
         [FromQuery] GetRevenueReportQuery query)
@@ -290,7 +432,14 @@ public class AdminController : ControllerBase
         return Ok(report);
     }
 
-    // GET /api/v1/admin/reports/vendors
+    /// <summary>
+    /// Retrieves vendor performance.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>VendorPerformanceReportDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("reports/vendors")]
     public async Task<ActionResult<VendorPerformanceReportDto>> GetVendorPerformance(
         [FromQuery] GetVendorPerformanceQuery query)
@@ -299,7 +448,14 @@ public class AdminController : ControllerBase
         return Ok(report);
     }
 
-    // GET /api/v1/admin/reports/products
+    /// <summary>
+    /// Retrieves product analytics.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>ProductAnalyticsReportDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("reports/products")]
     public async Task<ActionResult<ProductAnalyticsReportDto>> GetProductAnalytics(
         [FromQuery] GetProductAnalyticsQuery query)
@@ -308,7 +464,13 @@ public class AdminController : ControllerBase
         return Ok(report);
     }
 
-    // GET /api/v1/admin/reports/customers
+    /// <summary>
+    /// Retrieves customer analytics.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>CustomerAnalyticsReportDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet("reports/customers")]
     public async Task<ActionResult<CustomerAnalyticsReportDto>> GetCustomerAnalytics(
         [FromQuery] GetCustomerAnalyticsQuery query)

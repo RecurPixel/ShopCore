@@ -1,4 +1,4 @@
-using ShopCore.Application.Orders.Commands.CreateOrder;
+﻿using ShopCore.Application.Orders.Commands.CreateOrder;
 using ShopCore.Application.Orders.DTOs;
 
 namespace ShopCore.Api.Controllers;
@@ -20,7 +20,14 @@ public class OrdersController : ControllerBase
         _mediator = mediator;
     }
 
-    // POST /api/v1/orders
+    /// <summary>
+    /// Creates a new order.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>OrderDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost]
     public async Task<ActionResult<OrderDto>> CreateOrder(
         [FromBody] CreateOrderCommand command)

@@ -1,4 +1,4 @@
-using ShopCore.Application.Common.Models;
+﻿using ShopCore.Application.Common.Models;
 using ShopCore.Application.Payouts.Commands.CalculateVendorPayout;
 using ShopCore.Application.Payouts.Commands.ProcessVendorPayout;
 using ShopCore.Application.Payouts.DTOs;
@@ -18,7 +18,14 @@ public class PayoutsController : ControllerBase
         _mediator = mediator;
     }
 
-    // GET /api/v1/payouts
+    /// <summary>
+    /// Retrieves vendor payouts.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;VendorPayoutDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet]
     public async Task<ActionResult<PaginatedList<VendorPayoutDto>>> GetVendorPayouts(
         [FromQuery] GetVendorPayoutsQuery query)
@@ -27,7 +34,13 @@ public class PayoutsController : ControllerBase
         return Ok(payouts);
     }
 
-    // GET /api/v1/payouts/pending
+    /// <summary>
+    /// Retrieves pending payout.
+    /// </summary>
+    /// <returns>VendorPayoutDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpGet("pending")]
     public async Task<ActionResult<VendorPayoutDto>> GetPendingPayout()
@@ -36,7 +49,14 @@ public class PayoutsController : ControllerBase
         return Ok(payout);
     }
 
-    // POST /api/v1/payouts/calculate
+    /// <summary>
+    /// Creates or processes calculate payouts.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>List&lt;VendorPayoutDto&gt;</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Admin")]
     [HttpPost("calculate")]
     public async Task<ActionResult<List<VendorPayoutDto>>> CalculatePayouts(
@@ -46,7 +66,14 @@ public class PayoutsController : ControllerBase
         return Ok(payouts);
     }
 
-    // POST /api/v1/payouts/process
+    /// <summary>
+    /// Processes payout.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Admin")]
     [HttpPost("process")]
     public async Task<IActionResult> ProcessPayout(

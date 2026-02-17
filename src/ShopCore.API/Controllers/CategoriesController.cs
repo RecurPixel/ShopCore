@@ -1,4 +1,4 @@
-using ShopCore.Api.Files;
+﻿using ShopCore.Api.Files;
 using ShopCore.Application.Categories.Commands.CreateCategory;
 using ShopCore.Application.Categories.Commands.DeleteCategory;
 using ShopCore.Application.Categories.Commands.UpdateCategory;
@@ -26,7 +26,12 @@ public class CategoriesController : ControllerBase
     // Public endpoints
     // ----------------
 
-    // GET /api/v1/categories
+    /// <summary>
+    /// Retrieves categories.
+    /// </summary>
+    /// <returns>List&lt;CategoryDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet]
     public async Task<ActionResult<List<CategoryDto>>> GetCategories()
     {
@@ -34,7 +39,14 @@ public class CategoriesController : ControllerBase
         return Ok(categories);
     }
 
-    // GET /api/v1/categories/{id}
+    /// <summary>
+    /// Retrieves category.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>CategoryDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("{id:int}")]
     public async Task<ActionResult<CategoryDto>> GetCategoryById(int id)
     {
@@ -47,7 +59,15 @@ public class CategoriesController : ControllerBase
         return Ok(category);
     }
 
-    // GET /api/v1/categories/{id}/products
+    /// <summary>
+    /// Retrieves products by category.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;ProductDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("{id:int}/products")]
     public async Task<ActionResult<PaginatedList<ProductDto>>> GetProductsByCategory(
         int id,
@@ -63,7 +83,14 @@ public class CategoriesController : ControllerBase
     // Admin actions
     // -------------
 
-    // POST /api/v1/categories
+    /// <summary>
+    /// Creates a new category.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>CategoryDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<ActionResult<CategoryDto>> CreateCategory(
@@ -74,7 +101,15 @@ public class CategoriesController : ControllerBase
         return CreatedAtAction(nameof(GetCategoryById), new { id = category.Id }, category);
     }
 
-    // PUT /api/v1/categories/{id}
+    /// <summary>
+    /// Updates category.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>CategoryDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<CategoryDto>> UpdateCategory(
@@ -87,7 +122,14 @@ public class CategoriesController : ControllerBase
         return Ok(category);
     }
 
-    // DELETE /api/v1/categories/{id}
+    /// <summary>
+    /// Deletes category.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteCategory(int id)
@@ -96,6 +138,15 @@ public class CategoriesController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Uploads category image.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="file">The file to upload</param>
+    /// <returns>string</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Admin")]
     [HttpPost("{id:int}/image")]
     public async Task<ActionResult<string>> UploadCategoryImage(

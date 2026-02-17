@@ -16,6 +16,9 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
+        // HttpContextAccessor (required for CurrentUserService)
+        services.AddHttpContextAccessor();
+
         // Database
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
@@ -56,6 +59,8 @@ public static class DependencyInjection
         services.AddTransient<IEmailService, EmailService>();
         services.AddTransient<IPdfService, PdfService>();
         services.AddScoped<ITaxService, TaxService>();
+        services.AddScoped<IPaymentService, RazorpayPaymentService>();
+        services.AddScoped<ILocationService, LocationService>();
 
         // Authentication
         services.AddScoped<IJwtTokenService, JwtTokenService>();

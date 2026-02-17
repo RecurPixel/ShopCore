@@ -109,26 +109,38 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             if (entry.State == EntityState.Added)
             {
                 // Set CreatedAt for new entities
-                if (entry.Property("CreatedAt") != null)
+                try
                 {
                     entry.Property("CreatedAt").CurrentValue = DateTime.UtcNow;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Property doesn't exist, skip
                 }
             }
 
             // Set UpdatedAt for modified entities
             if (entry.State == EntityState.Modified)
             {
-                if (entry.Property("UpdatedAt") != null)
+                try
                 {
                     entry.Property("UpdatedAt").CurrentValue = DateTime.UtcNow;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Property doesn't exist, skip
                 }
             }
 
             if (entry.State == EntityState.Deleted)
             {
-                if (entry.Property("DeletedAt") != null)
+                try
                 {
                     entry.Property("DeletedAt").CurrentValue = DateTime.UtcNow;
+                }
+                catch (InvalidOperationException)
+                {
+                    // Property doesn't exist, skip
                 }
             }
         }

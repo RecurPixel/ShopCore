@@ -1,10 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using ShopCore.API.Filters;
 using ShopCore.API.Middleware;
 using ShopCore.Application;
 using ShopCore.Infrastructure;
+using ShopCore.Infrastructure.Data;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,7 +21,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "ShopCore API", Version = "v1" });
-    // Add JWT Authentication
+
+    // Fix duplicate schema name collisions across namespaces
+    c.CustomSchemaIds(type => type.ToString().Replace("+", "."));
+
+    // JWT Authentication definition
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token.",
@@ -26,6 +34,14 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
+
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+
+    c.SchemaFilter<EnumSchemaFilter>();
+
+
 });
 
 // Application layer
@@ -33,6 +49,9 @@ builder.Services.AddApplication();
 
 // Infrastructure layer
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Database Seeder
+builder.Services.AddScoped<ApplicationDbContextSeeder>();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -127,6 +146,41 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Apply migrations and seed database
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+
+        if (app.Environment.IsDevelopment())
+        {
+            // Auto-migrate in development
+            logger.LogInformation("Applying database migrations...");
+            await context.Database.MigrateAsync();
+            logger.LogInformation("Database migrations applied successfully");
+
+            // Seed database
+            logger.LogInformation("Seeding database...");
+            var seeder = services.GetRequiredService<ApplicationDbContextSeeder>();
+            await seeder.SeedAsync();
+        }
+        else
+        {
+            // In production, just ensure database exists
+            await context.Database.EnsureCreatedAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while migrating or seeding the database");
+        throw;
+    }
+}
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 

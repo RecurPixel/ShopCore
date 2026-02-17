@@ -1,4 +1,4 @@
-using ShopCore.Application.Test.Queries;
+﻿using ShopCore.Application.Test.Queries;
 
 namespace ShopCore.API.Controllers;
 
@@ -13,6 +13,12 @@ public class TestController : ControllerBase
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Retrieves the requested resource.
+    /// </summary>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
     [HttpGet]
     public async Task<IActionResult> Get()
     {

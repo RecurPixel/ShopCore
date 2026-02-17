@@ -1,4 +1,4 @@
-using ShopCore.Application.Payments.Commands.ConfirmPayment;
+﻿using ShopCore.Application.Payments.Commands.ConfirmPayment;
 using ShopCore.Application.Payments.Commands.CreateInvoicePaymentIntent;
 using ShopCore.Application.Payments.Commands.CreateOrderPaymentIntent;
 using ShopCore.Application.Payments.Commands.HandlePaymentWebhook;
@@ -23,7 +23,14 @@ public class PaymentsController : ControllerBase
     // User-facing APIs
     // ----------------
 
-    // POST /api/v1/payments/orders/{orderId}/create-intent
+    /// <summary>
+    /// Creates a new order payment intent.
+    /// </summary>
+    /// <param name="orderId">The order identifier</param>
+    /// <returns>PaymentIntentDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize]
     [HttpPost("orders/{orderId:int}/create-intent")]
     public async Task<ActionResult<PaymentIntentDto>> CreateOrderPaymentIntent(int orderId)
@@ -32,7 +39,14 @@ public class PaymentsController : ControllerBase
         return Ok(intent);
     }
 
-    // POST /api/v1/payments/invoices/{invoiceId}/create-intent
+    /// <summary>
+    /// Creates a new invoice payment intent.
+    /// </summary>
+    /// <param name="invoiceId">The invoice identifier</param>
+    /// <returns>PaymentIntentDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize]
     [HttpPost("invoices/{invoiceId:int}/create-intent")]
     public async Task<ActionResult<PaymentIntentDto>> CreateInvoicePaymentIntent(int invoiceId)
@@ -41,7 +55,14 @@ public class PaymentsController : ControllerBase
         return Ok(intent);
     }
 
-    // POST /api/v1/payments/confirm
+    /// <summary>
+    /// Confirms payment.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>PaymentConfirmationDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize]
     [HttpPost("confirm")]
     public async Task<ActionResult<PaymentConfirmationDto>> ConfirmPayment(
@@ -51,7 +72,15 @@ public class PaymentsController : ControllerBase
         return Ok(confirmation);
     }
 
-    // POST /api/v1/payments/orders/{orderId}/refund
+    /// <summary>
+    /// Initiates refund.
+    /// </summary>
+    /// <param name="orderId">The order identifier</param>
+    /// <param name="request">The request body</param>
+    /// <returns>RefundDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize]
     [HttpPost("orders/{orderId:int}/refund")]
     public async Task<ActionResult<RefundDto>> InitiateRefund(
@@ -62,7 +91,14 @@ public class PaymentsController : ControllerBase
         return Ok(refund);
     }
 
-    // POST /api/v1/payments/orders/{orderId}/record-cod
+    /// <summary>
+    /// Records cod payment.
+    /// </summary>
+    /// <param name="orderId">The order identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize]
     [HttpPost("orders/{orderId:int}/record-cod")]
     public async Task<IActionResult> RecordCODPayment(int orderId)
@@ -75,7 +111,12 @@ public class PaymentsController : ControllerBase
     // Webhook (No auth!)
     // -------------------
 
-    // POST /api/v1/payments/webhook
+    /// <summary>
+    /// Creates or processes handle webhook.
+    /// </summary>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [AllowAnonymous]
     [HttpPost("webhook")]
     public async Task<IActionResult> HandleWebhook(

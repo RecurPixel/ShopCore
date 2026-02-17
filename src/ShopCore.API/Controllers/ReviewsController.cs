@@ -1,4 +1,4 @@
-using ShopCore.Api.Files;
+﻿using ShopCore.Api.Files;
 using ShopCore.Application.Reviews.Commands.CreateReview;
 using ShopCore.Application.Reviews.Commands.DeleteReview;
 using ShopCore.Application.Reviews.Commands.MarkReviewHelpful;
@@ -25,7 +25,15 @@ public class ReviewsController : ControllerBase
     // Public endpoints
     // ----------------
 
-    // GET /api/v1/reviews/products/{productId}/reviews
+    /// <summary>
+    /// Retrieves product reviews.
+    /// </summary>
+    /// <param name="productId">The product identifier</param>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;ReviewDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="404">Resource not found</response>
     [AllowAnonymous]
     [HttpGet("products/{productId:int}/reviews")]
     public async Task<ActionResult<PaginatedList<ReviewDto>>> GetProductReviews(
@@ -42,7 +50,6 @@ public class ReviewsController : ControllerBase
     // User actions
     // ----------------
 
-    // POST /api/v1/reviews
     [Authorize]
     [HttpPost]
     public async Task<ActionResult<ReviewDto>> CreateReview(
@@ -69,7 +76,15 @@ public class ReviewsController : ControllerBase
         return Ok(review);
     }
 
-    // PUT /api/v1/reviews/{id}
+    /// <summary>
+    /// Updates review.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>ReviewDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize]
     [HttpPut("{id:int}")]
     public async Task<ActionResult<ReviewDto>> UpdateReview(
@@ -82,7 +97,14 @@ public class ReviewsController : ControllerBase
         return Ok(review);
     }
 
-    // DELETE /api/v1/reviews/{id}
+    /// <summary>
+    /// Deletes review.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteReview(int id)
@@ -91,7 +113,14 @@ public class ReviewsController : ControllerBase
         return NoContent();
     }
 
-    // GET /api/v1/reviews/me
+    /// <summary>
+    /// Retrieves my reviews.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;ReviewDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize]
     [HttpGet("me")]
     public async Task<ActionResult<PaginatedList<ReviewDto>>> GetMyReviews(
@@ -101,7 +130,14 @@ public class ReviewsController : ControllerBase
         return Ok(reviews);
     }
 
-    // POST /api/v1/reviews/{id}/helpful
+    /// <summary>
+    /// Marks review helpful.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize]
     [HttpPost("{id:int}/helpful")]
     public async Task<IActionResult> MarkReviewHelpful(int id)
@@ -114,7 +150,15 @@ public class ReviewsController : ControllerBase
     // Vendor actions
     // ----------------
 
-    // POST /api/v1/reviews/{id}/respond
+    /// <summary>
+    /// Adds vendor response.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize(Roles = "Vendor")]
     [HttpPost("{id:int}/respond")]
     public async Task<IActionResult> AddVendorResponse(

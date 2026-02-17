@@ -1,4 +1,4 @@
-using ShopCore.Api.Files;
+﻿using ShopCore.Api.Files;
 using ShopCore.Application.Addresses.Commands.CreateAddress;
 using ShopCore.Application.Addresses.Commands.DeleteAddress;
 using ShopCore.Application.Addresses.Commands.SetDefaultAddress;
@@ -55,7 +55,13 @@ public class UsersController : ControllerBase
     // Profile
     // ==================
 
-    // GET /api/v1/users/me
+    /// <summary>
+    /// Retrieves profile.
+    /// </summary>
+    /// <returns>UserProfileDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpGet]
     public async Task<ActionResult<UserProfileDto>> GetProfile()
     {
@@ -63,7 +69,14 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
-    // PUT /api/v1/users/me
+    /// <summary>
+    /// Updates profile.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>UserProfileDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPut]
     public async Task<ActionResult<UserProfileDto>> UpdateProfile(
         [FromBody] UpdateCurrentUserCommand command)
@@ -72,7 +85,14 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
-    // POST /api/v1/users/me/avatar
+    /// <summary>
+    /// Uploads avatar.
+    /// </summary>
+    /// <param name="file">The file to upload</param>
+    /// <returns>string</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("avatar")]
     public async Task<ActionResult<string>> UploadAvatar(IFormFile file)
     {
@@ -84,7 +104,14 @@ public class UsersController : ControllerBase
         return Ok(url);
     }
 
-    // POST /api/v1/users/me/change-password
+    /// <summary>
+    /// Creates or processes change password.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword(
         [FromBody] ChangePasswordCommand command)
@@ -93,7 +120,13 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    // DELETE /api/v1/users/me
+    /// <summary>
+    /// Deletes my account.
+    /// </summary>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpDelete]
     public async Task<IActionResult> DeleteMyAccount()
     {
@@ -105,7 +138,13 @@ public class UsersController : ControllerBase
     // Addresses
     // ==================
 
-    // GET /api/v1/users/me/addresses
+    /// <summary>
+    /// Retrieves my addresses.
+    /// </summary>
+    /// <returns>List&lt;AddressDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpGet("addresses")]
     public async Task<ActionResult<List<AddressDto>>> GetMyAddresses()
     {
@@ -113,7 +152,14 @@ public class UsersController : ControllerBase
         return Ok(addresses);
     }
 
-    // POST /api/v1/users/me/addresses
+    /// <summary>
+    /// Creates a new address.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>AddressDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("addresses")]
     public async Task<ActionResult<AddressDto>> CreateAddress(
         [FromBody] CreateAddressCommand command)
@@ -122,7 +168,15 @@ public class UsersController : ControllerBase
         return CreatedAtAction(nameof(GetAddressById), new { id = address.Id }, address);
     }
 
-    // GET /api/v1/users/me/addresses/{id}
+    /// <summary>
+    /// Retrieves address.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>AddressDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("addresses/{id:int}")]
     public async Task<ActionResult<AddressDto>> GetAddressById(int id)
     {
@@ -132,7 +186,15 @@ public class UsersController : ControllerBase
         return Ok(address);
     }
 
-    // PUT /api/v1/users/me/addresses/{id}
+    /// <summary>
+    /// Updates address.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>AddressDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPut("addresses/{id:int}")]
     public async Task<ActionResult<AddressDto>> UpdateAddress(
         int id,
@@ -143,7 +205,14 @@ public class UsersController : ControllerBase
         return Ok(address);
     }
 
-    // DELETE /api/v1/users/me/addresses/{id}
+    /// <summary>
+    /// Deletes address.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpDelete("addresses/{id:int}")]
     public async Task<IActionResult> DeleteAddress(int id)
     {
@@ -151,7 +220,14 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    // PATCH /api/v1/users/me/addresses/{id}/default
+    /// <summary>
+    /// Sets default address.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPatch("addresses/{id:int}/default")]
     public async Task<IActionResult> SetDefaultAddress(int id)
     {
@@ -163,7 +239,14 @@ public class UsersController : ControllerBase
     // Orders (Customer view)
     // ==================
 
-    // GET /api/v1/users/me/orders
+    /// <summary>
+    /// Retrieves my orders.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;OrderDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpGet("orders")]
     public async Task<ActionResult<PaginatedList<OrderDto>>> GetMyOrders(
         [FromQuery] GetMyOrdersQuery query)
@@ -172,7 +255,15 @@ public class UsersController : ControllerBase
         return Ok(orders);
     }
 
-    // GET /api/v1/users/me/orders/{id}
+    /// <summary>
+    /// Retrieves order.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>OrderDetailDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("orders/{id:int}")]
     public async Task<ActionResult<OrderDetailDto>> GetOrderById(int id)
     {
@@ -182,7 +273,15 @@ public class UsersController : ControllerBase
         return Ok(order);
     }
 
-    // POST /api/v1/users/me/orders/{id}/cancel
+    /// <summary>
+    /// Cancels order.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("orders/{id:int}/cancel")]
     public async Task<IActionResult> CancelOrder(
         int id,
@@ -193,7 +292,15 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    // POST /api/v1/users/me/orders/items/{itemId}/cancel
+    /// <summary>
+    /// Cancels order item.
+    /// </summary>
+    /// <param name="itemId">The item identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>CancellationResultDto</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("orders/items/{itemId:int}/cancel")]
     public async Task<ActionResult<CancellationResultDto>> CancelOrderItem(
         int itemId,
@@ -204,7 +311,15 @@ public class UsersController : ControllerBase
         return Ok(result);
     }
 
-    // GET /api/v1/users/me/orders/{id}/invoice
+    /// <summary>
+    /// Retrieves order invoice.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("orders/{id:int}/invoice")]
     public async Task<IActionResult> GetOrderInvoice(int id)
     {
@@ -218,7 +333,14 @@ public class UsersController : ControllerBase
     // Subscriptions (Customer view)
     // ==================
 
-    // GET /api/v1/users/me/subscriptions
+    /// <summary>
+    /// Retrieves my subscriptions.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;SubscriptionDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpGet("subscriptions")]
     public async Task<ActionResult<PaginatedList<SubscriptionDto>>> GetMySubscriptions(
         [FromQuery] GetMySubscriptionsQuery query)
@@ -227,7 +349,15 @@ public class UsersController : ControllerBase
         return Ok(subscriptions);
     }
 
-    // GET /api/v1/users/me/subscriptions/{id}
+    /// <summary>
+    /// Retrieves subscription.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>SubscriptionDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("subscriptions/{id:int}")]
     public async Task<ActionResult<SubscriptionDto>> GetSubscriptionById(int id)
     {
@@ -235,7 +365,17 @@ public class UsersController : ControllerBase
         return Ok(subscription);
     }
 
-    // GET /api/v1/users/me/subscriptions/{id}/deliveries
+    /// <summary>
+    /// Retrieves subscription deliveries.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="page">Page number for pagination (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <returns>PaginatedList&lt;DeliveryDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("subscriptions/{id:int}/deliveries")]
     public async Task<ActionResult<PaginatedList<DeliveryDto>>> GetSubscriptionDeliveries(
         int id,
@@ -246,7 +386,16 @@ public class UsersController : ControllerBase
         return Ok(deliveries);
     }
 
-    // GET /api/v1/users/me/subscriptions/{id}/invoices
+    /// <summary>
+    /// Retrieves subscription invoices.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;InvoiceDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("subscriptions/{id:int}/invoices")]
     public async Task<ActionResult<PaginatedList<InvoiceDto>>> GetSubscriptionInvoices(
         int id,
@@ -261,7 +410,14 @@ public class UsersController : ControllerBase
     // Reviews
     // ==================
 
-    // GET /api/v1/users/me/reviews
+    /// <summary>
+    /// Retrieves my reviews.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;ReviewDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpGet("reviews")]
     public async Task<ActionResult<PaginatedList<ReviewDto>>> GetMyReviews(
         [FromQuery] GetMyReviewsQuery query)
@@ -270,7 +426,6 @@ public class UsersController : ControllerBase
         return Ok(reviews);
     }
 
-    // POST /api/v1/users/me/reviews
     [HttpPost("reviews")]
     public async Task<ActionResult<ReviewDto>> CreateReview(
         [FromForm] int productId,
@@ -289,7 +444,15 @@ public class UsersController : ControllerBase
         return CreatedAtAction(nameof(GetMyReviews), review);
     }
 
-    // PUT /api/v1/users/me/reviews/{id}
+    /// <summary>
+    /// Updates review.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>ReviewDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPut("reviews/{id:int}")]
     public async Task<ActionResult<ReviewDto>> UpdateReview(
         int id,
@@ -300,7 +463,14 @@ public class UsersController : ControllerBase
         return Ok(review);
     }
 
-    // DELETE /api/v1/users/me/reviews/{id}
+    /// <summary>
+    /// Deletes review.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpDelete("reviews/{id:int}")]
     public async Task<IActionResult> DeleteReview(int id)
     {
@@ -312,7 +482,14 @@ public class UsersController : ControllerBase
     // Wishlist
     // ==================
 
-    // GET /api/v1/users/me/wishlist
+    /// <summary>
+    /// Retrieves wishlist.
+    /// </summary>
+    /// <returns>WishlistDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("wishlist")]
     public async Task<ActionResult<WishlistDto>> GetWishlist()
     {
@@ -320,7 +497,14 @@ public class UsersController : ControllerBase
         return Ok(wishlist);
     }
 
-    // POST /api/v1/users/me/wishlist
+    /// <summary>
+    /// Adds to wishlist.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpPost("wishlist")]
     public async Task<IActionResult> AddToWishlist(
         [FromBody] AddToWishlistCommand command)
@@ -329,7 +513,14 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    // DELETE /api/v1/users/me/wishlist/{productId}
+    /// <summary>
+    /// Removes from wishlist.
+    /// </summary>
+    /// <param name="productId">The product identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpDelete("wishlist/{productId:int}")]
     public async Task<IActionResult> RemoveFromWishlist(int productId)
     {
@@ -341,7 +532,14 @@ public class UsersController : ControllerBase
     // Payments
     // ==================
 
-    // GET /api/v1/users/me/payments
+    /// <summary>
+    /// Retrieves payment history.
+    /// </summary>
+    /// <param name="query">Search query string</param>
+    /// <returns>PaginatedList&lt;PaymentHistoryDto&gt;</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpGet("payments")]
     public async Task<ActionResult<PaginatedList<PaymentHistoryDto>>> GetPaymentHistory(
         [FromQuery] GetPaymentHistoryQuery query)

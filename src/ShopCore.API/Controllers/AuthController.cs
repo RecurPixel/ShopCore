@@ -1,4 +1,4 @@
-using ShopCore.Application.Auth.Commands.ForgotPassword;
+﻿using ShopCore.Application.Auth.Commands.ForgotPassword;
 using ShopCore.Application.Auth.Commands.Login;
 using ShopCore.Application.Auth.Commands.Logout;
 using ShopCore.Application.Auth.Commands.RefreshToken;
@@ -20,7 +20,13 @@ public class AuthController : ControllerBase
         _mediator = mediator;
     }
 
-    // POST /api/v1/auth/register
+    /// <summary>
+    /// Registers a new the requested resource.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>RegisterResponse</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [AllowAnonymous]
     [HttpPost("register")]
     public async Task<ActionResult<RegisterResponse>> Register(
@@ -30,7 +36,13 @@ public class AuthController : ControllerBase
         return CreatedAtAction(nameof(Register), result);
     }
 
-    // POST /api/v1/auth/login
+    /// <summary>
+    /// Authenticates user and returns the requested resource.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>LoginResponse</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login(
@@ -40,7 +52,13 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // POST /api/v1/auth/refresh-token
+    /// <summary>
+    /// Refreshes token.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>RefreshTokenResponse</returns>
+    /// <response code="201">Resource created successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [AllowAnonymous]
     [HttpPost("refresh-token")]
     public async Task<ActionResult<RefreshTokenResponse>> RefreshToken(
@@ -50,7 +68,13 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    // POST /api/v1/auth/logout
+    /// <summary>
+    /// Logs out the current the requested resource.
+    /// </summary>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
@@ -59,7 +83,13 @@ public class AuthController : ControllerBase
         return NoContent();
     }
 
-    // POST /api/v1/auth/forgot-password
+    /// <summary>
+    /// Initiates password recovery for password.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [AllowAnonymous]
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword(
@@ -70,7 +100,13 @@ public class AuthController : ControllerBase
         return NoContent();
     }
 
-    // POST /api/v1/auth/reset-password
+    /// <summary>
+    /// Resets password.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [AllowAnonymous]
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword(
@@ -80,7 +116,13 @@ public class AuthController : ControllerBase
         return NoContent();
     }
 
-    // POST /api/v1/auth/verify-email
+    /// <summary>
+    /// Verifies email.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [AllowAnonymous]
     [HttpPost("verify-email")]
     public async Task<IActionResult> VerifyEmail(
@@ -90,7 +132,13 @@ public class AuthController : ControllerBase
         return NoContent();
     }
 
-    // POST /api/v1/auth/resend-verification
+    /// <summary>
+    /// Resends verification.
+    /// </summary>
+    /// <param name="command">The command containing request data</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="204">Operation completed successfully</response>
+    /// <response code="400">Invalid request parameters</response>
     [AllowAnonymous]
     [HttpPost("resend-verification")]
     public async Task<IActionResult> ResendVerification(

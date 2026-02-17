@@ -1,4 +1,4 @@
-using ShopCore.Application.Invoices.DTOs;
+﻿using ShopCore.Application.Invoices.DTOs;
 using ShopCore.Application.Invoices.Queries.DownloadInvoice;
 using ShopCore.Application.Invoices.Queries.GetInvoiceById;
 
@@ -21,7 +21,15 @@ public class InvoicesController : ControllerBase
         _mediator = mediator;
     }
 
-    // GET /api/v1/invoices/{id}
+    /// <summary>
+    /// Retrieves invoice.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>InvoiceDto</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="404">Resource not found</response>
     [HttpGet("{id:int}")]
     public async Task<ActionResult<InvoiceDto>> GetInvoiceById(int id)
     {
@@ -31,7 +39,14 @@ public class InvoicesController : ControllerBase
         return Ok(invoice);
     }
 
-    // GET /api/v1/invoices/{id}/download
+    /// <summary>
+    /// Downloads invoice.
+    /// </summary>
+    /// <param name="id">The unique identifier</param>
+    /// <returns>Status code indicating success or failure</returns>
+    /// <response code="200">Returns the requested data</response>
+    /// <response code="400">Invalid request parameters</response>
+    /// <response code="401">Authentication required</response>
     [HttpGet("{id:int}/download")]
     public async Task<IActionResult> DownloadInvoice(int id)
     {
