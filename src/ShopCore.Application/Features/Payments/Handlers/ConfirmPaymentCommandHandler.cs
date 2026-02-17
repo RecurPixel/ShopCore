@@ -1,4 +1,6 @@
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Payments.DTOs;
+using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Payments.Commands.ConfirmPayment;
 
@@ -6,16 +8,16 @@ public class ConfirmPaymentCommandHandler
     : IRequestHandler<ConfirmPaymentCommand, PaymentConfirmationDto>
 {
     private readonly IApplicationDbContext _context;
-    private readonly IPaymentService _paymentService;
+    private readonly IPaymentGatewayFactory _gatewayFactory;
     private readonly IDateTime _dateTime;
 
     public ConfirmPaymentCommandHandler(
         IApplicationDbContext context,
-        IPaymentService paymentService,
+        IPaymentGatewayFactory gatewayFactory,
         IDateTime dateTime)
     {
         _context = context;
-        _paymentService = paymentService;
+        _gatewayFactory = gatewayFactory;
         _dateTime = dateTime;
     }
 
@@ -23,48 +25,58 @@ public class ConfirmPaymentCommandHandler
         ConfirmPaymentCommand request,
         CancellationToken cancellationToken)
     {
-        // 1. Verify payment signature with Razorpay
-        var isValid = await _paymentService.VerifyPaymentSignatureAsync(
-            request.RazorpayOrderId,
-            request.RazorpayPaymentId,
-            request.RazorpaySignature);
+        // 1. Get the payment gateway
+        var gateway = _gatewayFactory.GetGateway(request.Gateway);
 
-        if (!isValid)
-            throw new ValidationException("Payment signature verification failed");
+        // 2. Verify payment with the gateway
+        var verifyResult = await gateway.VerifyPaymentAsync(new VerifyPaymentRequest
+        {
+            GatewayOrderId = request.GatewayOrderId,
+            GatewayPaymentId = request.GatewayPaymentId,
+            Signature = request.Signature,
+            AdditionalData = request.AdditionalData
+        }, cancellationToken);
 
-        // 2. Try to find the order by PaymentTransactionId
+        if (!verifyResult.IsValid)
+            throw new ValidationException(verifyResult.ErrorMessage ?? "Payment verification failed");
+
+        // 3. Try to find the order by PaymentTransactionId
         var order = await _context.Orders
             .Include(o => o.Items)
-            .FirstOrDefaultAsync(o => o.PaymentTransactionId == request.RazorpayOrderId, cancellationToken);
+            .FirstOrDefaultAsync(o => o.PaymentTransactionId == request.GatewayOrderId, cancellationToken);
 
         if (order != null)
         {
-            return await ConfirmOrderPaymentAsync(order, request.RazorpayPaymentId, cancellationToken);
+            return await ConfirmOrderPaymentAsync(order, request.GatewayPaymentId, verifyResult.Method, cancellationToken);
         }
 
-        // 3. Try to find the invoice by PaymentTransactionId
+        // 4. Try to find the invoice by PaymentTransactionId
         var invoice = await _context.SubscriptionInvoices
             .Include(i => i.Subscription)
             .Include(i => i.Deliveries)
-            .FirstOrDefaultAsync(i => i.PaymentTransactionId == request.RazorpayOrderId, cancellationToken);
+            .FirstOrDefaultAsync(i => i.PaymentTransactionId == request.GatewayOrderId, cancellationToken);
 
         if (invoice != null)
         {
-            return await ConfirmInvoicePaymentAsync(invoice, request.RazorpayPaymentId, cancellationToken);
+            return await ConfirmInvoicePaymentAsync(invoice, request.GatewayPaymentId, verifyResult.Method, cancellationToken);
         }
 
-        throw new NotFoundException("Payment reference not found for the given Razorpay order ID");
+        throw new NotFoundException("Payment reference not found for the given gateway order ID");
     }
 
     private async Task<PaymentConfirmationDto> ConfirmOrderPaymentAsync(
         Order order,
-        string razorpayPaymentId,
+        string gatewayPaymentId,
+        PaymentMethod? method,
         CancellationToken cancellationToken)
     {
         // Update order payment status
         order.PaymentStatus = PaymentStatus.Paid;
         order.PaidAt = _dateTime.UtcNow;
-        order.PaymentTransactionId = razorpayPaymentId;
+        order.PaymentTransactionId = gatewayPaymentId;
+
+        if (method.HasValue)
+            order.PaymentMethod = method.Value;
 
         // Update order status to Confirmed if pending
         if (order.Status == OrderStatus.Pending)
@@ -95,7 +107,7 @@ public class ConfirmPaymentCommandHandler
             ReferenceId = order.Id,
             ReferenceType = "Order",
             ReferenceNumber = order.OrderNumber,
-            PaymentId = razorpayPaymentId,
+            PaymentId = gatewayPaymentId,
             Status = PaymentStatus.Paid.ToString(),
             Amount = order.Total,
             ConfirmedAt = order.PaidAt
@@ -104,7 +116,8 @@ public class ConfirmPaymentCommandHandler
 
     private async Task<PaymentConfirmationDto> ConfirmInvoicePaymentAsync(
         SubscriptionInvoice invoice,
-        string razorpayPaymentId,
+        string gatewayPaymentId,
+        PaymentMethod? method,
         CancellationToken cancellationToken)
     {
         var amountPaid = invoice.Total - invoice.PaidAmount;
@@ -113,15 +126,15 @@ public class ConfirmPaymentCommandHandler
         invoice.PaidAmount = invoice.Total;
         invoice.Status = InvoiceStatus.Paid;
         invoice.PaidAt = _dateTime.UtcNow;
-        invoice.PaymentMethod = PaymentMethod.Online;
-        invoice.PaymentTransactionId = razorpayPaymentId;
+        invoice.PaymentMethod = method ?? PaymentMethod.Online;
+        invoice.PaymentTransactionId = gatewayPaymentId;
 
         // Mark all linked deliveries as paid
         foreach (var delivery in invoice.Deliveries)
         {
             delivery.PaymentStatus = PaymentStatus.Paid;
-            delivery.PaymentMethod = PaymentMethod.Online;
-            delivery.PaymentTransactionId = razorpayPaymentId;
+            delivery.PaymentMethod = method ?? PaymentMethod.Online;
+            delivery.PaymentTransactionId = gatewayPaymentId;
             delivery.PaidAt = _dateTime.UtcNow;
         }
 
@@ -144,7 +157,7 @@ public class ConfirmPaymentCommandHandler
             ReferenceId = invoice.Id,
             ReferenceType = "Invoice",
             ReferenceNumber = invoice.InvoiceNumber,
-            PaymentId = razorpayPaymentId,
+            PaymentId = gatewayPaymentId,
             Status = PaymentStatus.Paid.ToString(),
             Amount = invoice.Total,
             ConfirmedAt = invoice.PaidAt

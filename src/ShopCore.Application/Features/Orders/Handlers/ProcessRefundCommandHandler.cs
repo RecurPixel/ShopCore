@@ -1,5 +1,8 @@
+using ShopCore.Application.Common.Interfaces;
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Orders.Commands.ProcessRefund;
 using ShopCore.Application.Orders.DTOs;
+using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Orders.Handlers;
 
@@ -8,16 +11,16 @@ public class ProcessRefundCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
-    private readonly IPaymentService _paymentService;
+    private readonly IPaymentGatewayFactory _paymentGatewayFactory;
 
     public ProcessRefundCommandHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUser,
-        IPaymentService paymentService)
+        IPaymentGatewayFactory paymentGatewayFactory)
     {
         _context = context;
         _currentUser = currentUser;
-        _paymentService = paymentService;
+        _paymentGatewayFactory = paymentGatewayFactory;
     }
 
     public async Task<RefundResultDto> Handle(ProcessRefundCommand request, CancellationToken ct)
@@ -43,12 +46,16 @@ public class ProcessRefundCommandHandler
         var refundAmount = itemsToRefund.Sum(i => i.Subtotal);
 
         // Process refund via payment gateway
-        var refundResult = await _paymentService.CreateRefundAsync(
-            order.PaymentTransactionId!,
-            refundAmount,
-            request.Reason);
+        var paymentGateway = _paymentGatewayFactory.GetGateway(PaymentGateway.Razorpay);
+        var refundResult = await paymentGateway.CreateRefundAsync(
+            new CreateRefundRequest
+            {
+                GatewayPaymentId = order.PaymentTransactionId!,
+                Amount = refundAmount,
+                Reason = request.Reason
+            });
 
-        if (refundResult.Status.Equals("failed", StringComparison.OrdinalIgnoreCase))
+        if (!refundResult.Success)
             throw new ValidationException("Refund failed");
 
         // Update order

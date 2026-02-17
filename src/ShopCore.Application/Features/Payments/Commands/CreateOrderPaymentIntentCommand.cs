@@ -1,5 +1,14 @@
 using ShopCore.Application.Payments.DTOs;
+using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Payments.Commands.CreateOrderPaymentIntent;
 
-public record CreateOrderPaymentIntentCommand(int OrderId) : IRequest<PaymentIntentDto>;
+/// <summary>
+/// Command to create a payment intent for an order
+/// </summary>
+/// <param name="OrderId">The order ID to create payment for</param>
+/// <param name="Gateway">Optional payment gateway to use. If null, uses default gateway.</param>
+public record CreateOrderPaymentIntentCommand(
+    int OrderId,
+    PaymentGateway? Gateway = null
+) : IRequest<PaymentIntentDto>;

@@ -1,4 +1,7 @@
+using ShopCore.Application.Common.Interfaces;
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Payments.DTOs;
+using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Payments.Commands.InitiateRefund;
 
@@ -6,18 +9,18 @@ public class InitiateRefundCommandHandler : IRequestHandler<InitiateRefundComman
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
-    private readonly IPaymentService _paymentService;
+    private readonly IPaymentGatewayFactory _paymentGatewayFactory;
     private readonly IDateTime _dateTime;
 
     public InitiateRefundCommandHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUser,
-        IPaymentService paymentService,
+        IPaymentGatewayFactory paymentGatewayFactory,
         IDateTime dateTime)
     {
         _context = context;
         _currentUser = currentUser;
-        _paymentService = paymentService;
+        _paymentGatewayFactory = paymentGatewayFactory;
         _dateTime = dateTime;
     }
 
@@ -55,10 +58,14 @@ public class InitiateRefundCommandHandler : IRequestHandler<InitiateRefundComman
             throw new ValidationException("Refund amount must be greater than zero");
 
         // Initiate refund with payment gateway
-        var refundResponse = await _paymentService.CreateRefundAsync(
-            order.PaymentTransactionId,
-            request.Amount,
-            request.Reason);
+        var paymentGateway = _paymentGatewayFactory.GetGateway(PaymentGateway.Razorpay);
+        var refundResponse = await paymentGateway.CreateRefundAsync(
+            new CreateRefundRequest
+            {
+                GatewayPaymentId = order.PaymentTransactionId,
+                Amount = request.Amount,
+                Reason = request.Reason
+            });
 
         // Update order refund tracking
         order.RefundedAmount += request.Amount;
@@ -85,8 +92,8 @@ public class InitiateRefundCommandHandler : IRequestHandler<InitiateRefundComman
             OrderId = order.Id,
             OrderNumber = order.OrderNumber,
             RefundAmount = request.Amount,
-            Status = refundResponse.Status,
-            RefundedAt = refundResponse.CreatedAt
+            Status = refundResponse.Success ? "Initiated" : "Failed",
+            RefundedAt = DateTime.UtcNow
         };
     }
 }

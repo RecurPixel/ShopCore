@@ -1,42 +1,51 @@
+using ShopCore.Application.Common.Models;
+using ShopCore.Domain.Enums;
+
 namespace ShopCore.Application.Payments.Commands.HandlePaymentWebhook;
 
 public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentWebhookCommand>
 {
     private readonly IApplicationDbContext _context;
-    private readonly IPaymentService _paymentService;
+    private readonly IPaymentGatewayFactory _gatewayFactory;
     private readonly IDateTime _dateTime;
 
     public HandlePaymentWebhookCommandHandler(
         IApplicationDbContext context,
-        IPaymentService paymentService,
+        IPaymentGatewayFactory gatewayFactory,
         IDateTime dateTime)
     {
         _context = context;
-        _paymentService = paymentService;
+        _gatewayFactory = gatewayFactory;
         _dateTime = dateTime;
     }
 
     public async Task Handle(HandlePaymentWebhookCommand request, CancellationToken cancellationToken)
     {
-        // 1. Verify webhook signature
-        if (!_paymentService.VerifyWebhookSignature(request.Payload, request.Signature))
+        // 1. Get the payment gateway
+        var gateway = _gatewayFactory.GetGateway(request.Gateway);
+
+        // 2. Verify webhook signature
+        if (!string.IsNullOrEmpty(request.Signature) &&
+            !gateway.VerifyWebhookSignature(request.Payload, request.Signature))
+        {
             throw new ValidationException("Invalid webhook signature");
+        }
 
-        // 2. Parse webhook payload
-        var webhookEvent = _paymentService.ParseWebhookPayload(request.Payload);
+        // 3. Parse webhook payload
+        var webhookEvent = gateway.ParseWebhookPayload(request.Payload);
 
-        // 3. Handle different event types
+        // 4. Handle different event types
         switch (webhookEvent.EventType)
         {
-            case "payment.captured":
+            case PaymentWebhookEventType.PaymentCaptured:
                 await HandlePaymentCapturedAsync(webhookEvent, cancellationToken);
                 break;
 
-            case "payment.failed":
+            case PaymentWebhookEventType.PaymentFailed:
                 await HandlePaymentFailedAsync(webhookEvent, cancellationToken);
                 break;
 
-            case "refund.processed":
+            case PaymentWebhookEventType.RefundProcessed:
                 await HandleRefundProcessedAsync(webhookEvent, cancellationToken);
                 break;
 
@@ -47,12 +56,12 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
         }
     }
 
-    private async Task HandlePaymentCapturedAsync(WebhookEvent webhookEvent, CancellationToken ct)
+    private async Task HandlePaymentCapturedAsync(PaymentWebhookEvent webhookEvent, CancellationToken ct)
     {
         // Try to find order first
         var order = await _context.Orders
             .Include(o => o.Items)
-            .FirstOrDefaultAsync(o => o.PaymentTransactionId == webhookEvent.RazorpayOrderId, ct);
+            .FirstOrDefaultAsync(o => o.PaymentTransactionId == webhookEvent.GatewayOrderId, ct);
 
         if (order != null)
         {
@@ -62,7 +71,10 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
 
             order.PaymentStatus = PaymentStatus.Paid;
             order.PaidAt = _dateTime.UtcNow;
-            order.PaymentTransactionId = webhookEvent.PaymentId;
+            order.PaymentTransactionId = webhookEvent.GatewayPaymentId;
+
+            if (webhookEvent.Method.HasValue)
+                order.PaymentMethod = webhookEvent.Method.Value;
 
             if (order.Status == OrderStatus.Pending)
             {
@@ -88,7 +100,7 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
         var invoice = await _context.SubscriptionInvoices
             .Include(i => i.Subscription)
             .Include(i => i.Deliveries)
-            .FirstOrDefaultAsync(i => i.PaymentTransactionId == webhookEvent.RazorpayOrderId, ct);
+            .FirstOrDefaultAsync(i => i.PaymentTransactionId == webhookEvent.GatewayOrderId, ct);
 
         if (invoice != null)
         {
@@ -100,14 +112,14 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
             invoice.PaidAmount = invoice.Total;
             invoice.Status = InvoiceStatus.Paid;
             invoice.PaidAt = _dateTime.UtcNow;
-            invoice.PaymentMethod = ParsePaymentMethod(webhookEvent.Method);
-            invoice.PaymentTransactionId = webhookEvent.PaymentId;
+            invoice.PaymentMethod = webhookEvent.Method ?? PaymentMethod.Online;
+            invoice.PaymentTransactionId = webhookEvent.GatewayPaymentId;
 
             foreach (var delivery in invoice.Deliveries)
             {
                 delivery.PaymentStatus = PaymentStatus.Paid;
-                delivery.PaymentMethod = ParsePaymentMethod(webhookEvent.Method);
-                delivery.PaymentTransactionId = webhookEvent.PaymentId;
+                delivery.PaymentMethod = webhookEvent.Method ?? PaymentMethod.Online;
+                delivery.PaymentTransactionId = webhookEvent.GatewayPaymentId;
                 delivery.PaidAt = _dateTime.UtcNow;
             }
 
@@ -125,10 +137,10 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
         }
     }
 
-    private async Task HandlePaymentFailedAsync(WebhookEvent webhookEvent, CancellationToken ct)
+    private async Task HandlePaymentFailedAsync(PaymentWebhookEvent webhookEvent, CancellationToken ct)
     {
         var order = await _context.Orders
-            .FirstOrDefaultAsync(o => o.PaymentTransactionId == webhookEvent.RazorpayOrderId, ct);
+            .FirstOrDefaultAsync(o => o.PaymentTransactionId == webhookEvent.GatewayOrderId, ct);
 
         if (order != null)
         {
@@ -148,7 +160,7 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
 
         // For invoices, just clear the transaction ID so they can try again
         var invoice = await _context.SubscriptionInvoices
-            .FirstOrDefaultAsync(i => i.PaymentTransactionId == webhookEvent.RazorpayOrderId, ct);
+            .FirstOrDefaultAsync(i => i.PaymentTransactionId == webhookEvent.GatewayOrderId, ct);
 
         if (invoice != null)
         {
@@ -157,15 +169,15 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
         }
     }
 
-    private async Task HandleRefundProcessedAsync(WebhookEvent webhookEvent, CancellationToken ct)
+    private async Task HandleRefundProcessedAsync(PaymentWebhookEvent webhookEvent, CancellationToken ct)
     {
         var order = await _context.Orders
-            .FirstOrDefaultAsync(o => o.PaymentTransactionId == webhookEvent.PaymentId, ct);
+            .FirstOrDefaultAsync(o => o.PaymentTransactionId == webhookEvent.GatewayPaymentId, ct);
 
         if (order == null)
             return;
 
-        order.RefundedAmount += webhookEvent.RefundAmount;
+        order.RefundedAmount += webhookEvent.RefundAmount ?? 0;
 
         if (order.RefundedAmount >= order.Total)
             order.PaymentStatus = PaymentStatus.Refunded;
@@ -181,20 +193,5 @@ public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentW
         });
 
         await _context.SaveChangesAsync(ct);
-    }
-
-    private static PaymentMethod ParsePaymentMethod(string? method)
-    {
-        if (string.IsNullOrEmpty(method))
-            return PaymentMethod.Online;
-
-        return method.ToLower() switch
-        {
-            "card" => PaymentMethod.Card,
-            "upi" => PaymentMethod.UPI,
-            "netbanking" => PaymentMethod.NetBanking,
-            "wallet" => PaymentMethod.Wallet,
-            _ => PaymentMethod.Online
-        };
     }
 }

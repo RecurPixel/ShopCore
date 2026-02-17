@@ -1,4 +1,6 @@
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Payments.DTOs;
+using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Payments.Commands.CreateInvoicePaymentIntent;
 
@@ -7,16 +9,16 @@ public class CreateInvoicePaymentIntentHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
-    private readonly IPaymentService _paymentService;
+    private readonly IPaymentGatewayFactory _gatewayFactory;
 
     public CreateInvoicePaymentIntentHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUser,
-        IPaymentService paymentService)
+        IPaymentGatewayFactory gatewayFactory)
     {
         _context = context;
         _currentUser = currentUser;
-        _paymentService = paymentService;
+        _gatewayFactory = gatewayFactory;
     }
 
     public async Task<PaymentIntentDto> Handle(
@@ -47,26 +49,53 @@ public class CreateInvoicePaymentIntentHandler
         if (amountToCharge <= 0)
             throw new ValidationException("Nothing to pay");
 
-        // Create payment intent via payment gateway (Razorpay)
-        var paymentIntent = await _paymentService.CreatePaymentIntentAsync(
-            amountToCharge,
-            invoice.Id,
-            PaymentReferenceType.Invoice,
-            "INR");
+        // Get payment gateway (specified or default)
+        var gateway = request.Gateway.HasValue
+            ? _gatewayFactory.GetGateway(request.Gateway.Value)
+            : _gatewayFactory.GetDefaultGateway();
+
+        // Create payment via generic interface
+        var paymentResult = await gateway.CreatePaymentAsync(new CreatePaymentRequest
+        {
+            Amount = amountToCharge,
+            Currency = "INR",
+            ReferenceId = invoice.Id,
+            ReferenceType = PaymentReferenceType.Invoice,
+            CustomerEmail = invoice.User?.Email,
+            CustomerPhone = invoice.User?.PhoneNumber,
+            CustomerName = $"{invoice.User?.FirstName} {invoice.User?.LastName}".Trim(),
+            Description = $"Invoice #{invoice.InvoiceNumber}"
+        }, cancellationToken);
+
+        if (!paymentResult.Success)
+            throw new ValidationException(paymentResult.ErrorMessage ?? "Failed to create payment");
 
         // Store the payment reference
-        invoice.PaymentTransactionId = paymentIntent.RazorpayOrderId;
+        invoice.PaymentTransactionId = paymentResult.GatewayOrderId;
+        invoice.PaymentGateway = gateway.GatewayType;
 
         await _context.SaveChangesAsync(cancellationToken);
 
+        // Extract client secret from provider-specific data
+        var clientSecret = GetClientDataValue(paymentResult.ClientData, "client_secret")
+                        ?? GetClientDataValue(paymentResult.ClientData, "key_id")
+                        ?? string.Empty;
+
         return new PaymentIntentDto
         {
-            PaymentIntentId = paymentIntent.RazorpayOrderId,
-            ClientSecret = paymentIntent.KeyId,
+            PaymentIntentId = paymentResult.GatewayOrderId,
+            ClientSecret = clientSecret,
             Amount = amountToCharge,
-            Currency = paymentIntent.Currency,
+            Currency = paymentResult.Currency,
             Status = PaymentStatus.Pending.ToString(),
-            GatewayOrderId = paymentIntent.RazorpayOrderId
+            Gateway = gateway.GatewayType.ToString(),
+            GatewayOrderId = paymentResult.GatewayOrderId,
+            ClientData = paymentResult.ClientData
         };
+    }
+
+    private static string? GetClientDataValue(IDictionary<string, string> data, string key)
+    {
+        return data.TryGetValue(key, out var value) ? value : null;
     }
 }

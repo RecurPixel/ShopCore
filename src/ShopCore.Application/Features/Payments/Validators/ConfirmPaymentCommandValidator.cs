@@ -1,4 +1,5 @@
 using ShopCore.Application.Payments.Commands.ConfirmPayment;
+using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Payments.Validators;
 
@@ -6,16 +7,22 @@ public class ConfirmPaymentCommandValidator : AbstractValidator<ConfirmPaymentCo
 {
     public ConfirmPaymentCommandValidator()
     {
-        RuleFor(x => x.RazorpayOrderId)
-            .NotEmpty()
-            .WithMessage("Razorpay order ID is required");
+        RuleFor(x => x.Gateway)
+            .IsInEnum()
+            .WithMessage("Invalid payment gateway");
 
-        RuleFor(x => x.RazorpayPaymentId)
+        RuleFor(x => x.GatewayOrderId)
             .NotEmpty()
-            .WithMessage("Razorpay payment ID is required");
+            .WithMessage("Gateway order ID is required");
 
-        RuleFor(x => x.RazorpaySignature)
+        RuleFor(x => x.GatewayPaymentId)
             .NotEmpty()
-            .WithMessage("Razorpay signature is required");
+            .WithMessage("Gateway payment ID is required");
+
+        // Signature is required for Razorpay
+        RuleFor(x => x.Signature)
+            .NotEmpty()
+            .When(x => x.Gateway == PaymentGateway.Razorpay)
+            .WithMessage("Signature is required for Razorpay payments");
     }
 }

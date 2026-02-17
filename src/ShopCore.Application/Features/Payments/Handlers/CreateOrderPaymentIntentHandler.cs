@@ -1,4 +1,7 @@
+using ShopCore.Application.Common.Interfaces;
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Payments.DTOs;
+using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Payments.Commands.CreateOrderPaymentIntent;
 
@@ -7,16 +10,16 @@ public class CreateOrderPaymentIntentHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
-    private readonly IPaymentService _paymentService;
+    private readonly IPaymentGatewayFactory _gatewayFactory;
 
     public CreateOrderPaymentIntentHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUser,
-        IPaymentService paymentService)
+        IPaymentGatewayFactory gatewayFactory)
     {
         _context = context;
         _currentUser = currentUser;
-        _paymentService = paymentService;
+        _gatewayFactory = gatewayFactory;
     }
 
     public async Task<PaymentIntentDto> Handle(
@@ -46,28 +49,60 @@ public class CreateOrderPaymentIntentHandler
         if (amountToCharge <= 0)
             throw new ValidationException("Nothing to pay");
 
-        // Create payment intent via payment gateway (Razorpay)
-        var paymentIntent = await _paymentService.CreatePaymentIntentAsync(
-            amountToCharge,
-            order.Id,
-            PaymentReferenceType.Order,
-            "INR");
+        // Get payment gateway (specified or default)
+        var gateway = request.Gateway.HasValue
+            ? _gatewayFactory.GetGateway(request.Gateway.Value)
+            : _gatewayFactory.GetDefaultGateway();
 
-        // Update order payment status to pending
+        // Create payment via generic interface
+        var paymentResult = await gateway.CreatePaymentAsync(new CreatePaymentRequest
+        {
+            Amount = amountToCharge,
+            Currency = "INR",
+            ReferenceId = order.Id,
+            ReferenceType = PaymentReferenceType.Order,
+            CustomerEmail = order.User?.Email,
+            CustomerPhone = order.User?.PhoneNumber,
+            CustomerName = $"{order.User?.FirstName} {order.User?.LastName}".Trim(),
+            Description = $"Order #{order.OrderNumber}"
+        }, cancellationToken);
+
+        if (!paymentResult.Success)
+            throw new ValidationException(paymentResult.ErrorMessage ?? "Failed to create payment");
+
+        // Update order payment status
         order.PaymentStatus = PaymentStatus.Pending;
-        order.PaymentTransactionId = paymentIntent.RazorpayOrderId;
+        order.PaymentGateway = gateway.GatewayType;
+        order.PaymentTransactionId = paymentResult.GatewayOrderId;
+
+        // For COD, set payment method directly
+        if (gateway.GatewayType == PaymentGateway.Manual)
+        {
+            order.PaymentMethod = PaymentMethod.CashOnDelivery;
+        }
 
         await _context.SaveChangesAsync(cancellationToken);
 
+        // Extract client secret from provider-specific data
+        var clientSecret = GetClientDataValue(paymentResult.ClientData, "client_secret")
+                        ?? GetClientDataValue(paymentResult.ClientData, "key_id")
+                        ?? string.Empty;
+
         return new PaymentIntentDto
         {
-            PaymentIntentId = paymentIntent.RazorpayOrderId,
-            ClientSecret = paymentIntent.KeyId, // Razorpay Key ID for frontend
+            PaymentIntentId = paymentResult.GatewayOrderId,
+            ClientSecret = clientSecret,
             Amount = amountToCharge,
-            Currency = paymentIntent.Currency,
+            Currency = paymentResult.Currency,
             Status = PaymentStatus.Pending.ToString(),
-            Gateway = PaymentGateway.Razorpay.ToString(),
-            GatewayOrderId = paymentIntent.RazorpayOrderId
+            Gateway = gateway.GatewayType.ToString(),
+            GatewayOrderId = paymentResult.GatewayOrderId,
+            ClientData = paymentResult.ClientData
         };
+    }
+
+    private static string? GetClientDataValue(IDictionary<string, string> data, string key)
+    {
+        return data.TryGetValue(key, out var value) ? value : null;
     }
 }

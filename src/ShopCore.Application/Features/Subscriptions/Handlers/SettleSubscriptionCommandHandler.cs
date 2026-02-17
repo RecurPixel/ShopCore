@@ -1,4 +1,7 @@
+using ShopCore.Application.Common.Interfaces;
+using ShopCore.Application.Common.Models;
 using ShopCore.Application.Subscriptions.DTOs;
+using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Subscriptions.Commands.SettleSubscription;
 
@@ -7,18 +10,18 @@ public class SettleSubscriptionCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
-    private readonly IPaymentService _paymentService;
+    private readonly IPaymentGatewayFactory _paymentGatewayFactory;
     private readonly IDateTime _dateTime;
 
     public SettleSubscriptionCommandHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUser,
-        IPaymentService paymentService,
+        IPaymentGatewayFactory paymentGatewayFactory,
         IDateTime dateTime)
     {
         _context = context;
         _currentUser = currentUser;
-        _paymentService = paymentService;
+        _paymentGatewayFactory = paymentGatewayFactory;
         _dateTime = dateTime;
     }
 
@@ -58,11 +61,16 @@ public class SettleSubscriptionCommandHandler
         {
             // Customer owes vendor
             // Create payment intent for remaining amount
-            var paymentIntent = await _paymentService.CreatePaymentIntentAsync(
-                netBalance,
-                subscription.Id,
-                PaymentReferenceType.Invoice,
-                "INR");
+            var paymentGateway = _paymentGatewayFactory.GetGateway(PaymentGateway.Razorpay);
+            var paymentIntent = await paymentGateway.CreatePaymentAsync(
+                new CreatePaymentRequest
+                {
+                    Amount = netBalance,
+                    Currency = "INR",
+                    ReferenceId = subscription.Id,
+                    ReferenceType = PaymentReferenceType.Invoice,
+                    Description = $"Subscription Settlement {subscription.Id}"
+                });
 
             settlement = new SubscriptionSettlementDto
             {
@@ -73,7 +81,7 @@ public class SettleSubscriptionCommandHandler
                 NetBalance = netBalance,
                 SettlementType = "CustomerOwes",
                 PaymentRequired = true,
-                PaymentIntentId = paymentIntent.RazorpayOrderId,
+                PaymentIntentId = paymentIntent.GatewayOrderId,
                 PaymentAmount = netBalance
             };
         }

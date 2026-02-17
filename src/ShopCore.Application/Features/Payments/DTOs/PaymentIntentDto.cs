@@ -9,4 +9,13 @@ public record PaymentIntentDto
     public string Status { get; init; } = string.Empty;
     public string Gateway { get; init; } = string.Empty;
     public string? GatewayOrderId { get; init; }
+
+    /// <summary>
+    /// Provider-specific client data for payment integration.
+    /// Keys vary by provider:
+    /// - Razorpay: key_id, order_id, amount, currency
+    /// - Stripe: publishable_key, client_secret
+    /// - COD: type, message
+    /// </summary>
+    public IDictionary<string, string> ClientData { get; init; } = new Dictionary<string, string>();
 }

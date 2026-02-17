@@ -6,12 +6,14 @@ public class HandlePaymentWebhookCommandValidator : AbstractValidator<HandlePaym
 {
     public HandlePaymentWebhookCommandValidator()
     {
+        RuleFor(x => x.Gateway)
+            .IsInEnum()
+            .WithMessage("Invalid payment gateway");
+
         RuleFor(x => x.Payload)
             .NotEmpty()
             .WithMessage("Webhook payload is required");
 
-        RuleFor(x => x.Signature)
-            .NotEmpty()
-            .WithMessage("Webhook signature is required");
+        // Signature is optional as some gateways verify differently
     }
 }
