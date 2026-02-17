@@ -3,6 +3,8 @@ using ShopCore.Application.Products.DTOs;
 
 namespace ShopCore.Application.Products.Commands.UpdateProduct;
 
+// Note: Status changes via UpdateProductStatusCommand
+// Note: IsFeatured changes via FeatureProductCommand (admin only)
 public record UpdateProductCommand(
     int Id,
     string Name,
@@ -19,8 +21,6 @@ public record UpdateProductCommand(
     decimal? Weight,
     string? WeightUnit,
     string? Dimensions,
-    ProductStatus Status,
-    bool IsFeatured,
     bool IsSubscriptionAvailable,
     decimal? SubscriptionDiscount,
     string? MetaTitle,

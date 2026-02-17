@@ -6,9 +6,7 @@ public class CreateSubscriptionCommandValidator : AbstractValidator<CreateSubscr
 {
     public CreateSubscriptionCommandValidator()
     {
-        RuleFor(x => x.VendorId)
-            .GreaterThan(0)
-            .WithMessage("Vendor is required");
+        // VendorId is derived from products in the handler
 
         RuleFor(x => x.DeliveryAddressId)
             .GreaterThan(0)

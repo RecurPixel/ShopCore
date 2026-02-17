@@ -745,12 +745,11 @@ public class VendorsController : ControllerBase
                 .ToList();
         }
 
-        // Complete the delivery
+        // Complete the delivery (PaymentMethod is determined by delivery record, not user input)
         var command = new CompleteDeliveryCommand(
             id,
             itemStatuses,
-            request?.PaymentMethod,
-            request?.PaymentTransactionId,
+            request?.PaymentTransactionId,  // CollectedPaymentReference for COD
             deliveryPhotoUrl ?? request?.DeliveryPhotoUrl,
             signatureUrl ?? request?.CustomerSignatureUrl,
             request?.DeliveryNotes

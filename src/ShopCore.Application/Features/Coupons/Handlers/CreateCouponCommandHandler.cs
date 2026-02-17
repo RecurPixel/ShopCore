@@ -40,7 +40,7 @@ public class CreateCouponCommandHandler : IRequestHandler<CreateCouponCommand, C
             UsageLimit = request.UsageLimit,
             UsageLimitPerUser = request.UsageLimitPerUser,
             UsageCount = 0,
-            IsActive = request.IsActive
+            IsActive = false // Defaults to inactive - use ActivateCouponCommand to activate
         };
 
         _context.Coupons.Add(coupon);

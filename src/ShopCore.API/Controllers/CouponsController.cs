@@ -103,6 +103,7 @@ public class CouponsController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<ActionResult<CouponDto>> UpdateCoupon(int id, [FromBody] UpdateCouponRequest request)
     {
+        // IsActive is controlled via ActivateCouponCommand/DeactivateCouponCommand
         var command = new UpdateCouponCommand(
             id,
             request.Code,
@@ -112,8 +113,7 @@ public class CouponsController : ControllerBase
             request.MaxDiscountAmount,
             request.UsageLimit,
             request.StartDate,
-            request.EndDate,
-            request.IsActive);
+            request.EndDate);
         var coupon = await _mediator.Send(command);
         return Ok(coupon);
     }

@@ -42,7 +42,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
                 throw new NotFoundException("Category", request.CategoryId);
         }
 
-        // 4. Update fields
+        // 4. Update fields (Status and IsFeatured are controlled via separate commands)
         product.Name = request.Name;
         product.Slug = request.Slug;
         product.Description = request.Description;
@@ -57,8 +57,8 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         product.Weight = request.Weight;
         product.WeightUnit = request.WeightUnit;
         product.Dimensions = request.Dimensions;
-        product.Status = request.Status;
-        product.IsFeatured = request.IsFeatured;
+        // Note: Status is changed via UpdateProductStatusCommand
+        // Note: IsFeatured is changed via FeatureProductCommand (admin only)
         product.IsSubscriptionAvailable = request.IsSubscriptionAvailable;
         product.SubscriptionDiscount = request.SubscriptionDiscount;
         product.MetaTitle = request.MetaTitle;

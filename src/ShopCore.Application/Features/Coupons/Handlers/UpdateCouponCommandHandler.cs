@@ -52,7 +52,7 @@ public class UpdateCouponCommandHandler : IRequestHandler<UpdateCouponCommand, C
         coupon.ValidFrom = request.StartDate ?? coupon.ValidFrom;
         coupon.ValidUntil = request.EndDate ?? coupon.ValidUntil;
         coupon.UsageLimit = request.UsageLimit;
-        coupon.IsActive = request.IsActive;
+        // Note: IsActive is controlled via ActivateCouponCommand/DeactivateCouponCommand
 
         await _context.SaveChangesAsync(ct);
 

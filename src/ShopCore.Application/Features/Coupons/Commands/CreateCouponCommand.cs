@@ -2,6 +2,7 @@ using ShopCore.Application.Coupons.DTOs;
 
 namespace ShopCore.Application.Coupons.Commands.CreateCoupon;
 
+// Note: IsActive defaults to false - use ActivateCouponCommand to activate
 public record CreateCouponCommand(
     string Code,
     string? Description,
@@ -13,6 +14,5 @@ public record CreateCouponCommand(
     DateTime ValidFrom,
     DateTime ValidUntil,
     int? UsageLimit,
-    int? UsageLimitPerUser,
-    bool IsActive
+    int? UsageLimitPerUser
 ) : IRequest<CouponDto>;

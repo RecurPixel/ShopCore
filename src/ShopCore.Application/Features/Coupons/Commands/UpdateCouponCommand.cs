@@ -2,6 +2,7 @@ using ShopCore.Application.Coupons.DTOs;
 
 namespace ShopCore.Application.Coupons.Commands.UpdateCoupon;
 
+// Note: IsActive is controlled via ActivateCouponCommand/DeactivateCouponCommand
 public record UpdateCouponCommand(
     int Id,
     string Code,
@@ -11,5 +12,4 @@ public record UpdateCouponCommand(
     decimal? MaxDiscountAmount,
     int? UsageLimit,
     DateTime? StartDate,
-    DateTime? EndDate,
-    bool IsActive) : IRequest<CouponDto>;
+    DateTime? EndDate) : IRequest<CouponDto>;

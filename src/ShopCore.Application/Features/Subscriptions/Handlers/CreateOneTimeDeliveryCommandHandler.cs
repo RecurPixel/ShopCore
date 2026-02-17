@@ -24,10 +24,6 @@ public class CreateOneTimeDeliveryCommandHandler
         var userId = _currentUserService.UserId
             ?? throw new UnauthorizedAccessException("User not authenticated");
 
-        var vendor = await _context.VendorProfiles
-            .FirstOrDefaultAsync(v => v.Id == request.VendorId, cancellationToken)
-            ?? throw new NotFoundException(nameof(VendorProfile), request.VendorId);
-
         var address = await _context.Addresses
             .FirstOrDefaultAsync(a => a.Id == request.DeliveryAddressId && a.UserId == userId, cancellationToken)
             ?? throw new NotFoundException(nameof(Address), request.DeliveryAddressId);
@@ -37,22 +33,33 @@ public class CreateOneTimeDeliveryCommandHandler
             throw new InvalidOperationException("Delivery date must be in the future");
         }
 
-        // Get products and calculate total
+        // Get products and derive vendor from them
         var productIds = request.Items.Select(i => i.ProductId).ToList();
         var products = await _context.Products
-            .Where(p => productIds.Contains(p.Id) && p.VendorId == request.VendorId)
+            .Include(p => p.Vendor)
+            .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
             .ToListAsync(cancellationToken);
 
         if (products.Count != productIds.Count)
         {
-            throw new NotFoundException("Some products were not found for this vendor");
+            throw new NotFoundException("Some products were not found");
         }
+
+        // Verify all products are from the same vendor
+        var vendorIds = products.Select(p => p.VendorId).Distinct().ToList();
+        if (vendorIds.Count > 1)
+        {
+            throw new ValidationException("All products must be from the same vendor");
+        }
+
+        var vendorId = vendorIds.First();
+        var vendor = products.First().Vendor;
 
         // Create one-time subscription
         var subscription = new Subscription
         {
             UserId = userId,
-            VendorId = request.VendorId,
+            VendorId = vendorId,
             DeliveryAddressId = request.DeliveryAddressId,
             SubscriptionNumber = GenerateSubscriptionNumber(),
             Frequency = SubscriptionFrequency.Custom,

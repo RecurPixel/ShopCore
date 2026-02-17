@@ -39,7 +39,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
         // 4. Generate email verification token
         var verificationToken = Guid.NewGuid().ToString();
 
-        // 5. Create user
+        // 5. Create user (Role defaults to Customer, upgraded to Vendor when vendor profile is created/approved)
         var user = new User
         {
             Email = request.Email.ToLowerInvariant(),
@@ -47,7 +47,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
             FirstName = request.FirstName,
             LastName = request.LastName,
             PhoneNumber = request.PhoneNumber,
-            Role = request.Role,
+            Role = UserRole.Customer,
             IsEmailVerified = false,
             EmailVerificationToken = verificationToken,
             EmailVerificationTokenExpiry = _dateTime.UtcNow.AddHours(24),

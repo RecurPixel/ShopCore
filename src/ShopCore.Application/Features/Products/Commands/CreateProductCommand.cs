@@ -2,6 +2,8 @@ using ShopCore.Application.Products.DTOs;
 
 namespace ShopCore.Application.Products.Commands.CreateProduct;
 
+// Note: Status defaults to Draft (use UpdateProductStatusCommand to change)
+// Note: IsFeatured defaults to false (use FeatureProductCommand - admin only)
 public record CreateProductCommand(
     string Name,
     string Slug,
@@ -17,8 +19,6 @@ public record CreateProductCommand(
     decimal? Weight,
     string? WeightUnit,
     string? Dimensions,
-    ProductStatus Status,
-    bool IsFeatured,
     bool IsSubscriptionAvailable,
     decimal? SubscriptionDiscount,
     string? MetaTitle,

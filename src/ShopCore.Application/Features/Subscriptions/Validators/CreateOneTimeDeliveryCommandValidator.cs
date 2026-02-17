@@ -6,9 +6,7 @@ public class CreateOneTimeDeliveryCommandValidator : AbstractValidator<CreateOne
 {
     public CreateOneTimeDeliveryCommandValidator()
     {
-        RuleFor(x => x.VendorId)
-            .GreaterThan(0)
-            .WithMessage("Vendor ID is required");
+        // VendorId is derived from products in the handler
 
         RuleFor(x => x.DeliveryAddressId)
             .GreaterThan(0)

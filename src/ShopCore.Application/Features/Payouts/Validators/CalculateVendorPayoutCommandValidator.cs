@@ -6,9 +6,11 @@ public class CalculateVendorPayoutCommandValidator : AbstractValidator<Calculate
 {
     public CalculateVendorPayoutCommandValidator()
     {
+        // VendorId is optional - if not provided, handler uses auth context
         RuleFor(x => x.VendorId)
             .GreaterThan(0)
-            .WithMessage("Vendor ID is required");
+            .When(x => x.VendorId.HasValue)
+            .WithMessage("Vendor ID must be greater than 0 if provided");
 
         RuleFor(x => x.FromDate)
             .LessThanOrEqualTo(x => x.ToDate)

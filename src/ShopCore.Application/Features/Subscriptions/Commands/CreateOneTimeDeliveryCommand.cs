@@ -2,8 +2,8 @@ using ShopCore.Application.Subscriptions.DTOs;
 
 namespace ShopCore.Application.Subscriptions.Commands.CreateOneTimeDelivery;
 
+// Note: VendorId is derived from the products - all products must be from the same vendor
 public record CreateOneTimeDeliveryCommand(
-    int VendorId,
     int DeliveryAddressId,
     List<OrderItemInput> Items,
     DateTime DeliveryDate,

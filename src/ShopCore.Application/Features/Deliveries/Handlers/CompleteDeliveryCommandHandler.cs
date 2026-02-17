@@ -62,13 +62,15 @@ public class CompleteDeliveryCommandHandler : IRequestHandler<CompleteDeliveryCo
         delivery.CustomerSignatureUrl = request.CustomerSignatureUrl;
         delivery.DeliveryNotes = request.DeliveryNotes;
 
-        if (request.PaymentMethod.HasValue)
+        // Handle payment based on existing payment method (not user-provided)
+        // For COD deliveries, mark as paid when delivery is completed
+        if (delivery.PaymentMethod == PaymentMethod.CashOnDelivery && delivery.PaymentStatus != PaymentStatus.Paid)
         {
-            delivery.PaymentMethod = request.PaymentMethod.Value;
-            delivery.PaymentTransactionId = request.PaymentTransactionId;
+            delivery.PaymentTransactionId = request.CollectedPaymentReference;
             delivery.PaidAt = DateTime.UtcNow;
             delivery.PaymentStatus = PaymentStatus.Paid;
         }
+        // For prepaid deliveries, payment is handled via payment gateway callbacks
 
         // Update subscription statistics
         delivery.Subscription.CompletedDeliveries++;

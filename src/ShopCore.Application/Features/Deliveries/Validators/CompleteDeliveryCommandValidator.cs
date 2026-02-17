@@ -10,15 +10,10 @@ public class CompleteDeliveryCommandValidator : AbstractValidator<CompleteDelive
             .GreaterThan(0)
             .WithMessage("Delivery ID is required");
 
-        RuleFor(x => x.PaymentMethod)
-            .IsInEnum()
-            .When(x => x.PaymentMethod.HasValue)
-            .WithMessage("Invalid payment method");
-
-        RuleFor(x => x.PaymentTransactionId)
+        RuleFor(x => x.CollectedPaymentReference)
             .MaximumLength(100)
-            .When(x => !string.IsNullOrEmpty(x.PaymentTransactionId))
-            .WithMessage("Payment transaction ID cannot exceed 100 characters");
+            .When(x => !string.IsNullOrEmpty(x.CollectedPaymentReference))
+            .WithMessage("Collected payment reference cannot exceed 100 characters");
 
         RuleFor(x => x.DeliveryNotes)
             .MaximumLength(500)
