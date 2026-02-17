@@ -67,6 +67,9 @@ public static class DependencyInjection
         services.Configure<PaymentGatewayOptions>(
             configuration.GetSection(PaymentGatewayOptions.SectionName));
 
+        // Register HttpClient for Razorpay
+        services.AddHttpClient("Razorpay");
+
         // Register all gateway implementations
         services.AddScoped<IPaymentGateway, RazorpayGateway>();
         services.AddScoped<IPaymentGateway, StripeGateway>();

@@ -1,6 +1,9 @@
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 using ShopCore.Application.Common.Models;
 using ShopCore.Domain.Enums;
@@ -8,15 +11,23 @@ using ShopCore.Domain.Enums;
 namespace ShopCore.Infrastructure.PaymentGateways.Providers;
 
 /// <summary>
-/// Razorpay payment gateway implementation
+/// Razorpay payment gateway implementation using REST API
 /// </summary>
 public class RazorpayGateway : BasePaymentGateway
 {
     private readonly RazorpayOptions _options;
+    private readonly HttpClient _httpClient;
+    private const string BaseUrl = "https://api.razorpay.com/v1";
 
-    public RazorpayGateway(IOptions<PaymentGatewayOptions> options)
+    public RazorpayGateway(IOptions<PaymentGatewayOptions> options, IHttpClientFactory httpClientFactory)
     {
         _options = options.Value.Razorpay;
+        _httpClient = httpClientFactory.CreateClient("Razorpay");
+
+        // Set up Basic Auth
+        var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_options.KeyId}:{_options.KeySecret}"));
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+        _httpClient.BaseAddress = new Uri(BaseUrl);
     }
 
     public override PaymentGateway GatewayType => PaymentGateway.Razorpay;
@@ -24,44 +35,85 @@ public class RazorpayGateway : BasePaymentGateway
     public override string Description => "Pay with UPI, Cards, Net Banking, or Wallets";
 
     public override IReadOnlyCollection<PaymentMethod> SupportedMethods =>
-        new[] { PaymentMethod.Card, PaymentMethod.UPI, PaymentMethod.NetBanking, PaymentMethod.Wallet };
+        [PaymentMethod.Card, PaymentMethod.UPI, PaymentMethod.NetBanking, PaymentMethod.Wallet];
 
     public override async Task<CreatePaymentResult> CreatePaymentAsync(
         CreatePaymentRequest request, CancellationToken ct = default)
     {
-        // TODO: Implement actual Razorpay API integration
-        // POST https://api.razorpay.com/v1/orders
-        await Task.CompletedTask;
-
-        var orderId = GenerateOrderId("order");
-        var amountInPaise = (int)(request.Amount * 100);
-
-        return new CreatePaymentResult
+        try
         {
-            Success = true,
-            GatewayOrderId = orderId,
-            Amount = request.Amount,
-            Currency = request.Currency,
-            Gateway = PaymentGateway.Razorpay,
-            ClientData = new Dictionary<string, string>
+            var amountInPaise = (int)(request.Amount * 100);
+            var receipt = $"{request.ReferenceType}_{request.ReferenceId}";
+
+            var orderRequest = new RazorpayOrderRequest
             {
-                ["key_id"] = _options.KeyId,
-                ["order_id"] = orderId,
-                ["amount"] = amountInPaise.ToString(),
-                ["currency"] = request.Currency,
-                ["name"] = request.CustomerName ?? string.Empty,
-                ["description"] = request.Description ?? $"Payment for {request.ReferenceType} #{request.ReferenceId}"
-            },
-            ReferenceId = request.ReferenceId,
-            ReferenceType = request.ReferenceType
-        };
+                Amount = amountInPaise,
+                Currency = request.Currency,
+                Receipt = receipt,
+                Notes = new Dictionary<string, string>
+                {
+                    ["reference_id"] = request.ReferenceId.ToString(),
+                    ["reference_type"] = request.ReferenceType.ToString()
+                }
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("/v1/orders", orderRequest, ct);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync(ct);
+                return new CreatePaymentResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Razorpay API error: {errorContent}",
+                    Gateway = PaymentGateway.Razorpay,
+                    ReferenceId = request.ReferenceId,
+                    ReferenceType = request.ReferenceType
+                };
+            }
+
+            var order = await response.Content.ReadFromJsonAsync<RazorpayOrderResponse>(ct);
+            var orderId = order!.Id;
+
+            return new CreatePaymentResult
+            {
+                Success = true,
+                GatewayOrderId = orderId,
+                Amount = request.Amount,
+                Currency = request.Currency,
+                Gateway = PaymentGateway.Razorpay,
+                ClientData = new Dictionary<string, string>
+                {
+                    ["key_id"] = _options.KeyId,
+                    ["order_id"] = orderId,
+                    ["amount"] = amountInPaise.ToString(),
+                    ["currency"] = request.Currency,
+                    ["name"] = request.CustomerName ?? string.Empty,
+                    ["description"] = request.Description ?? $"Payment for {request.ReferenceType} #{request.ReferenceId}",
+                    ["prefill_email"] = request.CustomerEmail ?? string.Empty,
+                    ["prefill_contact"] = request.CustomerPhone ?? string.Empty
+                },
+                ReferenceId = request.ReferenceId,
+                ReferenceType = request.ReferenceType
+            };
+        }
+        catch (Exception ex)
+        {
+            return new CreatePaymentResult
+            {
+                Success = false,
+                ErrorMessage = $"Failed to create Razorpay order: {ex.Message}",
+                Gateway = PaymentGateway.Razorpay,
+                ReferenceId = request.ReferenceId,
+                ReferenceType = request.ReferenceType
+            };
+        }
     }
 
     public override Task<VerifyPaymentResult> VerifyPaymentAsync(
         VerifyPaymentRequest request, CancellationToken ct = default)
     {
-        // Verify signature: HMAC-SHA256(order_id + "|" + payment_id, secret)
-        var isValid = VerifySignature(
+        var isValid = VerifyPaymentSignature(
             request.GatewayOrderId,
             request.GatewayPaymentId,
             request.Signature ?? string.Empty);
@@ -75,37 +127,127 @@ public class RazorpayGateway : BasePaymentGateway
         });
     }
 
-    public override Task<PaymentStatusResult> GetPaymentStatusAsync(
+    public override async Task<PaymentStatusResult> GetPaymentStatusAsync(
         string gatewayPaymentId, CancellationToken ct = default)
     {
-        // TODO: Implement actual Razorpay API call
-        // GET https://api.razorpay.com/v1/payments/{paymentId}
-        return Task.FromResult(new PaymentStatusResult
+        try
         {
-            Success = true,
-            GatewayPaymentId = gatewayPaymentId,
-            Status = PaymentStatus.Paid,
-            Amount = 0,
-            Method = PaymentMethod.Online,
-            CreatedAt = DateTime.UtcNow,
-            CompletedAt = DateTime.UtcNow
-        });
+            var response = await _httpClient.GetAsync($"/v1/payments/{gatewayPaymentId}", ct);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync(ct);
+                return new PaymentStatusResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Failed to fetch payment: {errorContent}",
+                    GatewayPaymentId = gatewayPaymentId,
+                    Status = PaymentStatus.Pending
+                };
+            }
+
+            var payment = await response.Content.ReadFromJsonAsync<RazorpayPaymentResponse>(ct);
+
+            var status = payment!.Status switch
+            {
+                "captured" => PaymentStatus.Paid,
+                "authorized" => PaymentStatus.Pending,
+                "failed" => PaymentStatus.Failed,
+                "refunded" => PaymentStatus.Refunded,
+                _ => PaymentStatus.Pending
+            };
+
+            return new PaymentStatusResult
+            {
+                Success = true,
+                GatewayPaymentId = gatewayPaymentId,
+                Status = status,
+                Amount = payment.Amount / 100m,
+                Method = ParsePaymentMethod(payment.Method),
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(payment.CreatedAt).UtcDateTime,
+                CompletedAt = status == PaymentStatus.Paid
+                    ? DateTimeOffset.FromUnixTimeSeconds(payment.CreatedAt).UtcDateTime
+                    : null
+            };
+        }
+        catch (Exception ex)
+        {
+            return new PaymentStatusResult
+            {
+                Success = false,
+                ErrorMessage = $"Failed to fetch payment status: {ex.Message}",
+                GatewayPaymentId = gatewayPaymentId,
+                Status = PaymentStatus.Pending
+            };
+        }
     }
 
-    public override Task<RefundResult> CreateRefundAsync(
+    public override async Task<RefundResult> CreateRefundAsync(
         CreateRefundRequest request, CancellationToken ct = default)
     {
-        // TODO: Implement actual Razorpay refund API
-        // POST https://api.razorpay.com/v1/payments/{paymentId}/refund
-        return Task.FromResult(new RefundResult
+        try
         {
-            Success = true,
-            RefundId = GenerateOrderId("rfnd"),
-            GatewayPaymentId = request.GatewayPaymentId,
-            Amount = request.Amount,
-            Status = RefundStatus.Completed,
-            CreatedAt = DateTime.UtcNow
-        });
+            var amountInPaise = (int)(request.Amount * 100);
+
+            var refundRequest = new RazorpayRefundRequest
+            {
+                Amount = amountInPaise,
+                Notes = !string.IsNullOrEmpty(request.Reason)
+                    ? new Dictionary<string, string> { ["reason"] = request.Reason }
+                    : null
+            };
+
+            var response = await _httpClient.PostAsJsonAsync(
+                $"/v1/payments/{request.GatewayPaymentId}/refund",
+                refundRequest,
+                ct);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync(ct);
+                return new RefundResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Refund failed: {errorContent}",
+                    GatewayPaymentId = request.GatewayPaymentId,
+                    Amount = request.Amount,
+                    Status = RefundStatus.Failed,
+                    CreatedAt = DateTime.UtcNow
+                };
+            }
+
+            var refund = await response.Content.ReadFromJsonAsync<RazorpayRefundResponse>(ct);
+
+            var refundStatus = refund!.Status switch
+            {
+                "processed" => RefundStatus.Completed,
+                "pending" => RefundStatus.Pending,
+                "failed" => RefundStatus.Failed,
+                _ => RefundStatus.Processing
+            };
+
+            return new RefundResult
+            {
+                Success = true,
+                RefundId = refund.Id,
+                GatewayPaymentId = request.GatewayPaymentId,
+                Amount = request.Amount,
+                Status = refundStatus,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+        catch (Exception ex)
+        {
+            return new RefundResult
+            {
+                Success = false,
+                ErrorMessage = $"Failed to create refund: {ex.Message}",
+                GatewayPaymentId = request.GatewayPaymentId,
+                Amount = request.Amount,
+                Status = RefundStatus.Failed,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
     }
 
     public override bool VerifyWebhookSignature(string payload, string signature)
@@ -122,7 +264,6 @@ public class RazorpayGateway : BasePaymentGateway
 
     public override PaymentWebhookEvent ParseWebhookPayload(string payload)
     {
-        // TODO: Parse actual Razorpay webhook JSON
         var json = JsonDocument.Parse(payload);
         var root = json.RootElement;
 
@@ -143,7 +284,7 @@ public class RazorpayGateway : BasePaymentGateway
         };
     }
 
-    private bool VerifySignature(string orderId, string paymentId, string signature)
+    private bool VerifyPaymentSignature(string orderId, string paymentId, string signature)
     {
         if (string.IsNullOrEmpty(_options.KeySecret))
             return true; // Skip verification in dev mode
@@ -195,4 +336,83 @@ public class RazorpayGateway : BasePaymentGateway
 
         return current.TryGetDecimal(out var value) ? value : 0;
     }
+
+    #region Razorpay API Models
+
+    private sealed class RazorpayOrderRequest
+    {
+        [JsonPropertyName("amount")]
+        public int Amount { get; set; }
+
+        [JsonPropertyName("currency")]
+        public string Currency { get; set; } = "INR";
+
+        [JsonPropertyName("receipt")]
+        public string? Receipt { get; set; }
+
+        [JsonPropertyName("notes")]
+        public Dictionary<string, string>? Notes { get; set; }
+    }
+
+    private sealed class RazorpayOrderResponse
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
+        [JsonPropertyName("amount")]
+        public int Amount { get; set; }
+
+        [JsonPropertyName("currency")]
+        public string Currency { get; set; } = string.Empty;
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = string.Empty;
+    }
+
+    private sealed class RazorpayPaymentResponse
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
+        [JsonPropertyName("amount")]
+        public int Amount { get; set; }
+
+        [JsonPropertyName("currency")]
+        public string Currency { get; set; } = string.Empty;
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = string.Empty;
+
+        [JsonPropertyName("method")]
+        public string? Method { get; set; }
+
+        [JsonPropertyName("order_id")]
+        public string? OrderId { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public long CreatedAt { get; set; }
+    }
+
+    private sealed class RazorpayRefundRequest
+    {
+        [JsonPropertyName("amount")]
+        public int Amount { get; set; }
+
+        [JsonPropertyName("notes")]
+        public Dictionary<string, string>? Notes { get; set; }
+    }
+
+    private sealed class RazorpayRefundResponse
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; } = string.Empty;
+
+        [JsonPropertyName("amount")]
+        public int Amount { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = string.Empty;
+    }
+
+    #endregion
 }

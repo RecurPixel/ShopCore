@@ -21,12 +21,7 @@ public class ExceptionHandlingMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Temporarily let Swagger errors bubble up unhandled so you can see the inner exception
-        if (context.Request.Path.StartsWithSegments("/swagger"))
-        {
-            await _next(context);
-            return;
-        }
+
         try
         {
             await _next(context);
