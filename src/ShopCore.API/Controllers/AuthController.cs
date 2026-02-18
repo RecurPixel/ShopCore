@@ -1,4 +1,5 @@
-﻿using ShopCore.Application.Auth.Commands.ForgotPassword;
+﻿using Microsoft.AspNetCore.RateLimiting;
+using ShopCore.Application.Auth.Commands.ForgotPassword;
 using ShopCore.Application.Auth.Commands.Login;
 using ShopCore.Application.Auth.Commands.Logout;
 using ShopCore.Application.Auth.Commands.RefreshToken;
@@ -11,6 +12,7 @@ namespace ShopCore.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/auth")]
+[EnableRateLimiting("strict")]
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;

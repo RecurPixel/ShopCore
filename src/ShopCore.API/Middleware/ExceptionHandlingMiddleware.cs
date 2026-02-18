@@ -37,17 +37,31 @@ public class ExceptionHandlingMiddleware
     {
         context.Response.ContentType = "application/json";
 
-        var problemDetails = exception switch
+        var options = new JsonSerializerOptions
         {
-            ValidationException validationEx => new ValidationProblemDetails(validationEx.Errors)
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        // Handle ValidationException separately to preserve errors dictionary
+        if (exception is ValidationException validationEx)
+        {
+            var validationProblem = new ValidationProblemDetails(validationEx.Errors)
             {
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
                 Title = "One or more validation errors occurred.",
                 Status = StatusCodes.Status400BadRequest,
-                Detail = validationEx.Message,
                 Instance = context.Request.Path
-            },
+            };
+            validationProblem.Extensions["traceId"] = context.TraceIdentifier;
 
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            var validationJson = JsonSerializer.Serialize(validationProblem, options);
+            await context.Response.WriteAsync(validationJson);
+            return;
+        }
+
+        var problemDetails = exception switch
+        {
             NotFoundException notFoundEx => new ProblemDetails
             {
                 Type = "https://tools.ietf.org/html/rfc7231#section-6.5.4",
@@ -103,21 +117,14 @@ public class ExceptionHandlingMiddleware
             }
         };
 
-        // Add TraceId for debugging
         problemDetails.Extensions["traceId"] = context.TraceIdentifier;
 
-        // Add stack trace in development
-        if (_environment.IsDevelopment() && exception is not ValidationException)
+        if (_environment.IsDevelopment())
         {
             problemDetails.Extensions["stackTrace"] = exception.StackTrace;
         }
 
         context.Response.StatusCode = problemDetails.Status ?? StatusCodes.Status500InternalServerError;
-
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
 
         var json = JsonSerializer.Serialize(problemDetails, options);
         await context.Response.WriteAsync(json);
