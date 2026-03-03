@@ -7,15 +7,18 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Ord
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
     private readonly IDateTime _dateTime;
+    private readonly INotificationService _notificationService;
 
     public CancelOrderCommandHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUser,
-        IDateTime dateTime)
+        IDateTime dateTime,
+        INotificationService notificationService)
     {
         _context = context;
         _currentUser = currentUser;
         _dateTime = dateTime;
+        _notificationService = notificationService;
     }
 
     public async Task<OrderDto> Handle(CancelOrderCommand request, CancellationToken ct)
@@ -68,6 +71,11 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Ord
         });
 
         await _context.SaveChangesAsync(ct);
+
+        // Notify order owner
+        var user = await _context.Users.FindAsync(new object[] { order.UserId }, ct);
+        if (user != null)
+            await _notificationService.SendOrderCancelledAsync(user, order.Id, order.OrderNumber, request.Reason);
 
         return new OrderDto
         {

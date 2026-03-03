@@ -8,15 +8,18 @@ public class ProcessVendorPayoutCommandHandler
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
     private readonly IDateTime _dateTime;
+    private readonly INotificationService _notificationService;
 
     public ProcessVendorPayoutCommandHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUser,
-        IDateTime dateTime)
+        IDateTime dateTime,
+        INotificationService notificationService)
     {
         _context = context;
         _currentUser = currentUser;
         _dateTime = dateTime;
+        _notificationService = notificationService;
     }
 
     public async Task<VendorPayoutDto> Handle(ProcessVendorPayoutCommand request, CancellationToken ct)
@@ -26,6 +29,7 @@ public class ProcessVendorPayoutCommandHandler
 
         var payout = await _context.VendorPayouts
             .Include(p => p.Vendor)
+                .ThenInclude(v => v.User)
             .FirstOrDefaultAsync(p => p.Id == request.PayoutId, ct);
 
         if (payout == null)
@@ -38,6 +42,8 @@ public class ProcessVendorPayoutCommandHandler
         payout.ProcessedBy = _currentUser.UserId;
 
         await _context.SaveChangesAsync(ct);
+
+        await _notificationService.SendPayoutProcessedAsync(payout.Vendor.User, payout.NetPayout);
 
         return new VendorPayoutDto
         {

@@ -4,15 +4,15 @@ namespace ShopCore.Application.Auth.Commands.ResendVerification;
 
 public class ResendVerificationCommandHandler : IRequestHandler<ResendVerificationCommand>
 {
-    private readonly IEmailService _emailService;
     private readonly IApplicationDbContext _context;
+    private readonly INotificationService _notificationService;
 
     public ResendVerificationCommandHandler(
         IApplicationDbContext context,
-        IEmailService emailService)
+        INotificationService notificationService)
     {
         _context = context;
-        _emailService = emailService;
+        _notificationService = notificationService;
     }
 
     public async Task Handle(ResendVerificationCommand request, CancellationToken cancellationToken)
@@ -29,12 +29,7 @@ public class ResendVerificationCommandHandler : IRequestHandler<ResendVerificati
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        // Send verification email
         var verifyUrl = "https://shopcore.com/verify-email";
-        await _emailService.SendEmailVerificationAsync(
-            user.Email,
-            user.EmailVerificationToken,
-            verifyUrl
-        );
+        await _notificationService.SendEmailVerificationAsync(user, user.EmailVerificationToken!, verifyUrl);
     }
 }

@@ -6,18 +6,18 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
 {
     private readonly IApplicationDbContext _context;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly IEmailService _emailService;
+    private readonly INotificationService _notificationService;
     private readonly IDateTime _dateTime;
 
     public RegisterUserCommandHandler(
         IApplicationDbContext context,
         IPasswordHasher passwordHasher,
-        IEmailService emailService,
+        INotificationService notificationService,
         IDateTime dateTime)
     {
         _context = context;
         _passwordHasher = passwordHasher;
-        _emailService = emailService;
+        _notificationService = notificationService;
         _dateTime = dateTime;
     }
 
@@ -57,14 +57,10 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
         _context.Users.Add(user);
         await _context.SaveChangesAsync(ct);
 
-        // 6. Send verification email (fire and forget)
-        await _context.SaveChangesAsync(ct);
-
-        // Send welcome email
-        await _emailService.SendWelcomeEmailAsync(
-            user.Email,
-            user.FullName
-        );
+        // 6. Send welcome notification (fire and forget — failures are logged internally)
+        var verifyUrl = "https://shopcore.com/verify-email";
+        await _notificationService.SendWelcomeAsync(user);
+        await _notificationService.SendEmailVerificationAsync(user, verificationToken, verifyUrl);
 
         return new RegisterResponse
         {

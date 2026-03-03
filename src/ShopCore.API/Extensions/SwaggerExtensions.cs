@@ -1,6 +1,8 @@
 using Microsoft.OpenApi;
+using Scalar.AspNetCore;
 using ShopCore.API.Filters;
 using Swashbuckle.AspNetCore.SwaggerGen;
+
 
 namespace ShopCore.API.Extensions;
 
@@ -45,6 +47,7 @@ public static class SwaggerExtensions
             app.MapOpenApi();
             app.UseSwagger();
             app.UseSwaggerUI();
+            app.MapScalarApiReference();
         }
 
         return app;

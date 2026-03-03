@@ -44,5 +44,9 @@ public interface IApplicationDbContext
     DbSet<VendorServiceArea> VendorServiceAreas { get; }
     DbSet<CustomerInvitation> CustomerInvitations { get; }
 
+    // Notifications
+    DbSet<Notification> Notifications { get; }
+    DbSet<NotificationLog> NotificationLogs { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -4,13 +4,16 @@ public class ApproveVendorCommandHandler : IRequestHandler<ApproveVendorCommand>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
+    private readonly INotificationService _notificationService;
 
     public ApproveVendorCommandHandler(
         IApplicationDbContext context,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        INotificationService notificationService)
     {
         _context = context;
         _currentUser = currentUser;
+        _notificationService = notificationService;
     }
 
     public async Task Handle(ApproveVendorCommand request, CancellationToken ct)
@@ -36,5 +39,7 @@ public class ApproveVendorCommandHandler : IRequestHandler<ApproveVendorCommand>
         vendor.User.Role = UserRole.Vendor;
 
         await _context.SaveChangesAsync(ct);
+
+        await _notificationService.SendVendorApprovedAsync(vendor.User);
     }
 }

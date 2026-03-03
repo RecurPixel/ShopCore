@@ -4,13 +4,16 @@ public class SuspendVendorCommandHandler : IRequestHandler<SuspendVendorCommand>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
+    private readonly INotificationService _notificationService;
 
     public SuspendVendorCommandHandler(
         IApplicationDbContext context,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        INotificationService notificationService)
     {
         _context = context;
         _currentUser = currentUser;
+        _notificationService = notificationService;
     }
 
     public async Task Handle(SuspendVendorCommand request, CancellationToken ct)
@@ -20,6 +23,7 @@ public class SuspendVendorCommandHandler : IRequestHandler<SuspendVendorCommand>
 
         var vendor = await _context.VendorProfiles
             .Include(v => v.Products)
+            .Include(v => v.User)
             .FirstOrDefaultAsync(v => v.Id == request.VendorId, ct);
 
         if (vendor == null)
@@ -37,5 +41,7 @@ public class SuspendVendorCommandHandler : IRequestHandler<SuspendVendorCommand>
         }
 
         await _context.SaveChangesAsync(ct);
+
+        await _notificationService.SendVendorSuspendedAsync(vendor.User);
     }
 }

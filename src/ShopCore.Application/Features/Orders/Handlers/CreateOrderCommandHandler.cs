@@ -8,17 +8,20 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
     private readonly ICurrentUserService _currentUser;
     private readonly IDateTime _dateTime;
     private readonly ITaxService _taxService;
+    private readonly INotificationService _notificationService;
 
     public CreateOrderCommandHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUser,
         IDateTime dateTime,
-        ITaxService taxService)
+        ITaxService taxService,
+        INotificationService notificationService)
     {
         _context = context;
         _currentUser = currentUser;
         _dateTime = dateTime;
         _taxService = taxService;
+        _notificationService = notificationService;
     }
 
     public async Task<OrderDto> Handle(CreateOrderCommand request, CancellationToken ct)
@@ -156,7 +159,12 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Ord
 
         await _context.SaveChangesAsync(ct);
 
-        // 11. Return order DTO
+        // 11. Notify user
+        var notifyUser = await _context.Users.FindAsync(new object[] { _currentUser.RequiredUserId }, ct);
+        if (notifyUser != null)
+            await _notificationService.SendOrderPlacedAsync(notifyUser, order.Id, order.OrderNumber, order.Total);
+
+        // 12. Return order DTO
         return await GetOrderDtoAsync(order.Id, ct);
     }
 

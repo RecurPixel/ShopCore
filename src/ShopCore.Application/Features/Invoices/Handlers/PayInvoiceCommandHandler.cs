@@ -7,15 +7,18 @@ public class PayInvoiceCommandHandler : IRequestHandler<PayInvoiceCommand, Invoi
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
     private readonly IDateTime _dateTime;
+    private readonly INotificationService _notificationService;
 
     public PayInvoiceCommandHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUser,
-        IDateTime dateTime)
+        IDateTime dateTime,
+        INotificationService notificationService)
     {
         _context = context;
         _currentUser = currentUser;
         _dateTime = dateTime;
+        _notificationService = notificationService;
     }
 
     public async Task<InvoiceDto> Handle(PayInvoiceCommand request, CancellationToken ct)
@@ -64,6 +67,10 @@ public class PayInvoiceCommandHandler : IRequestHandler<PayInvoiceCommand, Invoi
         }
 
         await _context.SaveChangesAsync(ct);
+
+        var user = await _context.Users.FindAsync(new object[] { invoice.UserId }, ct);
+        if (user != null)
+            await _notificationService.SendInvoicePaidAsync(user, invoice.InvoiceNumber, invoice.Total);
 
         return new InvoiceDto
         {

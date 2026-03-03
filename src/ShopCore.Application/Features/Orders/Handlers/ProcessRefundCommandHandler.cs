@@ -12,15 +12,18 @@ public class ProcessRefundCommandHandler
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
     private readonly IPaymentGatewayFactory _paymentGatewayFactory;
+    private readonly INotificationService _notificationService;
 
     public ProcessRefundCommandHandler(
         IApplicationDbContext context,
         ICurrentUserService currentUser,
-        IPaymentGatewayFactory paymentGatewayFactory)
+        IPaymentGatewayFactory paymentGatewayFactory,
+        INotificationService notificationService)
     {
         _context = context;
         _currentUser = currentUser;
         _paymentGatewayFactory = paymentGatewayFactory;
+        _notificationService = notificationService;
     }
 
     public async Task<RefundResultDto> Handle(ProcessRefundCommand request, CancellationToken ct)
@@ -74,6 +77,10 @@ public class ProcessRefundCommandHandler
         order.UpdateStatusFromItems();
 
         await _context.SaveChangesAsync(ct);
+
+        var user = await _context.Users.FindAsync(new object[] { order.UserId }, ct);
+        if (user != null)
+            await _notificationService.SendRefundProcessedAsync(user, order.Id, refundAmount);
 
         return new RefundResultDto
         {

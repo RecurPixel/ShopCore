@@ -6,13 +6,16 @@ public class SkipDeliveryCommandHandler : IRequestHandler<SkipDeliveryCommand, D
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
+    private readonly INotificationService _notificationService;
 
     public SkipDeliveryCommandHandler(
         IApplicationDbContext context,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        INotificationService notificationService)
     {
         _context = context;
         _currentUser = currentUser;
+        _notificationService = notificationService;
     }
 
     public async Task<DeliveryDto> Handle(
@@ -47,6 +50,11 @@ public class SkipDeliveryCommandHandler : IRequestHandler<SkipDeliveryCommand, D
 
         await _context.SaveChangesAsync(ct);
 
+        // Notify the customer (not the vendor who may be skipping on their behalf)
+        var user = await _context.Users.FindAsync(new object[] { delivery.Subscription.UserId }, ct);
+        if (user != null)
+            await _notificationService.SendDeliverySkippedAsync(user, delivery.Id);
+
         return MapToDto(delivery, request.Reason);
     }
 
@@ -71,7 +79,6 @@ public class SkipDeliveryCommandHandler : IRequestHandler<SkipDeliveryCommand, D
             SkipReason = skipReason,
             Total = delivery.TotalAmount,
             PaymentMethod = paymentMethod.ToString(),
-            // delivery.PaymentTransactionId,
             Items = delivery.Items.Select(i => new DeliveryItemDto
             {
                 Id = i.Id,

@@ -36,6 +36,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Coupon> Coupons { get; set; }
     public DbSet<VendorServiceArea> VendorServiceAreas { get; set; }
     public DbSet<CustomerInvitation> CustomerInvitations { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+    public DbSet<NotificationLog> NotificationLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -65,6 +67,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.ApplyConfiguration(new VendorPayoutConfiguration());
         modelBuilder.ApplyConfiguration(new VendorServiceAreaConfiguration());
         modelBuilder.ApplyConfiguration(new CustomerInvitationConfiguration());
+        modelBuilder.ApplyConfiguration(new NotificationConfiguration());
+        modelBuilder.ApplyConfiguration(new NotificationLogConfiguration());
 
         // Global query filters (soft delete)
         modelBuilder.Entity<User>().HasQueryFilter(e => !e.IsDeleted);
@@ -83,6 +87,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<VendorPayout>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<WishlistEntity>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Coupon>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<Notification>().HasQueryFilter(e => !e.IsDeleted);
     }
 
     // Override SaveChanges to automatically set timestamps

@@ -2,17 +2,15 @@ namespace ShopCore.Application.Auth.Commands.ForgotPassword;
 
 public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordCommand>
 {
-    private readonly IEmailService _emailService;
-
     private readonly IApplicationDbContext _context;
+    private readonly INotificationService _notificationService;
 
     public ForgotPasswordCommandHandler(
         IApplicationDbContext context,
-        IEmailService emailService
-    )
+        INotificationService notificationService)
     {
         _context = context;
-        _emailService = emailService;
+        _notificationService = notificationService;
     }
 
     public async Task Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
@@ -29,12 +27,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        // Send password reset email
         var resetUrl = "https://shopcore.com/reset-password";
-        await _emailService.SendPasswordResetEmailAsync(
-            user.Email,
-            user.PasswordResetToken,
-            resetUrl
-        );
+        await _notificationService.SendPasswordResetAsync(user, user.PasswordResetToken, resetUrl);
     }
 }
