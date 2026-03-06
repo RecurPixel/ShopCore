@@ -1,7 +1,5 @@
 using Microsoft.Extensions.Logging;
-using RecurPixel.Notify.Core;
-using RecurPixel.Notify.Core.Models;
-using RecurPixel.Notify.Orchestrator.Services;
+using RecurPixel.Notify;
 using ShopCore.Application.Common.Interfaces;
 using ShopCore.Domain.Entities;
 using ShopCore.Domain.Enums;
@@ -255,12 +253,12 @@ public class NotificationService : INotificationService
         });
 
         _logger.LogInformation(
-            "Triggered notification [{EventKey}] for user {UserId}. Success: {Success}",
-            eventKey, user.Id, result.Success);
+            "Triggered notification [{EventKey}] for user {UserId}. AllSucceeded: {AllSucceeded}",
+            eventKey, user.Id, result.AllSucceeded);
 
-        if (!result.Success)
+        if (!result.AllSucceeded)
             _logger.LogWarning(
-                "Notification [{EventKey}] for user {UserId} failed: {Error}",
-                eventKey, user.Id, result.Error);
+                "Notification [{EventKey}] for user {UserId} had failures: {Failures}",
+                eventKey, user.Id, string.Join(", ", result.Failures.Select(f => f.Error)));
     }
 }

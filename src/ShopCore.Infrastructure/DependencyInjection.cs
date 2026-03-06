@@ -2,13 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using RecurPixel.Notify.Core.Channels;
-using RecurPixel.Notify.Core.Extensions;
-using RecurPixel.Notify.Core.Options;
-using RecurPixel.Notify.Email.Smtp;
-using RecurPixel.Notify.InApp;
-using RecurPixel.Notify.Orchestrator.Extensions;
+using RecurPixel.Notify;
 using ShopCore.Application.Common.Interfaces;
+using ShopCore.Domain.Entities;
+using ShopCore.Domain.Enums;
 using ShopCore.Infrastructure.Data;
 using ShopCore.Infrastructure.FileStorage;
 using ShopCore.Infrastructure.Identity;
@@ -62,54 +59,88 @@ public static class DependencyInjection
                 break;
         }
 
-        // Notifications
-        var notifyOptions = configuration.GetSection("Notify").Get<NotifyOptions>() ?? new NotifyOptions();
-        services.AddRecurPixelNotify(notifyOptions);
+        services.AddInAppChannel(opts =>
+        opts.UseHandler<IApplicationDbContext>(async (notification, db) =>
+        {
+            if (!int.TryParse(notification.UserId, out var userId))
+                return new NotifyResult { Success = false, Error = $"Invalid userId in InApp notification: '{notification.UserId}'" };
 
-        // ChannelDispatcher resolves IOptions<NotifyOptions> — bridge the singleton so it
-        // receives the same configured instance (not an empty default from the options framework)
-        services.AddSingleton<IOptions<NotifyOptions>>(Options.Create(notifyOptions));
+            var typeStr = notification.Metadata.TryGetValue("type", out object? t) ? t?.ToString() : null;
+            if (!Enum.TryParse<NotificationType>(typeStr, out var notifType))
+                notifType = NotificationType.System;
 
-        // Register channel adapters based on configuration
-        if (notifyOptions.Email?.Provider == "smtp" && notifyOptions.Email.Smtp is not null)
-            services.AddSmtpChannel(notifyOptions.Email.Smtp);
+            int? referenceId = null;
+            if (notification.Metadata.TryGetValue("referenceId", out var rid) && rid is not null)
+                referenceId = Convert.ToInt32(rid);
 
-        // InApp channel — handler is wired at startup by NotificationDeliveryLogger.
-        // AddInAppChannel() in the NuGet package registers the keyed service as "inapp:inapp"
-        // but ChannelDispatcher resolves simple channels by bare channel name ("inapp"), so
-        // we register manually with the correct key.
-        var inAppOptions = new InAppOptions();
-        services.AddSingleton(Options.Create(inAppOptions));
-        services.AddKeyedSingleton<INotificationChannel, InAppChannel>("inapp");
-        services.AddSingleton(inAppOptions);
+            var referenceType = notification.Metadata.TryGetValue("referenceType", out var rt) ? rt?.ToString() : null;
 
-        services.AddRecurPixelNotifyOrchestrator(o =>
+            await db.Notifications.AddAsync(new ShopCore.Domain.Entities.Notification
+            {
+                UserId = userId,
+                Title = notification.Subject ?? string.Empty,
+                Message = notification.Body,
+                Type = notifType,
+                ReferenceId = referenceId,
+                ReferenceType = referenceType,
+                IsRead = false
+            });
+
+            await db.SaveChangesAsync(CancellationToken.None);
+
+            return new NotifyResult { Success = true };
+        }));
+
+        services.AddRecurPixelNotify(
+        notifyOptions =>
+        {
+            configuration.GetSection("Notify").Bind(notifyOptions);
+
+        },
+        orchestratorOptions =>
         {
             // Auth events
-            o.DefineEvent("auth.welcome",        e => e.UseChannels("email", "inapp"));
-            o.DefineEvent("auth.verify-email",   e => e.UseChannels("email"));
-            o.DefineEvent("auth.password-reset", e => e.UseChannels("email"));
+            orchestratorOptions.DefineEvent("auth.welcome", e => e.UseChannels("email", "inapp", "telegram").WithFallback("telegram"));
+            orchestratorOptions.DefineEvent("auth.verify-email", e => e.UseChannels("email"));
+            orchestratorOptions.DefineEvent("auth.password-reset", e => e.UseChannels("email"));
 
             // Order events
-            o.DefineEvent("order.placed",        e => e.UseChannels("email", "inapp"));
-            o.DefineEvent("order.cancelled",     e => e.UseChannels("email", "inapp"));
-            o.DefineEvent("order.refund",        e => e.UseChannels("email", "inapp"));
+            orchestratorOptions.DefineEvent("order.placed", e => e.UseChannels("email", "inapp"));
+            orchestratorOptions.DefineEvent("order.cancelled", e => e.UseChannels("email", "inapp"));
+            orchestratorOptions.DefineEvent("order.refund", e => e.UseChannels("email", "inapp"));
 
             // Subscription & delivery events
-            o.DefineEvent("subscription.created", e => e.UseChannels("email", "inapp"));
-            o.DefineEvent("delivery.skipped",      e => e.UseChannels("inapp"));
+            orchestratorOptions.DefineEvent("subscription.created", e => e.UseChannels("email", "inapp"));
+            orchestratorOptions.DefineEvent("delivery.skipped", e => e.UseChannels("inapp"));
 
             // Billing events
-            o.DefineEvent("invoice.paid", e => e.UseChannels("email", "inapp"));
+            orchestratorOptions.DefineEvent("invoice.paid", e => e.UseChannels("email", "inapp"));
 
             // Vendor events
-            o.DefineEvent("vendor.approved",  e => e.UseChannels("email", "inapp"));
-            o.DefineEvent("vendor.suspended", e => e.UseChannels("email", "inapp"));
-            o.DefineEvent("vendor.payout",    e => e.UseChannels("email", "inapp"));
+            orchestratorOptions.DefineEvent("vendor.approved", e => e.UseChannels("email", "inapp"));
+            orchestratorOptions.DefineEvent("vendor.suspended", e => e.UseChannels("email", "inapp"));
+            orchestratorOptions.DefineEvent("vendor.payout", e => e.UseChannels("email", "inapp"));
+
+            orchestratorOptions.OnDelivery<IApplicationDbContext>(async (result, db) =>
+            {
+
+                await db.NotificationLogs.AddAsync(new NotificationLog
+                {
+                    Channel = result.Channel,
+                    Provider = result.Provider,
+                    Recipient = result.Recipient ?? "Unknown",
+                    Status = result.Success ? "Sent" : "Failed",
+                    ProviderId = result.ProviderId,
+                    Error = result.Error,
+                    SentAt = result.SentAt
+                });
+
+                await db.SaveChangesAsync(CancellationToken.None);
+            });
         });
 
+
         services.AddScoped<INotificationService, NotificationService>();
-        services.AddHostedService<NotificationDeliveryLogger>();
 
         // Services
         services.AddScoped<ICurrentUserService, CurrentUserService>();
