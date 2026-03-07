@@ -356,7 +356,8 @@ public class PaymentsControllerTests : IntegrationTestBase
         await AuthenticateAsCustomerAsync();
         var product = await DbContext.Products.FirstAsync();
 
-        await Client.PostAsJsonAsync("/api/v1/cart/items", new { productId = product.Id, quantity = 2 });
+        var cartResponse = await Client.PostAsJsonAsync("/api/v1/cart/items", new { productId = product.Id, quantity = 2 });
+        cartResponse.IsSuccessStatusCode.Should().BeTrue($"Cart add failed: {await cartResponse.Content.ReadAsStringAsync()}");
 
         var addressResponse = await Client.PostAsJsonAsync("/api/v1/users/me/addresses", new
         {
@@ -365,21 +366,24 @@ public class PaymentsControllerTests : IntegrationTestBase
             addressLine1 = "123 Test Street",
             city = "Bangalore",
             state = "Karnataka",
-            postalCode = "560001",
+            pincode = "560001",
             country = "India",
             isDefault = true
         });
-
-        var addresses = await Client.GetFromJsonAsync<List<JsonElement>>("/api/v1/users/me/addresses");
-        var addressId = addresses?.FirstOrDefault().GetProperty("id").GetInt32() ?? 1;
+        addressResponse.EnsureSuccessStatusCode();
+        var createdAddress = await addressResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var addressId = createdAddress.GetProperty("id").GetInt32();
 
         var orderResponse = await Client.PostAsJsonAsync("/api/v1/orders", new
         {
             addressId,
-            paymentMethod = "Online",
-            notes = "Razorpay integration test"
+            paymentMethod = (int)PaymentMethod.Online,
+            customerNotes = "Razorpay integration test"
         });
-        orderResponse.StatusCode.Should().BeOneOf(HttpStatusCode.Created, HttpStatusCode.OK);
+        var orderBody = await orderResponse.Content.ReadAsStringAsync();
+        orderResponse.StatusCode.Should().BeOneOf(
+            new[] { HttpStatusCode.Created, HttpStatusCode.OK },
+            because: $"Order creation failed: {orderBody}");
 
         var order = await orderResponse.Content.ReadFromJsonAsync<JsonElement>();
         var orderId = order.GetProperty("id").GetInt32();
@@ -420,14 +424,26 @@ public class PaymentsControllerTests : IntegrationTestBase
 
         await Client.PostAsJsonAsync("/api/v1/cart/items", new { productId = product.Id, quantity = 1 });
 
-        var addresses = await Client.GetFromJsonAsync<List<JsonElement>>("/api/v1/users/me/addresses");
-        var addressId = addresses?.FirstOrDefault().GetProperty("id").GetInt32() ?? 1;
+        var addressResponse = await Client.PostAsJsonAsync("/api/v1/users/me/addresses", new
+        {
+            fullName = "Test Customer",
+            phoneNumber = "9999999999",
+            addressLine1 = "123 Test Street",
+            city = "Bangalore",
+            state = "Karnataka",
+            pincode = "560001",
+            country = "India",
+            isDefault = true
+        });
+        addressResponse.EnsureSuccessStatusCode();
+        var createdAddress = await addressResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var addressId = createdAddress.GetProperty("id").GetInt32();
 
         var orderResponse = await Client.PostAsJsonAsync("/api/v1/orders", new
         {
             addressId,
-            paymentMethod = "Online",
-            notes = "Stripe integration test"
+            paymentMethod = (int)PaymentMethod.Online,
+            customerNotes = "Stripe integration test"
         });
         orderResponse.StatusCode.Should().BeOneOf(HttpStatusCode.Created, HttpStatusCode.OK);
 
