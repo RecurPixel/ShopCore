@@ -6,6 +6,11 @@
 # dotenv files
 .env
 
+# Local app settings (contain secrets — use appsettings.example.json as template)
+src/ShopCore.API/appsettings.json
+src/ShopCore.API/appsettings.*.json
+!src/ShopCore.API/appsettings.example.json
+
 # User-specific files
 *.rsuser
 *.suo

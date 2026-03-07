@@ -314,7 +314,7 @@ public class StripeGateway : BasePaymentGateway
 
     public override PaymentWebhookEvent ParseWebhookPayload(string payload)
     {
-        Event stripeEvent = EventUtility.ParseEvent(payload);
+        Event stripeEvent = EventUtility.ParseEvent(payload, throwOnApiVersionMismatch: false);
         PaymentWebhookEventType eventType = MapEventType(stripeEvent.Type);
 
         PaymentWebhookEvent webhookEvent = new()
