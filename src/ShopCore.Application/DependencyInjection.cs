@@ -1,7 +1,7 @@
-﻿using System.Reflection;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using ShopCore.Application.Common.Behaviours;
+using System.Reflection;
 
 namespace ShopCore.Application;
 
@@ -19,8 +19,6 @@ public static class DependencyInjection
 
         // Pipeline Behaviors (run before every command/query)
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
-        // AutoMapper
-        services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         return services;
     }

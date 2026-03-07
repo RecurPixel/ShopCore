@@ -1,7 +1,7 @@
-using System.Net;
-using System.Text.Json;
 using FluentAssertions;
 using ShopCore.UnitTests.Infrastructure;
+using System.Net;
+using System.Text.Json;
 
 namespace ShopCore.UnitTests.Integration;
 
@@ -43,7 +43,7 @@ public class ProductsControllerTests : IntegrationTestBase
         PagedResponse<ProductDto>? result = await DeserializeAsync<PagedResponse<ProductDto>>(response);
         result.Should().NotBeNull();
         result!.Items.Should().NotBeEmpty();
-        result.TotalCount.Should().BeGreaterThan(0);
+        result.TotalItems.Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -110,11 +110,11 @@ public class ProductsControllerTests : IntegrationTestBase
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        List<ProductDto>? result = await DeserializeAsync<List<ProductDto>>(response);
+        PagedResponse<ProductDto>? result = await DeserializeAsync<PagedResponse<ProductDto>>(response);
         result.Should().NotBeNull();
 
         // All returned products should be featured
-        result!.Should().OnlyContain(p => p.IsFeatured);
+        result!.Items.Should().OnlyContain(p => p.IsFeatured);
     }
 
     #endregion
@@ -125,7 +125,7 @@ public class ProductsControllerTests : IntegrationTestBase
     public async Task SearchProducts_WithQuery_ReturnsMatchingProducts()
     {
         // Act
-        HttpResponseMessage response = await Client.GetAsync("/api/v1/products/search?query=apple");
+        HttpResponseMessage response = await Client.GetAsync("/api/v1/products/search?Search=apple");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -141,7 +141,7 @@ public class ProductsControllerTests : IntegrationTestBase
     public async Task SearchProducts_WithNoMatches_ReturnsEmptyList()
     {
         // Act
-        HttpResponseMessage response = await Client.GetAsync("/api/v1/products/search?query=nonexistentproduct123");
+        HttpResponseMessage response = await Client.GetAsync("/api/v1/products/search?Search=nonexistentproduct123");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);

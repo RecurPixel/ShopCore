@@ -37,19 +37,19 @@ Clean Architecture — all dependencies point inward. Domain knows nothing about
 
 ## Tech Stack
 
-| Concern | Choice |
-|---|---|
-| Framework | ASP.NET Core 10 |
-| ORM | Entity Framework Core 10 (SQL Server) |
-| CQRS | MediatR |
-| Validation | FluentValidation |
-| Auth | BCrypt + JWT (refresh tokens) |
-| Payments | Razorpay, Stripe, Cash on Delivery |
+| Concern       | Choice                                               |
+| ------------- | ---------------------------------------------------- |
+| Framework     | ASP.NET Core 10                                      |
+| ORM           | Entity Framework Core 10 (SQL Server)                |
+| CQRS          | MediatR                                              |
+| Validation    | FluentValidation                                     |
+| Auth          | BCrypt + JWT (refresh tokens)                        |
+| Payments      | Razorpay, Stripe, Cash on Delivery                   |
 | Notifications | RecurPixel.Notify.Sdk (email, in-app; multi-channel) |
-| PDF | QuestPDF |
-| File Storage | Local / Azure Blob |
-| Mapping | AutoMapper |
-| Testing | xUnit + WebApplicationFactory |
+| PDF           | QuestPDF                                             |
+| File Storage  | Local / Azure Blob                                   |
+| Mapping       | Manual                                               |
+| Testing       | xUnit + WebApplicationFactory                        |
 
 ---
 
@@ -112,13 +112,13 @@ Copy the example settings file and fill in your values:
 cp src/ShopCore.API/appsettings.example.json src/ShopCore.API/appsettings.json
 ```
 
-| Setting | Description |
-|---|---|
-| `ConnectionStrings.DefaultConnection` | SQL Server connection string |
-| `JwtSettings.Secret` | Random string, minimum 32 characters |
-| `Notify.Email.Smtp.*` | SMTP credentials (Mailtrap works for development) |
-| `PaymentGateways.Razorpay.*` | Razorpay Key ID + Secret (use test keys) |
-| `PaymentGateways.Stripe.*` | Stripe publishable + secret keys (use test keys) |
+| Setting                               | Description                                       |
+| ------------------------------------- | ------------------------------------------------- |
+| `ConnectionStrings.DefaultConnection` | SQL Server connection string                      |
+| `JwtSettings.Secret`                  | Random string, minimum 32 characters              |
+| `Notify.Email.Smtp.*`                 | SMTP credentials (Mailtrap works for development) |
+| `PaymentGateways.Razorpay.*`          | Razorpay Key ID + Secret (use test keys)          |
+| `PaymentGateways.Stripe.*`            | Stripe publishable + secret keys (use test keys)  |
 
 ### 3. Database
 
@@ -150,10 +150,10 @@ Tests use an in-memory database — no SQL Server required.
 
 Both gateways confirm payment via webhook before marking an order as paid.
 
-| Gateway | Webhook Endpoint |
-|---|---|
+| Gateway  | Webhook Endpoint                         |
+| -------- | ---------------------------------------- |
 | Razorpay | `POST /api/v1/payments/webhook/razorpay` |
-| Stripe | `POST /api/v1/payments/webhook/stripe` |
+| Stripe   | `POST /api/v1/payments/webhook/stripe`   |
 
 Configure these URLs in your gateway dashboard. The webhook secret goes in `appsettings.json` under `PaymentGateways.Razorpay.WebhookSecret` / `PaymentGateways.Stripe.WebhookSecret`.
 
@@ -163,19 +163,19 @@ Configure these URLs in your gateway dashboard. The webhook secret goes in `apps
 
 Full reference available via Swagger. Key route groups:
 
-| Prefix | Roles | Description |
-|---|---|---|
-| `/api/v1/auth` | Public | Register, login, verify email, password reset |
-| `/api/v1/products` | Public | Catalog browse, search |
-| `/api/v1/categories` | Public | Category listing |
-| `/api/v1/users/me` | Customer | Profile, addresses, orders, subscriptions, notifications |
-| `/api/v1/cart` | Customer | Cart management |
-| `/api/v1/orders` | Customer | Place and manage orders |
-| `/api/v1/subscriptions` | Customer | Subscription lifecycle |
-| `/api/v1/deliveries` | Customer/Vendor | Delivery tracking and completion |
-| `/api/v1/payments` | Customer | Payment initiation and webhooks |
-| `/api/v1/vendors/me` | Vendor | Dashboard, products, orders, invitations, payouts |
-| `/api/v1/admin` | Admin | Vendor approval, coupons, payouts, platform stats |
+| Prefix                  | Roles           | Description                                              |
+| ----------------------- | --------------- | -------------------------------------------------------- |
+| `/api/v1/auth`          | Public          | Register, login, verify email, password reset            |
+| `/api/v1/products`      | Public          | Catalog browse, search                                   |
+| `/api/v1/categories`    | Public          | Category listing                                         |
+| `/api/v1/users/me`      | Customer        | Profile, addresses, orders, subscriptions, notifications |
+| `/api/v1/cart`          | Customer        | Cart management                                          |
+| `/api/v1/orders`        | Customer        | Place and manage orders                                  |
+| `/api/v1/subscriptions` | Customer        | Subscription lifecycle                                   |
+| `/api/v1/deliveries`    | Customer/Vendor | Delivery tracking and completion                         |
+| `/api/v1/payments`      | Customer        | Payment initiation and webhooks                          |
+| `/api/v1/vendors/me`    | Vendor          | Dashboard, products, orders, invitations, payouts        |
+| `/api/v1/admin`         | Admin           | Vendor approval, coupons, payouts, platform stats        |
 
 ---
 

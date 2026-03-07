@@ -147,7 +147,11 @@ public static class DependencyInjection
         services.AddTransient<IDateTime, DateTimeService>();
         services.AddTransient<IPdfService, PdfService>();
         services.AddScoped<ITaxService, TaxService>();
-        services.AddScoped<ILocationService, LocationService>();
+
+        // Location Service with Google Maps API
+        services.Configure<GoogleMapsSettings>(
+            configuration.GetSection("GoogleMapsSettings"));
+        services.AddHttpClient<ILocationService, LocationService>();
 
         // Payment Gateways
         services.Configure<PaymentGatewayOptions>(

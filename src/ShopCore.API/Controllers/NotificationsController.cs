@@ -22,11 +22,11 @@ public class NotificationsController : ControllerBase
     /// <summary>Returns paginated notifications for the current user.</summary>
     [HttpGet]
     public async Task<ActionResult<List<NotificationDto>>> GetMyNotifications(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
+        [FromQuery] int Page = 1,
+        [FromQuery] int PageSize = 20,
         [FromQuery] bool unreadOnly = false)
     {
-        var result = await _mediator.Send(new GetMyNotificationsQuery(page, pageSize, unreadOnly));
+        var result = await _mediator.Send(new GetMyNotificationsQuery(Page, PageSize, unreadOnly));
         return Ok(result);
     }
 

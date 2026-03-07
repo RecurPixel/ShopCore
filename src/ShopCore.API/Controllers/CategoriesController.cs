@@ -12,7 +12,7 @@ using ShopCore.Application.Products.DTOs;
 namespace ShopCore.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/categories")]
 public class CategoriesController : ControllerBase
 {
     private readonly IMediator _mediator;

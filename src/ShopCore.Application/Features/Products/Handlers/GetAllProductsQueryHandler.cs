@@ -40,6 +40,7 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, P
                 DiscountPercentage = p.DiscountPercentage,
                 IsInStock = p.IsInStock,
                 IsOnSale = p.IsOnSale,
+                IsFeatured = p.IsFeatured,
                 PrimaryImageUrl = p.Images.FirstOrDefault(i => i.IsPrimary) != null
                     ? p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
                     : p.Images.FirstOrDefault() != null ? p.Images.FirstOrDefault()!.ImageUrl : null,

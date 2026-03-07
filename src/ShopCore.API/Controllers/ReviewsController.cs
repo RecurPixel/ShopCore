@@ -11,7 +11,7 @@ using ShopCore.Application.Reviews.Queries.GetProductReviews;
 namespace ShopCore.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/reviews")]
 public class ReviewsController : ControllerBase
 {
     private readonly IMediator _mediator;

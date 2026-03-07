@@ -8,7 +8,7 @@ using ShopCore.Application.Payouts.Queries.GetVendorPayouts;
 namespace ShopCore.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/payouts")]
 public class PayoutsController : ControllerBase
 {
     private readonly IMediator _mediator;

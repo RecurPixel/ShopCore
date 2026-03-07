@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Products.DTOs;
 
 namespace ShopCore.Application.Products.Queries.GetFeaturedProducts;

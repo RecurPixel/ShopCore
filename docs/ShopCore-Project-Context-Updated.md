@@ -36,7 +36,6 @@
 - SQL Server (LocalDB dev, Azure SQL prod)
 - JWT Bearer Authentication
 - FluentValidation (input validation)
-- AutoMapper (object mapping)
 - Hangfire (background jobs)
 
 **Frontend (Two Separate Apps):**

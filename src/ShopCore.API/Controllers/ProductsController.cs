@@ -91,10 +91,10 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<PaginatedList<ReviewDto>>> GetProductReviews(
         int id,
         [FromQuery] string? SortBy = null,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int Page = 1,
+        [FromQuery] int PageSize = 20)
     {
-        var reviews = await _mediator.Send(new GetProductReviewsQuery(id, SortBy, page, pageSize));
+        var reviews = await _mediator.Send(new GetProductReviewsQuery(id, SortBy, Page, PageSize));
         return Ok(reviews);
     }
 }

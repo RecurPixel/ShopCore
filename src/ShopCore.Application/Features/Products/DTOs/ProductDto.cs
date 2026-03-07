@@ -11,6 +11,7 @@ public record ProductDto
     public decimal DiscountPercentage { get; init; }
     public bool IsInStock { get; init; }
     public bool IsOnSale { get; init; }
+    public bool IsFeatured { get; init; }
     public string? PrimaryImageUrl { get; init; }
     public decimal AverageRating { get; init; }
     public int ReviewCount { get; init; }

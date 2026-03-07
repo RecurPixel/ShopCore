@@ -9,7 +9,7 @@ namespace ShopCore.Api.Controllers;
 /// Public endpoints for customer invitation acceptance/rejection
 /// </summary>
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/invitations")]
 public class InvitationsController : ControllerBase
 {
     private readonly IMediator _mediator;

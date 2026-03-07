@@ -247,6 +247,12 @@ public class CartControllerTests : IntegrationTestBase
         // Arrange
         await AuthenticateAsCustomerAsync();
 
+        // Add an item so the cart is not empty
+        HttpResponseMessage productsResponse = await Client.GetAsync("/api/v1/products");
+        PagedResponse<ProductDto>? products = await DeserializeAsync<PagedResponse<ProductDto>>(productsResponse);
+        int productId = products!.Items.First().Id;
+        await Client.PostAsJsonAsync("/api/v1/cart/items", new { productId, quantity = 1 });
+
         // Act
         HttpResponseMessage response = await Client.PostAsync("/api/v1/cart/validate", null);
 

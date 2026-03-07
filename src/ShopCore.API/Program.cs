@@ -35,7 +35,8 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSwaggerInDevelopment();
 app.UseHttpsRedirection();
 app.UseCors();
-app.UseRateLimiter();
+if (!app.Environment.IsEnvironment("Testing"))
+    app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

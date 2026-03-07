@@ -8,7 +8,7 @@ using ShopCore.Application.Wishlist.Queries.GetWishlist;
 namespace ShopCore.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/wishlist")]
 public class WishlistController : ControllerBase
 {
     private readonly IMediator _mediator;

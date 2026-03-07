@@ -376,10 +376,6 @@ public static class DependencyInjection
             typeof(IPipelineBehavior<,>),
             typeof(ValidationBehaviour<,>));
 
-        // AutoMapper
-        services.AddAutoMapper(
-            Assembly.GetExecutingAssembly());
-
         return services;
     }
 }
@@ -686,7 +682,6 @@ public class CreateProductCommandTests
 ```xml
 <PackageReference Include="MediatR" />
 <PackageReference Include="FluentValidation" />
-<PackageReference Include="AutoMapper" />
 ```
 
 **ShopCore.Infrastructure:**

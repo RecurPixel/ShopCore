@@ -25,6 +25,10 @@ public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordComman
         if (user == null)
             throw new NotFoundException(nameof(User), _currentUser.UserId);
 
+        // Validate confirmation matches
+        if (request.NewPassword != request.ConfirmNewPassword)
+            throw new ValidationException("Passwords do not match");
+
         // Verify current password
         if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
             throw new ValidationException("Current password is incorrect");

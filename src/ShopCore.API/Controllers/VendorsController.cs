@@ -111,8 +111,8 @@ public class VendorsController : ControllerBase
     /// Retrieves vendor public products.
     /// </summary>
     /// <param name="id">The unique identifier</param>
-    /// <param name="page">Page number for pagination (1-based)</param>
-    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="Page">Page number for pagination (1-based)</param>
+    /// <param name="PageSize">Number of items per page</param>
     /// <returns>PaginatedList&lt;ProductDto&gt;</returns>
     /// <response code="200">Returns the requested data</response>
     /// <response code="400">Invalid request parameters</response>
@@ -121,10 +121,10 @@ public class VendorsController : ControllerBase
     [HttpGet("{id:int}/products")]
     public async Task<ActionResult<PaginatedList<ProductDto>>> GetVendorPublicProducts(
         int id,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int Page = 1,
+        [FromQuery] int PageSize = 20)
     {
-        var products = await _mediator.Send(new GetVendorProductsQuery(id, page, pageSize, publicOnly: true));
+        var products = await _mediator.Send(new GetVendorProductsQuery(id, Page, PageSize, publicOnly: true));
         return Ok(products);
     }
 
@@ -389,8 +389,8 @@ public class VendorsController : ControllerBase
     /// <summary>
     /// Retrieves my products.
     /// </summary>
-    /// <param name="page">Page number for pagination (1-based)</param>
-    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="Page">Page number for pagination (1-based)</param>
+    /// <param name="PageSize">Number of items per page</param>
     /// <returns>PaginatedList&lt;ProductDto&gt;</returns>
     /// <response code="200">Returns the requested data</response>
     /// <response code="400">Invalid request parameters</response>
@@ -398,10 +398,10 @@ public class VendorsController : ControllerBase
     [Authorize(Roles = "Vendor")]
     [HttpGet("me/products")]
     public async Task<ActionResult<PaginatedList<ProductDto>>> GetMyProducts(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int Page = 1,
+        [FromQuery] int PageSize = 20)
     {
-        var products = await _mediator.Send(new GetVendorProductsQuery(VendorId: null, page, pageSize, publicOnly: false));
+        var products = await _mediator.Send(new GetVendorProductsQuery(VendorId: null, Page, PageSize, publicOnly: false));
         return Ok(products);
     }
 
@@ -938,8 +938,8 @@ public class VendorsController : ControllerBase
     /// Retrieves vendor customer subscriptions.
     /// </summary>
     /// <param name="userId">The user identifier</param>
-    /// <param name="page">Page number for pagination (1-based)</param>
-    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="Page">Page number for pagination (1-based)</param>
+    /// <param name="PageSize">Number of items per page</param>
     /// <returns>PaginatedList&lt;VendorSubscriptionDto&gt;</returns>
     /// <response code="200">Returns the requested data</response>
     /// <response code="400">Invalid request parameters</response>
@@ -949,10 +949,10 @@ public class VendorsController : ControllerBase
     [HttpGet("me/customers/{userId:int}/subscriptions")]
     public async Task<ActionResult<PaginatedList<VendorSubscriptionDto>>> GetVendorCustomerSubscriptions(
         int userId,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int Page = 1,
+        [FromQuery] int PageSize = 20)
     {
-        var subscriptions = await _mediator.Send(new GetVendorCustomerSubscriptionsQuery(userId, page, pageSize));
+        var subscriptions = await _mediator.Send(new GetVendorCustomerSubscriptionsQuery(userId, Page, PageSize));
         return Ok(subscriptions);
     }
 
@@ -960,8 +960,8 @@ public class VendorsController : ControllerBase
     /// Retrieves vendor customer orders.
     /// </summary>
     /// <param name="userId">The user identifier</param>
-    /// <param name="page">Page number for pagination (1-based)</param>
-    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="Page">Page number for pagination (1-based)</param>
+    /// <param name="PageSize">Number of items per page</param>
     /// <returns>PaginatedList&lt;VendorOrderDto&gt;</returns>
     /// <response code="200">Returns the requested data</response>
     /// <response code="400">Invalid request parameters</response>
@@ -971,10 +971,10 @@ public class VendorsController : ControllerBase
     [HttpGet("me/customers/{userId:int}/orders")]
     public async Task<ActionResult<PaginatedList<VendorOrderDto>>> GetVendorCustomerOrders(
         int userId,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int Page = 1,
+        [FromQuery] int PageSize = 20)
     {
-        var orders = await _mediator.Send(new GetVendorCustomerOrdersQuery(userId, page, pageSize));
+        var orders = await _mediator.Send(new GetVendorCustomerOrdersQuery(userId, Page, PageSize));
         return Ok(orders);
     }
 
@@ -982,8 +982,8 @@ public class VendorsController : ControllerBase
     /// Retrieves vendor customer deliveries.
     /// </summary>
     /// <param name="userId">The user identifier</param>
-    /// <param name="page">Page number for pagination (1-based)</param>
-    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="Page">Page number for pagination (1-based)</param>
+    /// <param name="PageSize">Number of items per page</param>
     /// <returns>PaginatedList&lt;DeliveryDto&gt;</returns>
     /// <response code="200">Returns the requested data</response>
     /// <response code="400">Invalid request parameters</response>
@@ -993,10 +993,10 @@ public class VendorsController : ControllerBase
     [HttpGet("me/customers/{userId:int}/deliveries")]
     public async Task<ActionResult<PaginatedList<DeliveryDto>>> GetVendorCustomerDeliveries(
         int userId,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int Page = 1,
+        [FromQuery] int PageSize = 20)
     {
-        var deliveries = await _mediator.Send(new GetVendorCustomerDeliveriesQuery(userId, page, pageSize));
+        var deliveries = await _mediator.Send(new GetVendorCustomerDeliveriesQuery(userId, Page, PageSize));
         return Ok(deliveries);
     }
 }

@@ -369,8 +369,8 @@ public class UsersController : ControllerBase
     /// Retrieves subscription deliveries.
     /// </summary>
     /// <param name="id">The unique identifier</param>
-    /// <param name="page">Page number for pagination (1-based)</param>
-    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="Page">Page number for pagination (1-based)</param>
+    /// <param name="PageSize">Number of items per page</param>
     /// <returns>PaginatedList&lt;DeliveryDto&gt;</returns>
     /// <response code="200">Returns the requested data</response>
     /// <response code="400">Invalid request parameters</response>
@@ -379,10 +379,10 @@ public class UsersController : ControllerBase
     [HttpGet("subscriptions/{id:int}/deliveries")]
     public async Task<ActionResult<PaginatedList<DeliveryDto>>> GetSubscriptionDeliveries(
         int id,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20)
+        [FromQuery] int Page = 1,
+        [FromQuery] int PageSize = 20)
     {
-        var deliveries = await _mediator.Send(new GetSubscriptionDeliveriesQuery(id, page, pageSize));
+        var deliveries = await _mediator.Send(new GetSubscriptionDeliveriesQuery(id, Page, PageSize));
         return Ok(deliveries);
     }
 

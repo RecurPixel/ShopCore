@@ -65,6 +65,7 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, Paginat
                 DiscountPercentage = p.DiscountPercentage,
                 IsInStock = p.IsInStock,
                 IsOnSale = p.IsOnSale,
+                IsFeatured = p.IsFeatured,
                 PrimaryImageUrl = p.Images.FirstOrDefault(i => i.IsPrimary) != null
                     ? p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
                     : null,

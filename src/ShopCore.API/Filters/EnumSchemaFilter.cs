@@ -15,7 +15,10 @@ public class EnumSchemaFilter : ISchemaFilter
     {
         if (!context.Type.IsEnum) return;
 
-        schema.Enum.Clear();
+        if (schema.Enum != null)
+        {
+            schema.Enum.Clear();
+        }
         schema.Type = JsonSchemaType.Integer;
         schema.Format = "int32";
         schema.Description = BuildDescription(context.Type);

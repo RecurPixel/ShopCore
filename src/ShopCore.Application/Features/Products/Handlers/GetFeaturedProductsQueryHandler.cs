@@ -48,6 +48,7 @@ public class GetFeaturedProductsQueryHandler
                 DiscountPercentage = p.DiscountPercentage,
                 IsOnSale = p.IsOnSale,
                 IsInStock = p.IsInStock,
+                IsFeatured = p.IsFeatured,
                 PrimaryImageUrl = p.Images.FirstOrDefault(i => i.IsPrimary) != null
                     ? p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
                     : null,

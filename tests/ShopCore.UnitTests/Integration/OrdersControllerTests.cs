@@ -1,53 +1,17 @@
+using FluentAssertions;
+using ShopCore.Application.Addresses.DTOs;
+using ShopCore.Application.Orders.DTOs;
+using ShopCore.Application.Products.DTOs;
+using ShopCore.UnitTests.Infrastructure;
 using System.Net;
 using System.Net.Http.Json;
-using FluentAssertions;
-using ShopCore.UnitTests.Infrastructure;
+using System.Text.Json;
 
 namespace ShopCore.UnitTests.Integration;
 
 public class OrdersControllerTests : IntegrationTestBase
 {
     public OrdersControllerTests(ShopCoreWebApplicationFactory factory) : base(factory) { }
-
-    #region DTOs
-
-    public record OrderDto
-    {
-        public int Id { get; init; }
-        public string OrderNumber { get; init; } = string.Empty;
-        public decimal SubTotal { get; init; }
-        public decimal Tax { get; init; }
-        public decimal DeliveryFee { get; init; }
-        public decimal Total { get; init; }
-        public string Status { get; init; } = string.Empty;
-        public string PaymentStatus { get; init; } = string.Empty;
-        public List<OrderItemDto> Items { get; init; } = [];
-    }
-
-    public record OrderItemDto
-    {
-        public int Id { get; init; }
-        public int ProductId { get; init; }
-        public string ProductName { get; init; } = string.Empty;
-        public int Quantity { get; init; }
-        public decimal UnitPrice { get; init; }
-        public decimal Total { get; init; }
-    }
-
-    public record ProductDto
-    {
-        public int Id { get; init; }
-        public string Name { get; init; } = string.Empty;
-        public decimal Price { get; init; }
-        public int VendorId { get; init; }
-    }
-
-    public record AddressDto
-    {
-        public int Id { get; init; }
-    }
-
-    #endregion
 
     #region Create Order Tests
 
@@ -77,13 +41,13 @@ public class OrdersControllerTests : IntegrationTestBase
 
         // Get addresses
         HttpResponseMessage addressesResponse = await Client.GetAsync("/api/v1/users/me/addresses");
-        List<AddressDto>? addresses = await DeserializeAsync<List<AddressDto>>(addressesResponse);
+        PagedResponse<AddressDto>? addresses = await DeserializeAsync<PagedResponse<AddressDto>>(addressesResponse);
 
-        if (addresses?.Count > 0)
+        if (addresses?.Items.Count > 0)
         {
             var orderRequest = new
             {
-                addressId = addresses.First().Id,
+                addressId = addresses.Items.First().Id,
                 paymentMethod = "CashOnDelivery",
                 notes = "Test order"
             };

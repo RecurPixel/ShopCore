@@ -23,12 +23,12 @@ public class SearchProductsQueryHandler : IRequestHandler<SearchProductsQuery, P
             .Where(p => p.Status == ProductStatus.Active);
 
         // Search filter
-        if (!string.IsNullOrEmpty(request.Query))
+        if (!string.IsNullOrEmpty(request.Search))
         {
-            var searchTerm = request.Query.ToLower();
+            var searchTerm = request.Search.ToLower();
             query = query.Where(p =>
                 p.Name.ToLower().Contains(searchTerm) ||
-                p.Description!.ToLower().Contains(searchTerm) ||
+                (p.Description != null && p.Description.ToLower().Contains(searchTerm)) ||
                 p.Category.Name.ToLower().Contains(searchTerm) ||
                 p.Vendor.BusinessName.ToLower().Contains(searchTerm));
         }
@@ -55,6 +55,7 @@ public class SearchProductsQueryHandler : IRequestHandler<SearchProductsQuery, P
                 DiscountPercentage = p.DiscountPercentage,
                 IsInStock = p.IsInStock,
                 IsOnSale = p.IsOnSale,
+                IsFeatured = p.IsFeatured,
                 PrimaryImageUrl = p.Images.FirstOrDefault(i => i.IsPrimary) != null
                     ? p.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl
                     : null,

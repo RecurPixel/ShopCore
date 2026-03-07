@@ -62,9 +62,12 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, P
             throw new NotFoundException(nameof(Product), request.Id);
 
         // Increment view count
-        await _context.Products
-            .Where(p => p.Id == request.Id)
-            .ExecuteUpdateAsync(p => p.SetProperty(x => x.ViewCount, x => x.ViewCount + 1), cancellationToken);
+        var productEntity = await _context.Products.FindAsync(new object?[] { request.Id }, cancellationToken: cancellationToken);
+        if (productEntity != null)
+        {
+            productEntity.ViewCount += 1;
+            await _context.SaveChangesAsync(cancellationToken);
+        }
 
         return product;
     }

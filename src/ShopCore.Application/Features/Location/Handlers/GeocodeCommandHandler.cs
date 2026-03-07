@@ -20,7 +20,7 @@ public class GeocodeCommandHandler : IRequestHandler<GeocodeCommand, GeocodeResu
 
         return new GeocodeResultDto
         {
-            FormattedAddress = result.FormattedAddress,
+            FormattedAddress = result.FormattedAddress ?? "N/A",
             Latitude = result.Latitude,
             Longitude = result.Longitude,
             PlaceId = result.PlaceId,

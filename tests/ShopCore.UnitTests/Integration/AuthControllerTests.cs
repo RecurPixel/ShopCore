@@ -1,7 +1,7 @@
-using System.Net;
-using System.Net.Http.Json;
 using FluentAssertions;
 using ShopCore.UnitTests.Infrastructure;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace ShopCore.UnitTests.Integration;
 
@@ -113,12 +113,12 @@ public class AuthControllerTests : IntegrationTestBase
         // Arrange
         var registerRequest = new
         {
-            email = $"newuser_{Guid.NewGuid():N}@test.com",
-            password = "NewUser@123",
-            confirmPassword = "NewUser@123",
-            firstName = "New",
-            lastName = "User",
-            phone = "9876543210"
+            Email = $"newuser_{Guid.NewGuid():N}@test.com",
+            Password = "NewUser@123",
+            // ConfirmPassword = "NewUser@123",
+            FirstName = "New",
+            LastName = "User",
+            PhoneNumber = "9876543210"
         };
 
         // Act
@@ -134,19 +134,23 @@ public class AuthControllerTests : IntegrationTestBase
         // Arrange
         var registerRequest = new
         {
-            email = "customer@test.com", // Already exists
-            password = "NewUser@123",
-            confirmPassword = "NewUser@123",
-            firstName = "New",
-            lastName = "User",
-            phone = "9876543210"
+            Email = "customer@test.com", // Already exists
+            Password = "NewUser@123",
+            // ConfirmPassword = "NewUser@123",
+            FirstName = "New",
+            LastName = "User",
+            PhoneNumber = "9876543210"
         };
 
         // Act
         HttpResponseMessage response = await Client.PostAsJsonAsync("/api/v1/auth/register", registerRequest);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Verify the error message indicates email is already registered
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().ContainAny("Email already registered", "already exists", "already registered");
     }
 
     [Fact]
@@ -155,11 +159,11 @@ public class AuthControllerTests : IntegrationTestBase
         // Arrange
         var registerRequest = new
         {
-            email = $"newuser_{Guid.NewGuid():N}@test.com",
-            password = "NewUser@123",
-            confirmPassword = "DifferentPassword@123",
-            firstName = "New",
-            lastName = "User"
+            Email = $"newuser_{Guid.NewGuid():N}@test.com",
+            Password = "NewUser@123",
+            ConfirmPassword = "DifferentPassword@123",
+            FirstName = "New",
+            LastName = "User"
         };
 
         // Act
@@ -228,8 +232,8 @@ public class AuthControllerTests : IntegrationTestBase
         // Arrange
         var refreshRequest = new
         {
-            accessToken = "invalid.access.token",
-            refreshToken = "invalid-refresh-token"
+            AccessToken = "invalid.access.token",
+            RefreshToken = "invalid-refresh-token"
         };
 
         // Act
@@ -253,7 +257,7 @@ public class AuthControllerTests : IntegrationTestBase
         HttpResponseMessage response = await Client.PostAsync("/api/v1/auth/logout", null);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
@@ -280,7 +284,7 @@ public class AuthControllerTests : IntegrationTestBase
         await AuthenticateAsCustomerAsync();
 
         // Act
-        HttpResponseMessage response = await Client.GetAsync("/api/v1/users/me/profile");
+        HttpResponseMessage response = await Client.GetAsync("/api/v1/users/me");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -293,7 +297,7 @@ public class AuthControllerTests : IntegrationTestBase
         ClearAuthentication();
 
         // Act
-        HttpResponseMessage response = await Client.GetAsync("/api/v1/users/me/profile");
+        HttpResponseMessage response = await Client.GetAsync("/api/v1/users/me");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);

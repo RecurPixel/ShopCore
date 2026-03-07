@@ -1,4 +1,5 @@
 using ShopCore.Application.Auth.DTOs;
+using ShopCore.Application.Common.Exceptions;
 
 namespace ShopCore.Application.Auth.Commands.Login;
 
@@ -30,15 +31,15 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
             .FirstOrDefaultAsync(u => u.Email == request.Email.ToLowerInvariant(), ct);
 
         if (user == null)
-            throw new UnauthorizedAccessException("Invalid email or password");
+            throw new UnauthorizedException("Invalid email or password");
 
         // 2. Verify password
         if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
-            throw new UnauthorizedAccessException("Invalid email or password");
+            throw new UnauthorizedException("Invalid email or password");
 
         // 3. Check if account is active
         if (!user.IsActive)
-            throw new UnauthorizedAccessException("Account is inactive");
+            throw new UnauthorizedException("Account is inactive");
 
         // 4. Generate tokens
         var accessToken = _jwtTokenService.GenerateAccessToken(user);

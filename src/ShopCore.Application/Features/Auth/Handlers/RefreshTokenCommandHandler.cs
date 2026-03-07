@@ -1,4 +1,5 @@
 using ShopCore.Application.Auth.DTOs;
+using ShopCore.Application.Common.Exceptions;
 
 namespace ShopCore.Application.Auth.Commands.RefreshToken;
 
@@ -26,7 +27,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             .FirstOrDefaultAsync(u => u.RefreshToken == request.RefreshToken, ct);
 
         if (user == null || user.RefreshTokenExpiry < _dateTime.UtcNow)
-            throw new UnauthorizedAccessException("Invalid or expired refresh token");
+            throw new UnauthorizedException("Invalid or expired refresh token");
 
         // 2. Generate new tokens
         var accessToken = _jwtTokenService.GenerateAccessToken(user);
