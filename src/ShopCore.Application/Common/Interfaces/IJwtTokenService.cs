@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using ShopCore.Domain.Entities;
 
 namespace ShopCore.Application.Common.Interfaces;
 

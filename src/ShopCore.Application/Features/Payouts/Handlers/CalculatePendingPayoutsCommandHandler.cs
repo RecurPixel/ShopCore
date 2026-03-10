@@ -26,7 +26,7 @@ public class CalculatePendingPayoutsCommandHandler : IRequestHandler<CalculatePe
             {
                 VendorId = g.Key.VendorId,
                 VendorName = g.Key.BusinessName,
-                PendingAmount = g.Sum(oi => oi.Subtotal) - g.Sum(oi => oi.CommissionAmount),
+                PendingAmount = g.Sum(oi => oi.Quantity * oi.UnitPrice * (1 - oi.CommissionRate / 100)),
                 OrderCount = g.Select(oi => oi.OrderId).Distinct().Count(),
                 OldestOrderDate = g.Min(oi => oi.Order.DeliveredAt)
             })

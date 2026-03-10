@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Vendors.DTOs;
 
 namespace ShopCore.Application.Vendors.Queries.GetVendorCustomerOrders;
@@ -20,11 +19,13 @@ public class GetVendorCustomerOrdersQueryHandler : IRequestHandler<GetVendorCust
         GetVendorCustomerOrdersQuery request,
         CancellationToken cancellationToken)
     {
+        var vendorId = _currentUser.VendorId;
+
         var query = _context.Orders
             .AsNoTracking()
             .Include(o => o.Items)
             .Where(o => o.UserId == request.UserId
-                && o.Items.Any(oi => oi.VendorId == _currentUser.VendorId));
+                && o.Items.Any(oi => oi.VendorId == vendorId));
 
         var totalCount = await query.CountAsync(cancellationToken);
 
@@ -37,12 +38,12 @@ public class GetVendorCustomerOrdersQueryHandler : IRequestHandler<GetVendorCust
                 OrderId = o.Id,
                 OrderNumber = o.OrderNumber,
                 OrderDate = o.CreatedAt,
-                Status = o.Items.First(oi => oi.VendorId == _currentUser.VendorId).Status.ToString(),
+                Status = o.Items.Where(oi => oi.VendorId == vendorId).Select(oi => oi.Status.ToString()).FirstOrDefault() ?? string.Empty,
                 PaymentStatus = o.PaymentStatus.ToString(),
                 VendorTotal = o.Items
-                    .Where(oi => oi.VendorId == _currentUser.VendorId)
-                    .Sum(oi => oi.Subtotal),
-                ItemCount = o.Items.Count(oi => oi.VendorId == _currentUser.VendorId)
+                    .Where(oi => oi.VendorId == vendorId)
+                    .Sum(oi => oi.Quantity * oi.UnitPrice),
+                ItemCount = o.Items.Count(oi => oi.VendorId == vendorId)
             })
             .ToListAsync(cancellationToken);
 

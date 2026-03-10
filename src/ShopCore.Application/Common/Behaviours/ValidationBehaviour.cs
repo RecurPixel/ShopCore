@@ -1,5 +1,3 @@
-using FluentValidation;
-
 namespace ShopCore.Application.Common.Behaviours;
 
 public class ValidationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>

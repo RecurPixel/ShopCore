@@ -1,6 +1,3 @@
-using ShopCore.Application.Common.Models;
-using ShopCore.Domain.Enums;
-
 namespace ShopCore.Application.Payments.Commands.HandlePaymentWebhook;
 
 public class HandlePaymentWebhookCommandHandler : IRequestHandler<HandlePaymentWebhookCommand>

@@ -1,5 +1,4 @@
 using ShopCore.Application.Payments.DTOs;
-using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Payments.Commands.CreateOrderPaymentIntent;
 

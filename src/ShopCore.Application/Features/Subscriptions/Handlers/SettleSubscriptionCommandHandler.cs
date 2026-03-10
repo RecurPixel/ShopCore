@@ -1,7 +1,4 @@
-using ShopCore.Application.Common.Interfaces;
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Subscriptions.DTOs;
-using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Subscriptions.Commands.SettleSubscription;
 

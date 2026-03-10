@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Interfaces;
 using ShopCore.Application.Products.DTOs;
 
 namespace ShopCore.Application.Products.Commands.UploadProductImages;

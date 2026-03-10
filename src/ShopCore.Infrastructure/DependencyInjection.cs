@@ -25,10 +25,26 @@ public static class DependencyInjection
         // HttpContextAccessor (required for CurrentUserService)
         services.AddHttpContextAccessor();
 
-        // Database
+        // Database — provider selected via "Database:Provider" config key
+        // Supported values: "SqlServer" (default), "Postgres"
+        var dbProvider = configuration["Database:Provider"] ?? "SqlServer";
+
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
-        );
+        {
+            if (dbProvider.Equals("Postgres", StringComparison.OrdinalIgnoreCase))
+            {
+                // Railway injects DATABASE_URL as a postgres:// URI; fall back to appsettings
+                var connStr = Environment.GetEnvironmentVariable("DATABASE_URL")
+                              ?? configuration.GetConnectionString("Postgres")
+                              ?? throw new InvalidOperationException(
+                                  "Postgres connection string not found. Set DATABASE_URL env var or ConnectionStrings:Postgres.");
+                options.UseNpgsql(connStr);
+            }
+            else
+            {
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            }
+        });
 
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>()
@@ -53,8 +69,12 @@ public static class DependencyInjection
                 services.AddScoped<IFileStorageService, AzureBlobFileStorageService>();
                 break;
 
+            case FileStorageProvider.S3:
+            case FileStorageProvider.Storj: // Storj DCS is S3-compatible — same implementation, different endpoint config
+                services.AddScoped<IFileStorageService, S3FileStorageService>();
+                break;
+
             default:
-                // Default to local storage
                 services.AddScoped<IFileStorageService, LocalFileStorageService>();
                 break;
         }

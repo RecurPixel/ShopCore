@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Subscriptions.DTOs;
 
 namespace ShopCore.Application.Subscriptions.Queries.GetAllSubscriptions;

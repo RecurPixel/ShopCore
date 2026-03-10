@@ -1,5 +1,4 @@
 using ShopCore.Application.Payments.Commands.ConfirmPayment;
-using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Payments.Validators;
 

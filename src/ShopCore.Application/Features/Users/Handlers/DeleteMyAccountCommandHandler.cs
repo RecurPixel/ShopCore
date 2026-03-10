@@ -1,5 +1,3 @@
-using ShopCore.Application.Users.Commands.DeleteMyAccount;
-
 namespace ShopCore.Application.Users.Commands.DeleteMyAccount;
 
 public class DeleteMyAccountCommandHandler : IRequestHandler<DeleteMyAccountCommand>

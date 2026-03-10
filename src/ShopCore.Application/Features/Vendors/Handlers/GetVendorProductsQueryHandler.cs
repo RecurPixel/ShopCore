@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Products.DTOs;
 
 namespace ShopCore.Application.Vendors.Queries.GetVendorProducts;
@@ -6,17 +5,22 @@ namespace ShopCore.Application.Vendors.Queries.GetVendorProducts;
 public class GetVendorProductsQueryHandler : IRequestHandler<GetVendorProductsQuery, PaginatedList<ProductDto>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
 
-    public GetVendorProductsQueryHandler(IApplicationDbContext context)
+    public GetVendorProductsQueryHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
         _context = context;
+        _currentUser = currentUser;
     }
 
     public async Task<PaginatedList<ProductDto>> Handle(
         GetVendorProductsQuery request,
         CancellationToken cancellationToken)
     {
-        if (!request.VendorId.HasValue)
+        // For "my products" (vendor viewing their own), fall back to current user's VendorId
+        var vendorId = request.VendorId ?? _currentUser.VendorId;
+
+        if (!vendorId.HasValue)
             throw new ValidationException("VendorId is required");
 
         var query = _context.Products
@@ -24,7 +28,7 @@ public class GetVendorProductsQueryHandler : IRequestHandler<GetVendorProductsQu
             .Include(p => p.Category)
             .Include(p => p.Vendor)
             .Include(p => p.Images)
-            .Where(p => p.VendorId == request.VendorId.Value);
+            .Where(p => p.VendorId == vendorId.Value);
 
         // Public view - only active products
         if (request.publicOnly)

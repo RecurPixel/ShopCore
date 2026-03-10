@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShopCore API</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#6366f1'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="min-h-screen bg-gray-950 text-gray-100 flex flex-col items-center justify-center px-4 py-16">
+
+    <!-- Header -->
+    <div class="mb-12 text-center">
+        <h1 class="text-4xl font-bold tracking-tight text-white">ShopCore <span class="text-indigo-400">API</span></h1>
+        <p class="mt-3 text-gray-400 text-lg">Explore API documentation and interactive references</p>
+    </div>
+
+    <!-- Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-4xl">
+
+        <!-- OpenAPI JSON -->
+        <a href="/openapi/v1.json" target="_blank"
+            class="group relative flex flex-col gap-4 rounded-2xl border border-gray-800 bg-gray-900 p-6 shadow-lg transition-all duration-200 hover:border-indigo-500 hover:shadow-indigo-900/40 hover:shadow-xl hover:-translate-y-1">
+            <div class="flex items-center justify-between">
+                <div
+                    class="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
+                    <!-- JSON / spec icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="1.75">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M14.25 9.75L16.5 12l-2.25 2.25M9.75 9.75L7.5 12l2.25 2.25M3 6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75v10.5A2.25 2.25 0 0118.75 19.5H5.25A2.25 2.25 0 013 17.25V6.75z" />
+                    </svg>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-600 group-hover:text-indigo-400 transition-colors" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold text-white">OpenAPI Spec</h2>
+                <p class="mt-1 text-sm text-gray-400">Raw OpenAPI 3.x JSON document. Import into any compatible client
+                    or tooling.</p>
+            </div>
+            <span
+                class="mt-auto inline-flex items-center text-xs font-medium text-indigo-400 group-hover:text-indigo-300">
+                /openapi/v1.json
+                <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-3 w-3" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </span>
+        </a>
+
+        <!-- Swagger UI -->
+        <a href="/swagger" target="_blank"
+            class="group relative flex flex-col gap-4 rounded-2xl border border-gray-800 bg-gray-900 p-6 shadow-lg transition-all duration-200 hover:border-emerald-500 hover:shadow-emerald-900/40 hover:shadow-xl hover:-translate-y-1">
+            <div class="flex items-center justify-between">
+                <div
+                    class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20 transition-colors">
+                    <!-- Swagger / UI icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="1.75">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                    </svg>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-600 group-hover:text-emerald-400 transition-colors" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold text-white">Swagger UI</h2>
+                <p class="mt-1 text-sm text-gray-400">Interactive API explorer. Try out endpoints directly from your
+                    browser.</p>
+            </div>
+            <span
+                class="mt-auto inline-flex items-center text-xs font-medium text-emerald-400 group-hover:text-emerald-300">
+                /swagger
+                <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-3 w-3" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </span>
+        </a>
+
+        <!-- Scalar -->
+        <a href="/scalar/v1" target="_blank"
+            class="group relative flex flex-col gap-4 rounded-2xl border border-gray-800 bg-gray-900 p-6 shadow-lg transition-all duration-200 hover:border-violet-500 hover:shadow-violet-900/40 hover:shadow-xl hover:-translate-y-1">
+            <div class="flex items-center justify-between">
+                <div
+                    class="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/10 text-violet-400 group-hover:bg-violet-500/20 transition-colors">
+                    <!-- Scalar / modern icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="1.75">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                    </svg>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-600 group-hover:text-violet-400 transition-colors" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold text-white">Scalar Docs</h2>
+                <p class="mt-1 text-sm text-gray-400">Modern, beautiful API reference with code samples and request
+                    builder.</p>
+            </div>
+            <span
+                class="mt-auto inline-flex items-center text-xs font-medium text-violet-400 group-hover:text-violet-300">
+                /scalar/v1
+                <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-3 w-3" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </span>
+        </a>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-16 flex flex-col items-center gap-2">
+        <div class="flex items-center gap-3">
+            <p class="text-xs text-gray-600">ShopCore &mdash; API Server</p>
+            <a href="https://github.com/recurpixel/shopcore" target="_blank" rel="noopener noreferrer"
+                class="text-gray-600 hover:text-gray-300 transition-colors" aria-label="GitHub repository">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                </svg>
+            </a>
+        </div>
+        <p class="text-xs text-gray-700">Made by <span class="text-gray-500 font-medium">RecurPixel</span></p>
+    </div>
+
+</body>
+
+</html>

@@ -19,60 +19,62 @@ public class GetMyVendorStatsQueryHandler : IRequestHandler<GetMyVendorStatsQuer
         GetMyVendorStatsQuery request,
         CancellationToken cancellationToken)
     {
+        var vendorId = _currentUser.VendorId;
         var startOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+
+        // Evaluate pending payout condition separately to avoid untranslatable nested subquery
+        var hasPaidPayout = await _context.VendorPayouts
+            .AnyAsync(vp => vp.VendorId == vendorId && vp.Status == PayoutStatus.Paid, cancellationToken);
 
         var stats = new VendorStatsDto
         {
             // Product stats
             TotalProducts = await _context.Products
-                .CountAsync(p => p.VendorId == _currentUser.VendorId && !p.IsDeleted, cancellationToken),
+                .CountAsync(p => p.VendorId == vendorId && !p.IsDeleted, cancellationToken),
             ActiveProducts = await _context.Products
-                .CountAsync(p => p.VendorId == _currentUser.VendorId && !p.IsDeleted
+                .CountAsync(p => p.VendorId == vendorId && !p.IsDeleted
                     && p.Status == ProductStatus.Active, cancellationToken),
 
             // Order stats
             TotalOrders = await _context.OrderItems
-                .CountAsync(oi => oi.VendorId == _currentUser.VendorId, cancellationToken),
+                .CountAsync(oi => oi.VendorId == vendorId, cancellationToken),
             PendingOrders = await _context.OrderItems
-                .CountAsync(oi => oi.VendorId == _currentUser.VendorId
+                .CountAsync(oi => oi.VendorId == vendorId
                     && oi.Status == OrderItemStatus.Pending, cancellationToken),
             CompletedOrders = await _context.OrderItems
-                .CountAsync(oi => oi.VendorId == _currentUser.VendorId
+                .CountAsync(oi => oi.VendorId == vendorId
                     && oi.Status == OrderItemStatus.Delivered, cancellationToken),
 
             // Subscription stats
             TotalSubscriptions = await _context.Subscriptions
-                .CountAsync(s => s.VendorId == _currentUser.VendorId, cancellationToken),
+                .CountAsync(s => s.VendorId == vendorId, cancellationToken),
             ActiveSubscriptions = await _context.Subscriptions
-                .CountAsync(s => s.VendorId == _currentUser.VendorId
+                .CountAsync(s => s.VendorId == vendorId
                     && s.Status == SubscriptionStatus.Active, cancellationToken),
 
-            // Revenue stats
+            // Revenue stats (inline arithmetic avoids unmapped computed property)
             TotalRevenue = await _context.OrderItems
-                .Where(oi => oi.VendorId == _currentUser.VendorId
+                .Where(oi => oi.VendorId == vendorId
                     && oi.Order.PaymentStatus == PaymentStatus.Paid)
-                .SumAsync(oi => oi.VendorAmount, cancellationToken),
+                .SumAsync(oi => oi.Quantity * oi.UnitPrice * (1 - oi.CommissionRate / 100), cancellationToken),
             RevenueThisMonth = await _context.OrderItems
-                .Where(oi => oi.VendorId == _currentUser.VendorId
+                .Where(oi => oi.VendorId == vendorId
                     && oi.Order.PaymentStatus == PaymentStatus.Paid
                     && oi.Order.CreatedAt >= startOfMonth)
-                .SumAsync(oi => oi.VendorAmount, cancellationToken),
+                .SumAsync(oi => oi.Quantity * oi.UnitPrice * (1 - oi.CommissionRate / 100), cancellationToken),
 
             // Pending payout
-            PendingPayout = await _context.OrderItems
-                .Where(oi => oi.VendorId == _currentUser.VendorId
-                    && oi.Order.PaymentStatus == PaymentStatus.Paid
-                    && !_context.VendorPayouts.Any(vp =>
-                        vp.VendorId == _currentUser.VendorId
-                        && vp.Status == PayoutStatus.Paid))
-                .SumAsync(oi => oi.VendorAmount, cancellationToken),
+            PendingPayout = hasPaidPayout ? 0m : await _context.OrderItems
+                .Where(oi => oi.VendorId == vendorId
+                    && oi.Order.PaymentStatus == PaymentStatus.Paid)
+                .SumAsync(oi => oi.Quantity * oi.UnitPrice * (1 - oi.CommissionRate / 100), cancellationToken),
 
             // Review stats
             Rating = await _context.Reviews
-                .Where(r => r.Product.VendorId == _currentUser.VendorId)
+                .Where(r => r.Product.VendorId == vendorId)
                 .AverageAsync(r => (decimal?)r.Rating, cancellationToken) ?? 0,
             TotalReviews = await _context.Reviews
-                .CountAsync(r => r.Product.VendorId == _currentUser.VendorId, cancellationToken)
+                .CountAsync(r => r.Product.VendorId == vendorId, cancellationToken)
         };
 
         return stats;

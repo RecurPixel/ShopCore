@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Interfaces;
 using ShopCore.Application.Payments.DTOs;
 using ShopCore.Application.Payments.Queries.GetAvailablePaymentOptions;
 

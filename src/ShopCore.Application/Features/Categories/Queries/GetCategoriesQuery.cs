@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Categories.DTOs;
 
 namespace ShopCore.Application.Categories.Queries.GetCategories;

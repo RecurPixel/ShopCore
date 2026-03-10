@@ -1,5 +1,4 @@
 using ShopCore.Application.Reports.DTOs;
-using ShopCore.Application.Vendors.DTOs;
 
 namespace ShopCore.Application.Reports.Queries.GetVendorPerformance;
 
@@ -36,7 +35,7 @@ public class GetVendorPerformanceQueryHandler : IRequestHandler<GetVendorPerform
             .Select(g => new
             {
                 VendorId = g.Key,
-                Revenue = g.Sum(oi => oi.Subtotal),
+                Revenue = g.Sum(oi => oi.Quantity * oi.UnitPrice),
                 OrderCount = g.Select(oi => oi.OrderId).Distinct().Count()
             })
             .OrderByDescending(x => x.Revenue)

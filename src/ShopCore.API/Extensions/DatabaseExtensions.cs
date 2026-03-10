@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using ShopCore.Infrastructure.Data;
 
 namespace ShopCore.API.Extensions;
@@ -15,19 +14,20 @@ public static class DatabaseExtensions
         {
             var context = services.GetRequiredService<ApplicationDbContext>();
 
-            if (app.Environment.IsDevelopment())
+            // MigrateAsync only works with relational providers (SQL Server, Postgres).
+            // In-memory database (used by integration tests) skips this.
+            if (context.Database.IsRelational())
             {
                 logger.LogInformation("Applying database migrations...");
                 await context.Database.MigrateAsync();
                 logger.LogInformation("Database migrations applied successfully");
+            }
 
+            if (app.Environment.IsDevelopment())
+            {
                 logger.LogInformation("Seeding database...");
                 var seeder = services.GetRequiredService<ApplicationDbContextSeeder>();
                 await seeder.SeedAsync();
-            }
-            else
-            {
-                await context.Database.EnsureCreatedAsync();
             }
         }
         catch (Exception ex)

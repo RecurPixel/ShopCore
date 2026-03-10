@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.CustomerInvitations.DTOs;
 using ShopCore.Application.CustomerInvitations.Queries.GetMyCustomerInvitations;
 

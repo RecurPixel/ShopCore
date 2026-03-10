@@ -45,11 +45,12 @@ public class GetMyVendorOrdersQueryHandler
         // Get total count for pagination
         var totalCount = await query.CountAsync(cancellationToken);
 
+        var vendorId = _currentUser.VendorId;
+
         // Get paginated orders that contain items from this vendor
         var items = await query
             .Include(o => o.User)
-            .Include(o => o.Items
-                .Where(oi => oi.VendorId == _currentUser.VendorId))
+            .Include(o => o.Items)
             .OrderByDescending(o => o.CreatedAt)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
@@ -60,12 +61,12 @@ public class GetMyVendorOrdersQueryHandler
                 CustomerName = o.User.FirstName + " " + o.User.LastName,
                 CustomerPhone = o.User.PhoneNumber,
                 OrderDate = o.CreatedAt,
-                Status = o.Items.FirstOrDefault()!.Status.ToString(),
+                Status = o.Items.Where(oi => oi.VendorId == vendorId).Select(oi => oi.Status.ToString()).FirstOrDefault() ?? string.Empty,
                 PaymentStatus = o.PaymentStatus.ToString(),
-                VendorTotal = o.Items.Sum(oi => oi.Subtotal),
-                VendorCommission = o.Items.Sum(oi => oi.CommissionAmount),
-                VendorPayout = o.Items.Sum(oi => oi.VendorAmount),
-                ItemCount = o.Items.Count
+                VendorTotal = o.Items.Where(oi => oi.VendorId == vendorId).Sum(oi => oi.Quantity * oi.UnitPrice),
+                VendorCommission = o.Items.Where(oi => oi.VendorId == vendorId).Sum(oi => oi.Quantity * oi.UnitPrice * oi.CommissionRate / 100),
+                VendorPayout = o.Items.Where(oi => oi.VendorId == vendorId).Sum(oi => oi.Quantity * oi.UnitPrice * (1 - oi.CommissionRate / 100)),
+                ItemCount = o.Items.Count(oi => oi.VendorId == vendorId)
             })
             .ToListAsync(cancellationToken);
 

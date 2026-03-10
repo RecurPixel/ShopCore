@@ -1,5 +1,3 @@
-using ShopCore.Application.Common.Interfaces;
-
 namespace ShopCore.Application.Deliveries.Commands.UploadDeliveryPhoto;
 
 public record UploadDeliveryPhotoCommand(

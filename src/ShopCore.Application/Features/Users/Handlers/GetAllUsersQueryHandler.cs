@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Users.DTOs;
 
 namespace ShopCore.Application.Users.Queries.GetAllUsers;

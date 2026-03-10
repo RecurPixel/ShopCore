@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Interfaces;
 using ShopCore.Application.Reviews.DTOs;
 
 namespace ShopCore.Application.Reviews.Commands.CreateReview;

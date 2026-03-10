@@ -1,5 +1,4 @@
 using ShopCore.Application.Auth.DTOs;
-using ShopCore.Application.Common.Exceptions;
 
 namespace ShopCore.Application.Auth.Commands.Login;
 

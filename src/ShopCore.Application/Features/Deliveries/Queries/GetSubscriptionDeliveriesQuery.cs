@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Deliveries.DTOs;
 
 namespace ShopCore.Application.Deliveries.Queries.GetSubscriptionDeliveries;

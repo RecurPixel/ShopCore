@@ -1,5 +1,3 @@
-using ShopCore.Domain.Enums;
-
 namespace ShopCore.Application.Payments.Commands.HandlePaymentWebhook;
 
 /// <summary>

@@ -65,7 +65,7 @@ public class GetVendorCustomerByIdQueryHandler : IRequestHandler<GetVendorCustom
                     && s.Status == SubscriptionStatus.Active, cancellationToken),
             TotalOrderCount = await vendorOrderItems.CountAsync(cancellationToken),
             TotalDeliveryCount = await deliveredOrderItems.CountAsync(cancellationToken),
-            TotalSpent = await paidOrderItems.SumAsync(oi => oi.Subtotal, cancellationToken),
+            TotalSpent = await paidOrderItems.SumAsync(oi => oi.Quantity * oi.UnitPrice, cancellationToken),
             FirstOrderDate = await _context.Orders
                 .Where(o => o.UserId == request.UserId
                     && o.Items.Any(oi => oi.VendorId == vendorId))

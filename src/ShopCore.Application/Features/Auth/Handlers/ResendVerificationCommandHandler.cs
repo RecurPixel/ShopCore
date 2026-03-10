@@ -1,5 +1,3 @@
-using ShopCore.Application.Auth.Commands.ResendVerification;
-
 namespace ShopCore.Application.Auth.Commands.ResendVerification;
 
 public class ResendVerificationCommandHandler : IRequestHandler<ResendVerificationCommand>

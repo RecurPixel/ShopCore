@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Orders.DTOs;
 
 namespace ShopCore.Application.Orders.Queries.GetAllOrders;

@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using ShopCore.Domain.Entities;
 using CartEntity = ShopCore.Domain.Entities.Cart;
 using WishlistEntity = ShopCore.Domain.Entities.Wishlist;
 

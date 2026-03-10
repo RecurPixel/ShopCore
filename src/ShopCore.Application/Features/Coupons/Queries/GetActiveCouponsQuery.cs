@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Coupons.DTOs;
 
 namespace ShopCore.Application.Coupons.Queries.GetActiveCoupons;

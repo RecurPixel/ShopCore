@@ -1,8 +1,5 @@
-using ShopCore.Application.Common.Interfaces;
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Orders.Commands.ProcessRefund;
 using ShopCore.Application.Orders.DTOs;
-using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Orders.Handlers;
 

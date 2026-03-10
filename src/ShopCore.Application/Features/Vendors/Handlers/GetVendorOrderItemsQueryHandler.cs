@@ -34,10 +34,10 @@ public class GetVendorOrderItemsQueryHandler : IRequestHandler<GetVendorOrderIte
                 ProductImageUrl = oi.Product.Images.FirstOrDefault(i => i.IsPrimary)!.ImageUrl,
                 Quantity = oi.Quantity,
                 UnitPrice = oi.UnitPrice,
-                Subtotal = oi.Subtotal,
+                Subtotal = oi.Quantity * oi.UnitPrice,
                 CommissionRate = oi.CommissionRate,
-                CommissionAmount = oi.CommissionAmount,
-                VendorAmount = oi.VendorAmount,
+                CommissionAmount = oi.Quantity * oi.UnitPrice * oi.CommissionRate / 100,
+                VendorAmount = oi.Quantity * oi.UnitPrice * (1 - oi.CommissionRate / 100),
                 Status = oi.Status.ToString()
             })
             .ToListAsync(cancellationToken);

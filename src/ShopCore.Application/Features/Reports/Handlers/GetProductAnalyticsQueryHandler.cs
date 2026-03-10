@@ -38,7 +38,7 @@ public class GetProductAnalyticsQueryHandler : IRequestHandler<GetProductAnalyti
                 ProductId = g.Key.ProductId,
                 ProductName = g.Key.Name,
                 SoldCount = g.Sum(oi => oi.Quantity),
-                Revenue = g.Sum(oi => oi.Subtotal)
+                Revenue = g.Sum(oi => oi.Quantity * oi.UnitPrice)
             })
             .OrderByDescending(p => p.Revenue)
             .Take(request.Top)
@@ -54,7 +54,7 @@ public class GetProductAnalyticsQueryHandler : IRequestHandler<GetProductAnalyti
                 CategoryId = g.Key.CategoryId,
                 CategoryName = g.Key.Name,
                 ProductCount = g.Select(oi => oi.ProductId).Distinct().Count(),
-                Revenue = g.Sum(oi => oi.Subtotal)
+                Revenue = g.Sum(oi => oi.Quantity * oi.UnitPrice)
             })
             .OrderByDescending(c => c.Revenue)
             .ToListAsync(ct);

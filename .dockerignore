@@ -1,0 +1,15 @@
+**/.git
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/logs
+**/*.user
+**/*.suo
+**/.gitignore
+**/node_modules
+**/wwwroot/uploads
+**/TestResults
+docs
+*.md
+*.html

@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Payouts.DTOs;
 
 namespace ShopCore.Application.Payouts.Queries.GetVendorPayouts;

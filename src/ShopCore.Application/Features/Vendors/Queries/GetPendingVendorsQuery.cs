@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Vendors.DTOs;
 
 namespace ShopCore.Application.Vendors.Queries.GetPendingVendors;

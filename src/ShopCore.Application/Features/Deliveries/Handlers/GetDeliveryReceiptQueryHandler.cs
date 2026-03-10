@@ -1,5 +1,3 @@
-using ShopCore.Application.Common.Models;
-
 namespace ShopCore.Application.Deliveries.Queries.GetDeliveryReceipt;
 
 public class GetDeliveryReceiptQueryHandler : IRequestHandler<GetDeliveryReceiptQuery, FileResponse>

@@ -1,4 +1,3 @@
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Invoices.DTOs;
 
 namespace ShopCore.Application.Invoices.Queries.GetVendorInvoices;

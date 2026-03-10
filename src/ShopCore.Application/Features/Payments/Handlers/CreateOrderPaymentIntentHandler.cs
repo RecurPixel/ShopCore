@@ -1,7 +1,4 @@
-using ShopCore.Application.Common.Interfaces;
-using ShopCore.Application.Common.Models;
 using ShopCore.Application.Payments.DTOs;
-using ShopCore.Domain.Enums;
 
 namespace ShopCore.Application.Payments.Commands.CreateOrderPaymentIntent;
 
