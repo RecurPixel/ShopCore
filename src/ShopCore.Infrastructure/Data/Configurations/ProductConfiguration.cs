@@ -28,7 +28,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.Property(p => p.SKU).HasMaxLength(50);
 
-        builder.HasIndex(p => p.SKU).IsUnique().HasFilter("SKU IS NOT NULL");
+        builder.HasIndex(p => p.SKU).IsUnique();
 
         builder.Property(p => p.Barcode).HasMaxLength(50);
 

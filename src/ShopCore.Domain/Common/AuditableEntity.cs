@@ -8,7 +8,7 @@ public abstract class AuditableEntity : BaseEntity
     /// <summary>
     /// When the entity was created (UTC)
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
     /// User ID who created the entity (nullable for system-created)

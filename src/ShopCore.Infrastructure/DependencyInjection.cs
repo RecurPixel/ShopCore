@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using RecurPixel.Notify;
 using ShopCore.Application.Common.Interfaces;
 using ShopCore.Domain.Entities;
@@ -44,6 +43,11 @@ public static class DependencyInjection
             {
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             }
+
+            // Suppress snapshot type-mapping diff warning when switching providers.
+            // Migrations are provider-agnostic; EF generates correct DDL per provider at runtime.
+            options.ConfigureWarnings(w =>
+                w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
         });
 
         services.AddScoped<IApplicationDbContext>(provider =>

@@ -35,8 +35,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.AvatarUrl).HasMaxLength(500);
 
-        builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
-
         // Ignore computed property
         builder.Ignore(u => u.FullName);
 

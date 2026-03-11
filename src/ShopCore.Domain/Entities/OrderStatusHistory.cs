@@ -7,7 +7,7 @@ public class OrderStatusHistory
     public OrderStatus Status { get; set; }
     public string? Notes { get; set; }
     public int? ChangedBy { get; set; }
-    public DateTime ChangedAt { get; set; }
+    public DateTime ChangedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation
     public Order Order { get; set; } = null!;

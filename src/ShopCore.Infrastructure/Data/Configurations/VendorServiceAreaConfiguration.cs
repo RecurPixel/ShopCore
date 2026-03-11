@@ -1,7 +1,7 @@
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ShopCore.Domain.Entities;
+using System.Text.Json;
 
 namespace ShopCore.Infrastructure.EntityConfigurations;
 
@@ -29,11 +29,7 @@ public class VendorServiceAreaConfiguration : IEntityTypeConfiguration<VendorSer
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
                 v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()
-            )
-            .HasColumnType("nvarchar(max)");
-
-        builder.Property(vsa => vsa.GeoJsonPolygon)
-            .HasColumnType("nvarchar(max)");
+            );
 
         builder.Property(vsa => vsa.IsActive)
             .HasDefaultValue(true);

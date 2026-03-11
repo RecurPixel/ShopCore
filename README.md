@@ -122,11 +122,26 @@ cp src/ShopCore.API/appsettings.example.json src/ShopCore.API/appsettings.json
 
 ### 3. Database
 
+> ⚠️ **PostgreSQL only.** The EF Core migrations are generated targeting Postgres (`Npgsql` provider). Switching `Database:Provider` to `SqlServer` will fail with syntax errors (`nvarchar`, `WITH` keyword, etc.) because the migration files contain Postgres-specific DDL.
+>
+> **Do not attempt to run against SQL Server.** Use PostgreSQL locally (same as production on Railway).
+
+Set up your local Postgres connection in `appsettings.json`:
+```json
+"Database": { "Provider": "Postgres" },
+"ConnectionStrings": {
+  "Postgres": "Host=localhost;Port=5432;Database=ShopCoreDb;Username=postgres;Password=yourpassword"
+}
+```
+
+Apply migrations:
 ```bash
 dotnet ef database update \
   --project src/ShopCore.Infrastructure \
   --startup-project src/ShopCore.API
 ```
+
+> Migrations auto-apply on startup in all environments (`ApplyMigrationsAsync` in `Program.cs`).
 
 ### 4. Run
 
@@ -142,7 +157,7 @@ Swagger UI available at `https://localhost:5001/swagger`.
 dotnet test
 ```
 
-Tests use an in-memory database — no SQL Server required.
+Tests use an in-memory database — no Postgres instance required to run tests.
 
 ---
 

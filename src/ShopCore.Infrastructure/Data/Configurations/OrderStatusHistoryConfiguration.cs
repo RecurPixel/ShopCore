@@ -14,8 +14,6 @@ public class OrderStatusHistoryConfiguration : IEntityTypeConfiguration<OrderSta
 
         builder.Property(osh => osh.Notes).HasMaxLength(500);
 
-        builder.Property(osh => osh.ChangedAt).HasDefaultValueSql("GETUTCDATE()");
-
         // Indexes
         builder.HasIndex(osh => osh.OrderId);
     }

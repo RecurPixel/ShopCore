@@ -39,8 +39,7 @@ public class CustomerInvitationConfiguration : IEntityTypeConfiguration<Customer
             .HasMaxLength(10);
 
         builder.Property(ci => ci.SubscriptionItemsJson)
-            .IsRequired()
-            .HasColumnType("nvarchar(max)");
+            .IsRequired();
 
         builder.Property(ci => ci.Frequency)
             .HasConversion<int>();
