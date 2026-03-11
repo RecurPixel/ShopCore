@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify Email – ShopCore</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .08);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a73e8;
+      margin-bottom: 24px;
+    }
+
+    .icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 15px;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e0e0e0;
+      border-top-color: #1a73e8;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 16px auto 24px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .success {
+      color: #1e7e34;
+    }
+
+    .error {
+      color: #c5221f;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="logo">ShopCore</div>
+    <div id="loading">
+      <div class="spinner"></div>
+      <h1>Verifying your email…</h1>
+      <p>Please wait a moment.</p>
+    </div>
+    <div id="result" style="display:none"></div>
+  </div>
+
+  <script>
+    (async () => {
+      const token = new URLSearchParams(window.location.search).get('token') || '';
+      const loading = document.getElementById('loading');
+      const result = document.getElementById('result');
+
+      const show = (icon, heading, message, cls) => {
+        loading.style.display = 'none';
+        result.style.display = 'block';
+        result.innerHTML = `
+          <div class="icon">${icon}</div>
+          <h1 class="${cls}">${heading}</h1>
+          <p>${message}</p>`;
+      };
+
+      if (!token) {
+        show('⚠️', 'Invalid Link', 'This verification link is missing a token. Please request a new verification email.', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/v1/auth/verify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ verificationToken: token })
+        });
+
+        if (res.ok || res.status === 204) {
+          show('✅', 'Email Verified!', 'Your email has been verified successfully. You can now log in to your account.', 'success');
+        } else {
+          const data = await res.json().catch(() => ({}));
+          const msg = data?.detail || data?.title || 'This verification link may have expired. Please request a new verification email.';
+          show('❌', 'Verification Failed', msg, 'error');
+        }
+      } catch {
+        show('❌', 'Network Error', 'Could not reach the server. Please check your connection and try again.', 'error');
+      }
+    })();
+  </script>
+</body>
+
+</html>
