@@ -1,7 +1,6 @@
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using ShopCore.API.Filters;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 
 namespace ShopCore.API.Extensions;
@@ -47,7 +46,11 @@ public static class SwaggerExtensions
             app.MapOpenApi();
             app.UseSwagger();
             app.UseSwaggerUI();
-            app.MapScalarApiReference();
+            app.MapScalarApiReference(options =>
+            {
+                options.WithTitle("ShopCore API");
+                options.AddServer(app.Configuration["App:BaseUrl"] ?? "https://localhost:7001");
+            });
         }
 
         return app;

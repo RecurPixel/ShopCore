@@ -30,7 +30,7 @@ public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordComman
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        var baseUrl = (_configuration["App:BaseUrl"] ?? "https://localhost:7000").TrimEnd('/');
+        var baseUrl = (_configuration["App:BaseUrl"] ?? "https://localhost:7001").TrimEnd('/');
         var resetUrl = $"{baseUrl}/reset-password.html";
         await _notificationService.SendPasswordResetAsync(user, user.PasswordResetToken, resetUrl);
     }

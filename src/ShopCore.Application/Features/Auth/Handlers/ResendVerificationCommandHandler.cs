@@ -30,7 +30,7 @@ public class ResendVerificationCommandHandler : IRequestHandler<ResendVerificati
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        var baseUrl = (_configuration["App:BaseUrl"] ?? "https://localhost:7000").TrimEnd('/');
+        var baseUrl = (_configuration["App:BaseUrl"] ?? "https://localhost:7001").TrimEnd('/');
         var verifyUrl = $"{baseUrl}/verify-email.html";
         await _notificationService.SendEmailVerificationAsync(user, user.EmailVerificationToken!, verifyUrl);
     }

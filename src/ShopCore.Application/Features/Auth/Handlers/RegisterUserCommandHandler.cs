@@ -61,7 +61,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
         await _context.SaveChangesAsync(ct);
 
         // 6. Send welcome notification (fire and forget — failures are logged internally)
-        var baseUrl = (_configuration["App:BaseUrl"] ?? "https://localhost:7000").TrimEnd('/');
+        var baseUrl = (_configuration["App:BaseUrl"] ?? "https://localhost:7001").TrimEnd('/');
         var verifyUrl = $"{baseUrl}/verify-email.html";
         await _notificationService.SendWelcomeAsync(user);
         await _notificationService.SendEmailVerificationAsync(user, verificationToken, verifyUrl);

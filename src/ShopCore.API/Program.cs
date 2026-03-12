@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 using ShopCore.API.Extensions;
 using ShopCore.API.Middleware;
@@ -63,6 +64,10 @@ var app = builder.Build();
 await app.ApplyMigrationsAsync();
 
 // Middleware pipeline
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
