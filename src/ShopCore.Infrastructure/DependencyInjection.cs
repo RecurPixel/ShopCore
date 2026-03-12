@@ -32,11 +32,17 @@ public static class DependencyInjection
         {
             if (dbProvider.Equals("Postgres", StringComparison.OrdinalIgnoreCase))
             {
-                // Railway injects DATABASE_URL as a postgres:// URI; fall back to appsettings
-                var connStr = Environment.GetEnvironmentVariable("DATABASE_URL")
+                var rawConnStr = Environment.GetEnvironmentVariable("DATABASE_URL")
                               ?? configuration.GetConnectionString("Postgres")
                               ?? throw new InvalidOperationException(
                                   "Postgres connection string not found. Set DATABASE_URL env var or ConnectionStrings:Postgres.");
+
+                // Railway injects DATABASE_URL as a URI (postgresql://user:pass@host:port/db).
+                // Npgsql requires key-value format — convert if needed.
+                var connStr = rawConnStr.StartsWith("postgresql://") || rawConnStr.StartsWith("postgres://")
+                    ? ConvertPostgresUrlToConnectionString(rawConnStr)
+                    : rawConnStr;
+
                 options.UseNpgsql(connStr);
             }
             else
@@ -44,8 +50,6 @@ public static class DependencyInjection
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             }
 
-            // Suppress snapshot type-mapping diff warning when switching providers.
-            // Migrations are provider-agnostic; EF generates correct DDL per provider at runtime.
             options.ConfigureWarnings(w =>
                 w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
         });
@@ -58,7 +62,6 @@ public static class DependencyInjection
         services.Configure<FileStorageOptions>(
             configuration.GetSection(FileStorageOptions.SectionName));
 
-        // Register file storage service based on configuration
         var fileStorageOptions = configuration
             .GetSection(FileStorageOptions.SectionName)
             .Get<FileStorageOptions>() ?? new FileStorageOptions();
@@ -163,16 +166,13 @@ public static class DependencyInjection
             });
         });
 
-
         services.AddScoped<INotificationService, NotificationService>();
 
-        // Services
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddTransient<IDateTime, DateTimeService>();
         services.AddTransient<IPdfService, PdfService>();
         services.AddScoped<ITaxService, TaxService>();
 
-        // Location Service with Google Maps API
         services.Configure<GoogleMapsSettings>(
             configuration.GetSection("GoogleMapsSettings"));
         services.AddHttpClient<ILocationService, LocationService>();
@@ -197,5 +197,17 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasher, PasswordHasher>();
 
         return services;
+    }
+
+    private static string ConvertPostgresUrlToConnectionString(string url)
+    {
+        // Handles both postgresql:// and postgres:// schemes
+        var uri = new Uri(url);
+        var userInfo = uri.UserInfo.Split(':', 2);
+        var username = Uri.UnescapeDataString(userInfo[0]);
+        var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : string.Empty;
+        var database = uri.AbsolutePath.TrimStart('/');
+
+        return $"Host={uri.Host};Port={uri.Port};Database={database};Username={username};Password={password};SSL Mode=Prefer;Trust Server Certificate=true";
     }
 }
