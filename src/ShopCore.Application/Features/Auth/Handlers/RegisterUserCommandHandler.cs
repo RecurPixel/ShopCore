@@ -8,17 +8,20 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
     private readonly IPasswordHasher _passwordHasher;
     private readonly INotificationService _notificationService;
     private readonly IDateTime _dateTime;
+    private readonly IConfiguration _configuration;
 
     public RegisterUserCommandHandler(
         IApplicationDbContext context,
         IPasswordHasher passwordHasher,
         INotificationService notificationService,
-        IDateTime dateTime)
+        IDateTime dateTime,
+        IConfiguration configuration)
     {
         _context = context;
         _passwordHasher = passwordHasher;
         _notificationService = notificationService;
         _dateTime = dateTime;
+        _configuration = configuration;
     }
 
     public async Task<RegisterResponse> Handle(RegisterUserCommand request, CancellationToken ct)
@@ -58,7 +61,8 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
         await _context.SaveChangesAsync(ct);
 
         // 6. Send welcome notification (fire and forget — failures are logged internally)
-        var verifyUrl = "https://shopcore.com/verify-email";
+        var baseUrl = (_configuration["App:BaseUrl"] ?? "https://localhost:7000").TrimEnd('/');
+        var verifyUrl = $"{baseUrl}/verify-email.html";
         await _notificationService.SendWelcomeAsync(user);
         await _notificationService.SendEmailVerificationAsync(user, verificationToken, verifyUrl);
 

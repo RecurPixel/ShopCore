@@ -1,6 +1,7 @@
 global using FluentValidation;
 global using MediatR;
 global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.Configuration;
 global using ShopCore.Application.Common.Exceptions;
 global using ShopCore.Application.Common.Interfaces;
 global using ShopCore.Application.Common.Models;

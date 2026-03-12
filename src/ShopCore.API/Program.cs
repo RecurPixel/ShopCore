@@ -7,6 +7,21 @@ using ShopCore.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var railwayDomain = Environment.GetEnvironmentVariable("RAILWAY_PUBLIC_DOMAIN");
+if (!string.IsNullOrWhiteSpace(railwayDomain))
+{
+    var normalizedDomain = railwayDomain.Trim().TrimEnd('/');
+    if (normalizedDomain.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+        normalizedDomain.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+    {
+        builder.Configuration["App:BaseUrl"] = normalizedDomain;
+    }
+    else
+    {
+        builder.Configuration["App:BaseUrl"] = $"https://{normalizedDomain}";
+    }
+}
+
 // PORT binding — Railway (and most container platforms) inject $PORT at runtime
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(port))

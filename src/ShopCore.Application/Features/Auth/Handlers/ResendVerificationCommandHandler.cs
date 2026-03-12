@@ -4,13 +4,16 @@ public class ResendVerificationCommandHandler : IRequestHandler<ResendVerificati
 {
     private readonly IApplicationDbContext _context;
     private readonly INotificationService _notificationService;
+    private readonly IConfiguration _configuration;
 
     public ResendVerificationCommandHandler(
         IApplicationDbContext context,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IConfiguration configuration)
     {
         _context = context;
         _notificationService = notificationService;
+        _configuration = configuration;
     }
 
     public async Task Handle(ResendVerificationCommand request, CancellationToken cancellationToken)
@@ -27,7 +30,8 @@ public class ResendVerificationCommandHandler : IRequestHandler<ResendVerificati
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        var verifyUrl = "https://shopcore.com/verify-email";
+        var baseUrl = (_configuration["App:BaseUrl"] ?? "https://localhost:7000").TrimEnd('/');
+        var verifyUrl = $"{baseUrl}/verify-email.html";
         await _notificationService.SendEmailVerificationAsync(user, user.EmailVerificationToken!, verifyUrl);
     }
 }
