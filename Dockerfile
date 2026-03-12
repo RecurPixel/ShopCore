@@ -10,7 +10,7 @@ COPY src/ShopCore.Domain/ShopCore.Domain.csproj        src/ShopCore.Domain/
 COPY src/ShopCore.Infrastructure/ShopCore.Infrastructure.csproj src/ShopCore.Infrastructure/
 
 # Restore dependencies
-RUN dotnet restore
+RUN dotnet restore src/ShopCore.API/ShopCore.API.csproj
 
 # Copy everything else and build
 COPY . .
@@ -23,13 +23,11 @@ RUN dotnet publish src/ShopCore.API/ShopCore.API.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+RUN groupadd --system appgroup && \
+    useradd --system --gid appgroup --no-create-home appuser
 
-# Copy published output
 COPY --from=build /app/publish .
 
-# Create logs directory with correct permissions
 RUN mkdir -p logs && chown -R appuser:appgroup /app
 
 USER appuser
